@@ -1,0 +1,278 @@
+{
+  "brand": "Waves Arcade",
+  "nav": {
+    "play": "Spelen",
+    "shop": "Winkel",
+    "inventory": "Inventaris",
+    "premium": "Premium",
+    "profile": "Profiel",
+    "settings": "Instellingen"
+  },
+  "auth": {
+    "welcome": "Betreed de arena",
+    "subtitle": "Bouw je neonspoor, jaag op topscores en ontgrendel premium skins.",
+    "login": "Inloggen",
+    "register": "Registreren",
+    "email": "E-mail",
+    "password": "Wachtwoord",
+    "displayName": "Spelersnaam",
+    "createAccount": "Account maken",
+    "haveAccount": "Ik heb al een account",
+    "needAccount": "Maak een nieuw account",
+    "featureAccount": "Veilig account",
+    "featureSkins": "Cosmetische skins",
+    "featureLeaderboard": "Ranglijst",
+    "logout": "Uitloggen"
+  },
+  "menu": {
+    "title": "Neon wave runner",
+    "subtitle": "Ontwijk de arena, verzamel energie en duw je spoor verder in elke run.",
+    "playNow": "Nu spelen",
+    "dailyReward": "Dagelijkse beloning",
+    "claim": "Claim",
+    "claimed": "Geclaimd",
+    "streak": "Reeks",
+    "reward": "{{coins}} munten"
+  },
+  "game": {
+    "score": "Score",
+    "coins": "Munten",
+    "distance": "Afstand",
+    "pause": "Pauze",
+    "resume": "Doorgaan",
+    "restart": "Herstart",
+    "exit": "Afsluiten",
+    "gameOver": "Game over",
+    "newBest": "Nieuwe beste",
+    "coinsEarned": "Munten verdiend",
+    "start": "Start run",
+    "tapToControl": "Klik vasthouden of Space"
+  },
+  "roulette": {
+    "eyebrow": "Beloningswiel",
+    "title": "Prijzenroulette",
+    "tickets": "Tickets",
+    "nextSpin": "Volgende spin",
+    "adsNeeded": "{{count}} advertentie(s) nodig",
+    "freeReady": "Klaar om te draaien",
+    "freeSpins": "Gratis spins",
+    "lastPrize": "Laatste prijs",
+    "locked": "Ad",
+    "ready": "Go",
+    "watchAd": "Bekijk ad",
+    "adWatching": "Ad laden...",
+    "spin": "Draai",
+    "spinning": "Draaien...",
+    "vipTrial": "VIP-proef",
+    "prizes": {
+      "coins": "Munten",
+      "gems": "Edelstenen",
+      "rouletteTicket": "Rouletteticket",
+      "extraLife": "Extra leven",
+      "skin": "Skin",
+      "premiumTrial": "VIP-proef",
+      "booster": "Booster",
+      "antiAds": "Ad skip"
+    }
+  },
+  "ads": {
+    "watchForCoins": "Bekijk ad voor munten",
+    "watching": "Ad laden..."
+  },
+  "shop": {
+    "title": "Skinwinkel",
+    "subtitle": "Bekijk, ontgrendel en draag cosmetische skins.",
+    "owned": "In bezit",
+    "locked": "Vergrendeld",
+    "equipped": "Actief",
+    "buy": "Kopen",
+    "equip": "Uitrusten",
+    "preview": "Preview",
+    "premium": "Premium",
+    "limited": "Tijdelijk",
+    "coins": "{{count}} munten",
+    "gems": "{{count}} edelstenen"
+  },
+  "inventory": {
+    "title": "Skininventaris",
+    "subtitle": "Rust je pijlskin uit en kies de lichtlijn die achter je aan loopt in de game.",
+    "total": "In bezit",
+    "arrowSkins": "Pijlen",
+    "trailSkins": "Lijnen",
+    "currentLoadout": "Huidige set",
+    "loadoutHint": "De pijl verandert de speler zelf. De lijn verandert het lange spoor erachter.",
+    "arrowSlot": "Pijlskin",
+    "trailSlot": "Spoorlijn",
+    "emptySlot": "Niet gekozen",
+    "unlocked": "Ontgrendeld",
+    "empty": "Nog geen skins in deze categorie.",
+    "filters": {
+      "all": "Alle skins",
+      "arrow": "Pijlskins",
+      "trail": "Spoorlijn"
+    }
+  },
+  "skinCategory": {
+    "arrow": "Pijlskin",
+    "trail": "Spoorlijn",
+    "line": "Lijneffect",
+    "effect": "Speciaal effect",
+    "background": "Achtergrond",
+    "deathEffect": "Doodseffect",
+    "profileFrame": "Profielframe",
+    "badge": "Badge"
+  },
+  "profile": {
+    "title": "Pilootprofiel",
+    "highScore": "Topscore",
+    "coins": "Munten",
+    "gems": "Edelstenen",
+    "leaderboard": "Wereldranglijst",
+    "rank": "Rang",
+    "player": "Speler",
+    "score": "Score",
+    "emptyLeaderboard": "Nog geen scores."
+  },
+  "settings": {
+    "title": "Instellingen",
+    "language": "Taal",
+    "account": "Account",
+    "save": "Opslaan",
+    "saved": "Opgeslagen",
+    "payments": "Betalingen",
+    "paymentsNote": "Betaalproviders kunnen worden gekoppeld na productieconfiguratie.",
+    "ads": "Beloningsadvertenties",
+    "adsNote": "Beloningsadvertenties kunnen aansluiten op de wallet-beloningen."
+  },
+  "common": {
+    "loading": "Laden",
+    "error": "Er is iets misgegaan",
+    "close": "Sluiten",
+    "back": "Terug"
+  },
+  "skins": {
+    "neonBlueTrail": {
+      "name": "Neon Blue Trail",
+      "description": "Een helder elektrisch blauw spoor voor eerste runs."
+    },
+    "fireLine": {
+      "name": "Fire Line",
+      "description": "Een vurige lijn met vonkdeeltjes."
+    },
+    "iceArrow": {
+      "name": "Ice Arrow",
+      "description": "Scherpe ijsranden met lichte gloed."
+    },
+    "goldPremiumTrail": {
+      "name": "Gold Premium Trail",
+      "description": "Een premium gouden spoor voor VIP-piloten."
+    },
+    "galaxyLine": {
+      "name": "Galaxy Line",
+      "description": "Kosmische kleuren met sterachtige deeltjes."
+    },
+    "cyberGreen": {
+      "name": "Cyber Green",
+      "description": "Een frisse starterpijl met arcade-energie."
+    },
+    "rainbowTrail": {
+      "name": "Rainbow Trail",
+      "description": "Een tijdelijk spoor met volledige regenboogbeweging."
+    },
+    "shadowArrow": {
+      "name": "Shadow Arrow",
+      "description": "Een sluippijl met donkere gloed."
+    },
+    "diamondSkin": {
+      "name": "Diamond Skin",
+      "description": "Een legendarisch kristaleffect."
+    },
+    "plasmaArrow": {
+      "name": "Plasma Arrow",
+      "description": "Een scherpe roze-paarse pijl met onstabiele plasmagloed."
+    },
+    "solarFlareTrail": {
+      "name": "Solar Flare Trail",
+      "description": "Een fel oranje spoor met hete arcade-energie."
+    },
+    "toxicWaveLine": {
+      "name": "Toxic Wave Line",
+      "description": "Een groene chemische lijn die snel en gevaarlijk voelt."
+    },
+    "rubyArrow": {
+      "name": "Ruby Arrow",
+      "description": "Een zware rode pijl met robijnachtige randen."
+    },
+    "voidTrail": {
+      "name": "Void Trail",
+      "description": "Een donker paars spoor vanaf de rand van de ruimte."
+    },
+    "thunderLine": {
+      "name": "Thunder Line",
+      "description": "Een geel-blauwe elektrische lijn met stormvonken."
+    },
+    "auroraTrail": {
+      "name": "Aurora Trail",
+      "description": "Een tijdelijk teal-paars spoor met poollichtbeweging."
+    },
+    "pearlArrow": {
+      "name": "Pearl Arrow",
+      "description": "Een premium parelmoeren pijl met zachte luxe gloed."
+    },
+    "obsidianLine": {
+      "name": "Obsidian Line",
+      "description": "Een donkere metalen lijn met koude zilveren randen."
+    },
+    "emeraldTrail": {
+      "name": "Emerald Trail",
+      "description": "Een schoon groen spoor met smaragdglans."
+    },
+    "sapphireArrow": {
+      "name": "Sapphire Arrow",
+      "description": "Een blauwe pijl met ijzige saffierreflecties."
+    },
+    "lavaTrail": {
+      "name": "Lava Trail",
+      "description": "Een gesmolten rood-oranje spoor."
+    },
+    "glitchArrow": {
+      "name": "Glitch Arrow",
+      "description": "Een premium cyaan-roze pijl met kapot-signaaleffecten."
+    },
+    "cometTrail": {
+      "name": "Comet Trail",
+      "description": "Een legendarisch wit-blauw spoor dat als een komeet strekt."
+    },
+    "prismLine": {
+      "name": "Prism Line",
+      "description": "Een premium regenbooglijn met glasachtige breking."
+    },
+    "royalGoldArrow": {
+      "name": "Royal Gold Arrow",
+      "description": "Een premium gouden pijl voor VIP-piloten."
+    },
+    "nebulaTrail": {
+      "name": "Nebula Trail",
+      "description": "Een premium kosmisch spoor met diep violet-blauwe gloed."
+    },
+    "candyPulseTrail": {
+      "name": "Candy Pulse Trail",
+      "description": "Een tijdelijk roze-cyaan eventspoor met speelse pulsen."
+    }
+  },
+  "rarity": {
+    "common": "Gewoon",
+    "rare": "Zeldzaam",
+    "epic": "Episch",
+    "legendary": "Legendarisch",
+    "premium": "Premium",
+    "limited": "Tijdelijk",
+    "event": "Event"
+  },
+  "language": {
+    "en": "Engels",
+    "nl": "Nederlands",
+    "ru": "Russisch",
+    "uk": "Oekraïens"
+  }
+}

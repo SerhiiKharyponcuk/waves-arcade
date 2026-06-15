@@ -1,0 +1,83 @@
+import { create } from "zustand";
+import type { AuthResponse, CurrentUser, LoginPayload, RegisterPayload, UserProfileDto, WalletDto } from "../types/api";
+import { authApi } from "../services/authApi";
+import { setAccessToken } from "../services/apiClient";
+
+interface AuthState {
+  token: string;
+  user: CurrentUser | null;
+  loading: boolean;
+  error: string;
+  bootstrap: () => Promise<void>;
+  login: (payload: LoginPayload) => Promise<void>;
+  register: (payload: RegisterPayload) => Promise<void>;
+  logout: () => Promise<void>;
+  patchProfile: (profile: UserProfileDto) => void;
+  patchWallet: (wallet: WalletDto) => void;
+}
+
+function applyAuthResponse(result: AuthResponse) {
+  setAccessToken(result.accessToken);
+  return { token: result.accessToken, user: result.user, error: "" };
+}
+
+export const useAuthStore = create<AuthState>((set, get) => ({
+  token: localStorage.getItem("waves_access_token") ?? "",
+  user: null,
+  loading: false,
+  error: "",
+  bootstrap: async () => {
+    const token = get().token;
+    if (!token || get().user) {
+      return;
+    }
+    setAccessToken(token);
+    set({ loading: true });
+    try {
+      const user = await authApi.me();
+      set({ user, loading: false, error: "" });
+    } catch {
+      setAccessToken("");
+      set({ token: "", user: null, loading: false });
+    }
+  },
+  login: async (payload) => {
+    set({ loading: true, error: "" });
+    try {
+      const result = await authApi.login(payload);
+      set({ ...applyAuthResponse(result), loading: false });
+    } catch (error) {
+      set({ loading: false, error: error instanceof Error ? error.message : "Login failed" });
+    }
+  },
+  register: async (payload) => {
+    set({ loading: true, error: "" });
+    try {
+      const result = await authApi.register(payload);
+      set({ ...applyAuthResponse(result), loading: false });
+    } catch (error) {
+      set({ loading: false, error: error instanceof Error ? error.message : "Registration failed" });
+    }
+  },
+  logout: async () => {
+    try {
+      await authApi.logout();
+    } catch {
+      // Stateless JWT logout is completed client-side even if the token has expired.
+    }
+    setAccessToken("");
+    set({ token: "", user: null });
+  },
+  patchProfile: (profile) => {
+    const user = get().user;
+    if (user) {
+      set({ user: { ...user, profile } });
+    }
+  },
+  patchWallet: (wallet) => {
+    const user = get().user;
+    if (user) {
+      set({ user: { ...user, wallet } });
+    }
+  }
+}));

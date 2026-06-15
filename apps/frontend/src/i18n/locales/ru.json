@@ -1,0 +1,278 @@
+{
+  "brand": "Waves Arcade",
+  "nav": {
+    "play": "Играть",
+    "shop": "Магазин",
+    "inventory": "Инвентарь",
+    "premium": "Премиум",
+    "profile": "Профиль",
+    "settings": "Настройки"
+  },
+  "auth": {
+    "welcome": "Войти на арену",
+    "subtitle": "Создавай неоновый след, ставь рекорды и открывай премиум-скины.",
+    "login": "Войти",
+    "register": "Регистрация",
+    "email": "Email",
+    "password": "Пароль",
+    "displayName": "Имя игрока",
+    "createAccount": "Создать аккаунт",
+    "haveAccount": "У меня уже есть аккаунт",
+    "needAccount": "Создать новый аккаунт",
+    "featureAccount": "Безопасный аккаунт",
+    "featureSkins": "Косметические скины",
+    "featureLeaderboard": "Таблица лидеров",
+    "logout": "Выйти"
+  },
+  "menu": {
+    "title": "Неоновый wave runner",
+    "subtitle": "Уклоняйся от арены, собирай энергию и проходи дальше с каждой попыткой.",
+    "playNow": "Играть",
+    "dailyReward": "Ежедневная награда",
+    "claim": "Получить",
+    "claimed": "Получено",
+    "streak": "Серия",
+    "reward": "{{coins}} монет"
+  },
+  "game": {
+    "score": "Счет",
+    "coins": "Монеты",
+    "distance": "Дистанция",
+    "pause": "Пауза",
+    "resume": "Продолжить",
+    "restart": "Заново",
+    "exit": "Выйти",
+    "gameOver": "Игра окончена",
+    "newBest": "Новый рекорд",
+    "coinsEarned": "Монет получено",
+    "start": "Начать забег",
+    "tapToControl": "Удерживай клик или Space"
+  },
+  "roulette": {
+    "eyebrow": "Колесо наград",
+    "title": "Призовая рулетка",
+    "tickets": "Билеты",
+    "nextSpin": "Следующий спин",
+    "adsNeeded": "Нужно реклам: {{count}}",
+    "freeReady": "Можно крутить",
+    "freeSpins": "Бесплатные спины",
+    "lastPrize": "Последний приз",
+    "locked": "Ad",
+    "ready": "Go",
+    "watchAd": "Смотреть рекламу",
+    "adWatching": "Загрузка рекламы...",
+    "spin": "Крутить",
+    "spinning": "Крутится...",
+    "vipTrial": "VIP-пробный доступ",
+    "prizes": {
+      "coins": "Монеты",
+      "gems": "Кристаллы",
+      "rouletteTicket": "Билет рулетки",
+      "extraLife": "Дополнительная жизнь",
+      "skin": "Скин",
+      "premiumTrial": "VIP-пробный доступ",
+      "booster": "Бустер",
+      "antiAds": "Пропуск рекламы"
+    }
+  },
+  "ads": {
+    "watchForCoins": "Реклама за монеты",
+    "watching": "Загрузка рекламы..."
+  },
+  "shop": {
+    "title": "Магазин скинов",
+    "subtitle": "Смотри, открывай и надевай косметические скины.",
+    "owned": "Есть",
+    "locked": "Закрыто",
+    "equipped": "Выбрано",
+    "buy": "Купить",
+    "equip": "Надеть",
+    "preview": "Просмотр",
+    "premium": "Премиум",
+    "limited": "Ограничено",
+    "coins": "{{count}} монет",
+    "gems": "{{count}} кристаллов"
+  },
+  "inventory": {
+    "title": "Инвентарь скинов",
+    "subtitle": "Надевай саму стрелку и световую линию, которая тянется позади во время игры.",
+    "total": "Открыто",
+    "arrowSkins": "Стрелки",
+    "trailSkins": "Линии",
+    "currentLoadout": "Текущий набор",
+    "loadoutHint": "Стрелка меняет сам скин игрока. Линия меняет длинный след позади.",
+    "arrowSlot": "Скин стрелки",
+    "trailSlot": "Линия позади",
+    "emptySlot": "Не выбрано",
+    "unlocked": "Открыто",
+    "empty": "В этой категории пока нет скинов.",
+    "filters": {
+      "all": "Все скины",
+      "arrow": "Скин стрелки",
+      "trail": "Линия позади"
+    }
+  },
+  "skinCategory": {
+    "arrow": "Скин стрелки",
+    "trail": "Линия позади",
+    "line": "Эффект линии",
+    "effect": "Спецэффект",
+    "background": "Фон",
+    "deathEffect": "Эффект смерти",
+    "profileFrame": "Рамка профиля",
+    "badge": "Значок"
+  },
+  "profile": {
+    "title": "Профиль пилота",
+    "highScore": "Рекорд",
+    "coins": "Монеты",
+    "gems": "Кристаллы",
+    "leaderboard": "Глобальная таблица",
+    "rank": "Место",
+    "player": "Игрок",
+    "score": "Счет",
+    "emptyLeaderboard": "Пока нет результатов."
+  },
+  "settings": {
+    "title": "Настройки",
+    "language": "Язык",
+    "account": "Аккаунт",
+    "save": "Сохранить",
+    "saved": "Сохранено",
+    "payments": "Платежи",
+    "paymentsNote": "Платежные провайдеры можно подключить после production-настройки.",
+    "ads": "Рекламные награды",
+    "adsNote": "Rewarded ads можно подключить к сервису наград кошелька."
+  },
+  "common": {
+    "loading": "Загрузка",
+    "error": "Что-то пошло не так",
+    "close": "Закрыть",
+    "back": "Назад"
+  },
+  "skins": {
+    "neonBlueTrail": {
+      "name": "Neon Blue Trail",
+      "description": "Чистый электрически-синий след для первых забегов."
+    },
+    "fireLine": {
+      "name": "Fire Line",
+      "description": "Горячая линия с частицами искр."
+    },
+    "iceArrow": {
+      "name": "Ice Arrow",
+      "description": "Острые ледяные грани и холодное сияние."
+    },
+    "goldPremiumTrail": {
+      "name": "Gold Premium Trail",
+      "description": "Премиальный золотой след для VIP-пилотов."
+    },
+    "galaxyLine": {
+      "name": "Galaxy Line",
+      "description": "Космические цвета и частицы звезд."
+    },
+    "cyberGreen": {
+      "name": "Cyber Green",
+      "description": "Четкая стартовая стрелка с аркадной энергией."
+    },
+    "rainbowTrail": {
+      "name": "Rainbow Trail",
+      "description": "Ограниченный след с радужным движением."
+    },
+    "shadowArrow": {
+      "name": "Shadow Arrow",
+      "description": "Скрытная стрелка с темным свечением."
+    },
+    "diamondSkin": {
+      "name": "Diamond Skin",
+      "description": "Легендарный кристальный эффект."
+    },
+    "plasmaArrow": {
+      "name": "Plasma Arrow",
+      "description": "Острая розово-фиолетовая стрелка с нестабильным плазменным свечением."
+    },
+    "solarFlareTrail": {
+      "name": "Solar Flare Trail",
+      "description": "Яркая оранжевая линия с горячей аркадной энергией."
+    },
+    "toxicWaveLine": {
+      "name": "Toxic Wave Line",
+      "description": "Зеленая токсичная линия, которая выглядит быстро и опасно."
+    },
+    "rubyArrow": {
+      "name": "Ruby Arrow",
+      "description": "Тяжелая красная стрелка с рубиновыми гранями."
+    },
+    "voidTrail": {
+      "name": "Void Trail",
+      "description": "Темно-фиолетовый след с края космоса."
+    },
+    "thunderLine": {
+      "name": "Thunder Line",
+      "description": "Желто-синяя электрическая линия со штормовыми искрами."
+    },
+    "auroraTrail": {
+      "name": "Aurora Trail",
+      "description": "Ограниченная бирюзово-фиолетовая линия в стиле северного сияния."
+    },
+    "pearlArrow": {
+      "name": "Pearl Arrow",
+      "description": "Премиальная перламутровая стрелка с мягким люксовым свечением."
+    },
+    "obsidianLine": {
+      "name": "Obsidian Line",
+      "description": "Темная металлическая линия с холодными серебряными краями."
+    },
+    "emeraldTrail": {
+      "name": "Emerald Trail",
+      "description": "Чистая зеленая линия с блеском изумруда."
+    },
+    "sapphireArrow": {
+      "name": "Sapphire Arrow",
+      "description": "Синяя стрелка с ледяными сапфировыми отблесками."
+    },
+    "lavaTrail": {
+      "name": "Lava Trail",
+      "description": "Раскаленная красно-оранжевая линия."
+    },
+    "glitchArrow": {
+      "name": "Glitch Arrow",
+      "description": "Премиальная бирюзово-розовая стрелка с эффектом сломанного сигнала."
+    },
+    "cometTrail": {
+      "name": "Comet Trail",
+      "description": "Легендарная бело-синяя линия, летящая как комета."
+    },
+    "prismLine": {
+      "name": "Prism Line",
+      "description": "Премиальная радужная линия со стеклянным преломлением."
+    },
+    "royalGoldArrow": {
+      "name": "Royal Gold Arrow",
+      "description": "Премиальная золотая стрелка для VIP-пилотов."
+    },
+    "nebulaTrail": {
+      "name": "Nebula Trail",
+      "description": "Премиальная космическая линия с глубоким фиолетово-синим свечением."
+    },
+    "candyPulseTrail": {
+      "name": "Candy Pulse Trail",
+      "description": "Ограниченная розово-бирюзовая event-линия с живыми импульсами."
+    }
+  },
+  "rarity": {
+    "common": "Обычный",
+    "rare": "Редкий",
+    "epic": "Эпический",
+    "legendary": "Легендарный",
+    "premium": "Премиум",
+    "limited": "Ограниченный",
+    "event": "Ивент"
+  },
+  "language": {
+    "en": "Английский",
+    "nl": "Нидерландский",
+    "ru": "Русский",
+    "uk": "Украинский"
+  }
+}

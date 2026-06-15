@@ -1,0 +1,186 @@
+import Phaser from "phaser";
+import type { GameSkinBundle } from "../skins/skinResolver";
+import { ObstacleManager } from "../obstacles/ObstacleManager";
+import { ParticleBurst } from "../effects/ParticleBurst";
+import { PlayerController } from "../player/PlayerController";
+
+export interface GameStats {
+  score: number;
+  coins: number;
+  distance: number;
+  durationMs: number;
+  obstacleHits: number;
+}
+
+export interface WavesSceneOptions {
+  skins: GameSkinBundle;
+  onStats: (stats: GameStats) => void;
+  onGameOver: (stats: GameStats) => void | Promise<void>;
+}
+
+export class WavesScene extends Phaser.Scene {
+  private readonly options: WavesSceneOptions;
+  private player?: PlayerController;
+  private obstacles?: ObstacleManager;
+  private particles?: ParticleBurst;
+  private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
+  private wasd?: Record<string, Phaser.Input.Keyboard.Key>;
+  private startedAt = 0;
+  private coins = 0;
+  private ended = false;
+  private firstInputAt = 0;
+  private pointerPressed = false;
+  private virtualPressed = false;
+  private pausedByUi = false;
+
+  constructor(options: WavesSceneOptions) {
+    super("waves-scene");
+    this.options = options;
+  }
+
+  create() {
+    this.cameras.main.setBackgroundColor("#081116");
+    this.physics.world.setBounds(0, 0, 100_000, this.scale.height);
+    this.drawBackdrop();
+
+    this.cursors = this.input.keyboard?.createCursorKeys();
+    this.wasd = this.input.keyboard?.addKeys("W,A,S,D,SPACE") as Record<string, Phaser.Input.Keyboard.Key>;
+    this.player = new PlayerController(this, this.options.skins.arrow, this.options.skins.trail);
+    this.obstacles = new ObstacleManager(this);
+    this.particles = new ParticleBurst(this);
+    this.startedAt = performance.now();
+
+    this.physics.add.collider(this.player.collider, this.obstacles.obstacleGroup, () => this.finish(1));
+    this.physics.add.overlap(this.player.collider, this.obstacles.coinGroup, (_player, coin) =>
+      this.collectCoin(coin as Phaser.GameObjects.GameObject)
+    );
+    this.cameras.main.startFollow(this.player.collider, false, 0.08, 0.12, -220, 0);
+    this.cameras.main.setDeadzone(180, 90);
+
+    this.input.on("pointerdown", () => {
+      this.pointerPressed = true;
+    });
+    this.input.on("pointerup", () => {
+      this.pointerPressed = false;
+    });
+    this.input.on("pointerout", () => {
+      this.pointerPressed = false;
+    });
+
+    window.addEventListener("waves:virtual-control", this.handleVirtualControl as EventListener);
+    window.addEventListener("waves:pause", this.handlePause as EventListener);
+  }
+
+  update(_time: number, delta: number) {
+    if (!this.player || !this.obstacles || this.ended || this.pausedByUi) {
+      return;
+    }
+
+    const pressed = this.readPressedInput();
+    if (!this.firstInputAt) {
+      if (!pressed) {
+        this.obstacles.update(this.player.x, 1);
+        this.options.onStats(this.currentStats(0));
+        return;
+      }
+      this.firstInputAt = performance.now();
+      this.startedAt = this.firstInputAt;
+    }
+
+    this.player.update(delta, { pressed });
+    const difficulty = Math.min(18, 1 + Math.floor(this.player.distance / 5000));
+    this.obstacles.update(this.player.x, difficulty);
+
+    if (this.player.y < 10 || this.player.y > this.scale.height - 10) {
+      this.finish(1);
+      return;
+    }
+
+    this.options.onStats(this.currentStats(0));
+  }
+
+  shutdown() {
+    window.removeEventListener("waves:virtual-control", this.handleVirtualControl as EventListener);
+    window.removeEventListener("waves:pause", this.handlePause as EventListener);
+  }
+
+  private drawBackdrop() {
+    const graphics = this.add.graphics();
+    const stripeColors = [0x0b1414, 0x113238, 0x1b1435, 0x10222d];
+    const sectionWidth = 1800;
+
+    for (let x = 0; x < 100_000; x += sectionWidth) {
+      const colorIndex = Math.floor(x / sectionWidth) % stripeColors.length;
+      const stripeColor = stripeColors[colorIndex] ?? 0x081116;
+      graphics.fillStyle(stripeColor, 0.96);
+      graphics.fillRect(x, 0, sectionWidth, this.scale.height);
+    }
+
+    graphics.lineStyle(2, 0xffffffff, 0.6);
+    for (let x = 0; x < 100_000; x += 1600) {
+      graphics.lineBetween(x, 0, x, this.scale.height);
+    }
+    for (let y = 80; y < this.scale.height; y += 80) {
+      graphics.lineBetween(0, y, 100_000, y);
+    }
+    graphics.setDepth(-10);
+  }
+
+  private readPressedInput() {
+    const pressed = Boolean(
+      this.pointerPressed ||
+        this.virtualPressed ||
+        this.cursors?.up.isDown ||
+        this.wasd?.W?.isDown ||
+        this.wasd?.A?.isDown ||
+        this.wasd?.SPACE?.isDown
+    );
+
+    return pressed;
+  }
+
+  private handleVirtualControl = (event: CustomEvent<{ pressed: boolean }>) => {
+    this.virtualPressed = event.detail.pressed;
+  };
+
+  private handlePause = (event: CustomEvent<{ paused: boolean }>) => {
+    this.pausedByUi = event.detail.paused;
+    if (this.pausedByUi) {
+      this.physics.pause();
+    } else {
+      this.physics.resume();
+    }
+  };
+
+  private collectCoin(coin: Phaser.GameObjects.GameObject) {
+    const object = coin as Phaser.GameObjects.Arc;
+    this.coins += 1;
+    this.particles?.emit(object.x, object.y, this.options.skins.trail, 10);
+    object.destroy();
+  }
+
+  private currentStats(obstacleHits: number): GameStats {
+    const distance = this.player?.distance ?? 0;
+    return {
+      score: distance + this.coins * 125,
+      coins: this.coins,
+      distance,
+      durationMs: Math.floor(performance.now() - this.startedAt),
+      obstacleHits
+    };
+  }
+
+  private finish(obstacleHits: number) {
+    if (this.ended) {
+      return;
+    }
+    this.ended = true;
+    const stats = this.currentStats(obstacleHits);
+    if (this.player) {
+      this.particles?.emit(this.player.x, this.player.y, this.options.skins.arrow, 24);
+    }
+    this.physics.pause();
+    this.options.onStats(stats);
+    this.options.onGameOver(stats);
+  }
+}

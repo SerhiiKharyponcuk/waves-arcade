@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: waves-api
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build:backend:prod
+    preDeployCommand: npm run db:migrate:prod
+    startCommand: npm run start --workspace @waves/backend
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 22.12.0
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: JWT_ACCESS_EXPIRES_IN
+        value: 15m
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 7d
+      - key: CORS_ORIGIN
+        sync: false
+      - key: AD_PROVIDER
+        value: google_ad_manager
+      - key: AD_SESSION_TTL_SECONDS
+        value: "600"

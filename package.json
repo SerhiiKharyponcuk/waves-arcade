@@ -1,0 +1,29 @@
+{
+  "name": "waves-arcade-platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Commercial-ready neon arcade game MVP with full-stack architecture.",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:frontend": "npm run dev --workspace @waves/frontend",
+    "dev:backend": "npm run dev --workspace @waves/backend",
+    "build": "npm run build --workspaces",
+    "build:backend:prod": "npm run build:prod --workspace @waves/backend",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "db:migrate": "npm run db:migrate --workspace @waves/backend",
+    "db:migrate:prod": "npm run db:migrate:prod --workspace @waves/backend",
+    "db:seed": "npm run db:seed --workspace @waves/backend"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  }
+}

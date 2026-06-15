@@ -1,0 +1,12 @@
+{
+  "installCommand": "npm install",
+  "buildCommand": "npm run build --workspace @waves/frontend",
+  "outputDirectory": "apps/frontend/dist",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

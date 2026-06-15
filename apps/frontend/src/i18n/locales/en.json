@@ -1,0 +1,295 @@
+{
+  "brand": "Waves Arcade",
+  "nav": {
+    "play": "Play",
+    "shop": "Shop",
+    "inventory": "Inventory",
+    "premium": "Premium",
+    "profile": "Profile",
+    "settings": "Settings"
+  },
+  "auth": {
+    "welcome": "Enter the arena",
+    "subtitle": "Build your neon trail, chase high scores, and unlock premium skins.",
+    "login": "Login",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "displayName": "Display name",
+    "createAccount": "Create account",
+    "haveAccount": "I already have an account",
+    "needAccount": "Create a new account",
+    "featureAccount": "Secure account",
+    "featureSkins": "Cosmetic skins",
+    "featureLeaderboard": "Leaderboard",
+    "logout": "Logout"
+  },
+  "menu": {
+    "title": "Neon wave runner",
+    "subtitle": "Dodge the arena, collect energy, and push your trail farther each run.",
+    "playNow": "Play now",
+    "dailyReward": "Daily reward",
+    "claim": "Claim",
+    "claimed": "Claimed",
+    "streak": "Streak",
+    "reward": "{{coins}} coins"
+  },
+  "game": {
+    "score": "Score",
+    "coins": "Coins",
+    "distance": "Distance",
+    "pause": "Pause",
+    "resume": "Resume",
+    "restart": "Restart",
+    "exit": "Exit",
+    "gameOver": "Game over",
+    "newBest": "New best",
+    "coinsEarned": "Coins earned",
+    "start": "Start run",
+    "tapToControl": "Hold click or Space"
+  },
+  "roulette": {
+    "eyebrow": "Reward wheel",
+    "title": "Prize Roulette",
+    "tickets": "Tickets",
+    "nextSpin": "Next spin",
+    "adsNeeded": "{{count}} ad(s) needed",
+    "freeReady": "Ready to spin",
+    "freeSpins": "Free spins",
+    "lastPrize": "Last prize",
+    "locked": "Ad",
+    "ready": "Go",
+    "watchAd": "Watch ad",
+    "adWatching": "Loading ad...",
+    "spin": "Spin",
+    "spinning": "Spinning...",
+    "vipTrial": "VIP Trial",
+    "prizes": {
+      "coins": "Coins",
+      "gems": "Gems",
+      "rouletteTicket": "Roulette ticket",
+      "extraLife": "Extra life",
+      "skin": "Skin",
+      "premiumTrial": "VIP trial",
+      "booster": "Booster",
+      "antiAds": "Ad skip"
+    }
+  },
+  "ads": {
+    "watchForCoins": "Watch ad for coins",
+    "watching": "Loading ad..."
+  },
+  "shop": {
+    "title": "Skin shop",
+    "subtitle": "Preview, unlock, and equip cosmetic skins.",
+    "owned": "Owned",
+    "locked": "Locked",
+    "equipped": "Equipped",
+    "buy": "Buy",
+    "equip": "Equip",
+    "preview": "Preview",
+    "premium": "Premium",
+    "limited": "Limited",
+    "coins": "{{count}} coins",
+    "gems": "{{count}} gems"
+  },
+  "inventory": {
+    "title": "Skin inventory",
+    "subtitle": "Equip your arrow skin and the glowing trail line that follows it in-game.",
+    "total": "Owned",
+    "arrowSkins": "Arrows",
+    "trailSkins": "Trails",
+    "currentLoadout": "Current loadout",
+    "loadoutHint": "Arrow changes the player shape. Trail changes the long line behind it.",
+    "arrowSlot": "Arrow skin",
+    "trailSlot": "Trail line",
+    "emptySlot": "Not selected",
+    "unlocked": "Unlocked",
+    "empty": "No skins in this category yet.",
+    "filters": {
+      "all": "All skins",
+      "arrow": "Arrow skins",
+      "trail": "Trail line"
+    }
+  },
+  "skinCategory": {
+    "arrow": "Arrow skin",
+    "trail": "Trail line",
+    "line": "Line effect",
+    "effect": "Special effect",
+    "background": "Background",
+    "deathEffect": "Death effect",
+    "profileFrame": "Profile frame",
+    "badge": "Badge"
+  },
+  "profile": {
+    "title": "Pilot profile",
+    "highScore": "High score",
+    "coins": "Coins",
+    "gems": "Gems",
+    "leaderboard": "Global leaderboard",
+    "rank": "Rank",
+    "player": "Player",
+    "score": "Score",
+    "emptyLeaderboard": "No scores yet."
+  },
+  "premium": {
+    "title": "Premium access",
+    "heading": "Unlock VIP perks",
+    "subtitle": "Upgrade your arcade journey with extra rewards, ad-free runs, and premium-only cosmetics.",
+    "noAds": "No ads",
+    "premiumBadge": "Premium badge",
+    "premiumSkins": "Premium skins",
+    "extraDailySpins": "Extra daily spin(s): {{count}}",
+    "extraDailyGems": "Extra daily gems: {{count}}",
+    "extraLivesPerRun": "Bonus lives per run: {{count}}",
+    "betterDailyRewards": "Better daily rewards every day.",
+    "calloutTitle": "Upgrade your runs",
+    "calloutText": "Premium gives you passive rewards and a special badge to show your status in the arena.",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "loading": "Loading premium benefits..."
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "account": "Account",
+    "save": "Save",
+    "saved": "Saved",
+    "payments": "Payments",
+    "paymentsNote": "Payment providers are ready to connect after production configuration.",
+    "ads": "Rewarded ads",
+    "adsNote": "Rewarded ads can plug into the wallet reward service."
+  },
+  "common": {
+    "loading": "Loading",
+    "error": "Something went wrong",
+    "close": "Close",
+    "back": "Back"
+  },
+  "skins": {
+    "neonBlueTrail": {
+      "name": "Neon Blue Trail",
+      "description": "A clean electric-blue trail for first runs."
+    },
+    "fireLine": {
+      "name": "Fire Line",
+      "description": "A hot streak with ember particles."
+    },
+    "iceArrow": {
+      "name": "Ice Arrow",
+      "description": "Sharp frozen edges and pale glow."
+    },
+    "goldPremiumTrail": {
+      "name": "Gold Premium Trail",
+      "description": "A premium gold trail for VIP pilots."
+    },
+    "galaxyLine": {
+      "name": "Galaxy Line",
+      "description": "Cosmic colors with star-like particles."
+    },
+    "cyberGreen": {
+      "name": "Cyber Green",
+      "description": "A crisp starter arrow with arcade energy."
+    },
+    "rainbowTrail": {
+      "name": "Rainbow Trail",
+      "description": "A limited trail with full-spectrum motion."
+    },
+    "shadowArrow": {
+      "name": "Shadow Arrow",
+      "description": "A stealthy arrow with dark glow."
+    },
+    "diamondSkin": {
+      "name": "Diamond Skin",
+      "description": "A legendary crystalline effect."
+    },
+    "plasmaArrow": {
+      "name": "Plasma Arrow",
+      "description": "A sharp rose-violet arrow with unstable plasma glow."
+    },
+    "solarFlareTrail": {
+      "name": "Solar Flare Trail",
+      "description": "A bright orange flare trail with hot arcade energy."
+    },
+    "toxicWaveLine": {
+      "name": "Toxic Wave Line",
+      "description": "A green chemical line that feels fast and dangerous."
+    },
+    "rubyArrow": {
+      "name": "Ruby Arrow",
+      "description": "A heavy red arrow with gem-cut highlights."
+    },
+    "voidTrail": {
+      "name": "Void Trail",
+      "description": "A dark violet trail pulled from the edge of space."
+    },
+    "thunderLine": {
+      "name": "Thunder Line",
+      "description": "A yellow-blue electric line with stormy sparks."
+    },
+    "auroraTrail": {
+      "name": "Aurora Trail",
+      "description": "A limited teal-purple trail with northern-light motion."
+    },
+    "pearlArrow": {
+      "name": "Pearl Arrow",
+      "description": "A premium pearlescent arrow with soft luxury glow."
+    },
+    "obsidianLine": {
+      "name": "Obsidian Line",
+      "description": "A dark metallic line with cold silver edges."
+    },
+    "emeraldTrail": {
+      "name": "Emerald Trail",
+      "description": "A clean green trail with polished gem shine."
+    },
+    "sapphireArrow": {
+      "name": "Sapphire Arrow",
+      "description": "A blue arrow with icy sapphire reflections."
+    },
+    "lavaTrail": {
+      "name": "Lava Trail",
+      "description": "A molten trail with red-orange heat."
+    },
+    "glitchArrow": {
+      "name": "Glitch Arrow",
+      "description": "A premium cyan-pink arrow with broken signal effects."
+    },
+    "cometTrail": {
+      "name": "Comet Trail",
+      "description": "A legendary white-blue trail that streaks like a comet."
+    },
+    "prismLine": {
+      "name": "Prism Line",
+      "description": "A premium rainbow line with glassy refractions."
+    },
+    "royalGoldArrow": {
+      "name": "Royal Gold Arrow",
+      "description": "A premium gold arrow made for VIP pilots."
+    },
+    "nebulaTrail": {
+      "name": "Nebula Trail",
+      "description": "A premium cosmic trail with deep violet-blue glow."
+    },
+    "candyPulseTrail": {
+      "name": "Candy Pulse Trail",
+      "description": "A limited pink-cyan event trail with playful pulses."
+    }
+  },
+  "rarity": {
+    "common": "Common",
+    "rare": "Rare",
+    "epic": "Epic",
+    "legendary": "Legendary",
+    "premium": "Premium",
+    "limited": "Limited",
+    "event": "Event"
+  },
+  "language": {
+    "en": "English",
+    "nl": "Dutch",
+    "ru": "Russian",
+    "uk": "Ukrainian"
+  }
+}

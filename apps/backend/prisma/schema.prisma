@@ -1,0 +1,263 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String                @id @default(uuid())
+  email         String                @unique
+  passwordHash  String
+  role          String                @default("PLAYER")
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+  profile       UserProfile?
+  wallet        Wallet?
+  subscription  Subscription?
+  dailyClaim    DailyRewardClaim?
+  ownedSkins    OwnedSkin[]
+  scores        Score[]
+  purchases     PurchaseTransaction[]
+  walletTransactions WalletTransaction[]
+  sessions      GameSession[]
+  rouletteSpins RouletteSpin[]
+  adRewards     AdReward[]
+  extraLifeUses ExtraLifeUsage[]
+  refreshTokens RefreshToken[]
+}
+
+model UserProfile {
+  id                  String    @id @default(uuid())
+  userId              String    @unique
+  displayName         String
+  locale              String    @default("en")
+  avatarUrl           String?
+  highScore           Int       @default(0)
+  selectedArrowSkinId String?
+  selectedTrailSkinId String?
+  lastDailyRewardAt   DateTime?
+  dailyRewardStreak   Int       @default(0)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Wallet {
+  id             String               @id @default(uuid())
+  userId         String               @unique
+  coins          Int                  @default(0)
+  gems           Int                  @default(0)
+  rouletteTickets Int                 @default(0)
+  extraLives     Int                  @default(0)
+  lifetimeCoins  Int                  @default(0)
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  user           User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions   WalletTransaction[]
+  rouletteSpins  RouletteSpin[]
+  adRewards      AdReward[]
+  extraLifeUses  ExtraLifeUsage[]
+}
+
+model Skin {
+  id             String                @id @default(uuid())
+  slug           String                @unique
+  nameKey        String
+  descriptionKey String
+  category       String
+  rarity         String
+  priceCoins     Int                   @default(0)
+  priceGems      Int                   @default(0)
+  isPremium      Boolean               @default(false)
+  isLimited      Boolean               @default(false)
+  active         Boolean               @default(true)
+  visualJson     String
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+  ownedBy        OwnedSkin[]
+  purchases      PurchaseTransaction[]
+  rouletteWins   RouletteSpin[]
+}
+
+model OwnedSkin {
+  id      String   @id @default(uuid())
+  userId  String
+  skinId  String
+  ownedAt DateTime @default(now())
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skin    Skin     @relation(fields: [skinId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, skinId])
+  @@index([userId])
+}
+
+model Score {
+  id         String   @id @default(uuid())
+  userId     String
+  sessionId  String?
+  score      Int
+  distance   Int
+  durationMs Int
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([score])
+  @@index([createdAt])
+}
+
+model PurchaseTransaction {
+  id          String   @id @default(uuid())
+  userId      String
+  skinId      String?
+  provider    String
+  type        String   @default("skin")
+  status      String   @default("pending")
+  amountCoins Int      @default(0)
+  amountGems  Int      @default(0)
+  amountTickets Int     @default(0)
+  amountExtraLives Int  @default(0)
+  metadata    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skin        Skin?    @relation(fields: [skinId], references: [id])
+
+  @@index([userId])
+  @@index([provider])
+}
+
+model WalletTransaction {
+  id              String   @id @default(uuid())
+  userId          String
+  walletId        String
+  type            String
+  provider        String
+  amountCoins     Int      @default(0)
+  amountGems      Int      @default(0)
+  amountTickets   Int      @default(0)
+  amountExtraLives Int     @default(0)
+  metadata        String?
+  createdAt       DateTime @default(now())
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wallet          Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([walletId])
+}
+
+model RouletteSpin {
+  id           String   @id @default(uuid())
+  userId       String
+  walletId     String
+  rewardType   String
+  rewardAmount Int      @default(0)
+  rewardSkinId String?
+  rarity       String
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wallet       Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  rewardSkin   Skin?    @relation(fields: [rewardSkinId], references: [id])
+}
+
+model AdReward {
+  id           String   @id @default(uuid())
+  userId       String
+  walletId     String
+  provider     String
+  rewardType   String
+  rewardAmount Int      @default(0)
+  status       String   @default("pending")
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wallet       Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+}
+
+model ExtraLifeUsage {
+  id           String   @id @default(uuid())
+  userId       String
+  walletId     String
+  usedAt       DateTime @default(now())
+  reason       String
+  runId        String?
+  amount       Int      @default(1)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wallet       Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+}
+
+model Subscription {
+  id                String   @id @default(uuid())
+  userId            String   @unique
+  status            String   @default("free")
+  plan              String   @default("standard")
+  provider          String?
+  startDate         DateTime?
+  endDate           DateTime?
+  cancelAtPeriodEnd Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model DailyRewardClaim {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  lastClaimAt DateTime?
+  streak      Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model OfferBundle {
+  id            String   @id @default(uuid())
+  slug          String   @unique
+  titleKey      String
+  descriptionKey String
+  priceCoins    Int      @default(0)
+  priceGems     Int      @default(0)
+  coins         Int      @default(0)
+  gems          Int      @default(0)
+  tickets       Int      @default(0)
+  extraLives    Int      @default(0)
+  discountPercent Int   @default(0)
+  featured      Boolean  @default(false)
+  premiumOnly   Boolean  @default(false)
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model GameSession {
+  id             String    @id @default(uuid())
+  userId         String
+  seed           String
+  startedAt      DateTime  @default(now())
+  endedAt        DateTime?
+  score          Int       @default(0)
+  coinsCollected Int       @default(0)
+  distance       Int       @default(0)
+  durationMs     Int       @default(0)
+  obstacleHits   Int       @default(0)
+  checksum       String?
+  valid          Boolean   @default(false)
+  antiCheatNotes String?
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([startedAt])
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}

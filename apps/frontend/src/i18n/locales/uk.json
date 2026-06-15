@@ -1,0 +1,278 @@
+{
+  "brand": "Waves Arcade",
+  "nav": {
+    "play": "Грати",
+    "shop": "Магазин",
+    "inventory": "Інвентар",
+    "premium": "Преміум",
+    "profile": "Профіль",
+    "settings": "Налаштування"
+  },
+  "auth": {
+    "welcome": "Увійти на арену",
+    "subtitle": "Створюй неоновий слід, бий рекорди та відкривай преміум-скіни.",
+    "login": "Увійти",
+    "register": "Реєстрація",
+    "email": "Email",
+    "password": "Пароль",
+    "displayName": "Ім'я гравця",
+    "createAccount": "Створити акаунт",
+    "haveAccount": "У мене вже є акаунт",
+    "needAccount": "Створити новий акаунт",
+    "featureAccount": "Захищений акаунт",
+    "featureSkins": "Косметичні скіни",
+    "featureLeaderboard": "Таблиця лідерів",
+    "logout": "Вийти"
+  },
+  "menu": {
+    "title": "Неоновий wave runner",
+    "subtitle": "Ухиляйся від арени, збирай енергію та просувайся далі з кожним забігом.",
+    "playNow": "Грати зараз",
+    "dailyReward": "Щоденна нагорода",
+    "claim": "Забрати",
+    "claimed": "Отримано",
+    "streak": "Серія",
+    "reward": "{{coins}} монет"
+  },
+  "game": {
+    "score": "Рахунок",
+    "coins": "Монети",
+    "distance": "Дистанція",
+    "pause": "Пауза",
+    "resume": "Продовжити",
+    "restart": "Заново",
+    "exit": "Вийти",
+    "gameOver": "Гру завершено",
+    "newBest": "Новий рекорд",
+    "coinsEarned": "Монет отримано",
+    "start": "Почати забіг",
+    "tapToControl": "Утримуй клік або Space"
+  },
+  "roulette": {
+    "eyebrow": "Колесо нагород",
+    "title": "Призова рулетка",
+    "tickets": "Квитки",
+    "nextSpin": "Наступний спін",
+    "adsNeeded": "Потрібно реклам: {{count}}",
+    "freeReady": "Можна крутити",
+    "freeSpins": "Безкоштовні спіни",
+    "lastPrize": "Останній приз",
+    "locked": "Ad",
+    "ready": "Go",
+    "watchAd": "Дивитись рекламу",
+    "adWatching": "Завантаження реклами...",
+    "spin": "Крутити",
+    "spinning": "Крутиться...",
+    "vipTrial": "VIP-пробний доступ",
+    "prizes": {
+      "coins": "Монети",
+      "gems": "Кристали",
+      "rouletteTicket": "Квиток рулетки",
+      "extraLife": "Додаткове життя",
+      "skin": "Скін",
+      "premiumTrial": "VIP-пробний доступ",
+      "booster": "Бустер",
+      "antiAds": "Пропуск реклами"
+    }
+  },
+  "ads": {
+    "watchForCoins": "Реклама за монети",
+    "watching": "Завантаження реклами..."
+  },
+  "shop": {
+    "title": "Магазин скінів",
+    "subtitle": "Переглядай, відкривай та екіпіруй косметичні скіни.",
+    "owned": "Є",
+    "locked": "Закрито",
+    "equipped": "Обрано",
+    "buy": "Купити",
+    "equip": "Екіпірувати",
+    "preview": "Перегляд",
+    "premium": "Преміум",
+    "limited": "Обмежено",
+    "coins": "{{count}} монет",
+    "gems": "{{count}} кристалів"
+  },
+  "inventory": {
+    "title": "Інвентар скінів",
+    "subtitle": "Екіпіруй саму стрілку та світлову лінію, яка тягнеться позаду під час гри.",
+    "total": "Відкрито",
+    "arrowSkins": "Стрілки",
+    "trailSkins": "Лінії",
+    "currentLoadout": "Поточний набір",
+    "loadoutHint": "Стрілка змінює сам скін гравця. Лінія змінює довгий слід позаду.",
+    "arrowSlot": "Скін стрілки",
+    "trailSlot": "Лінія позаду",
+    "emptySlot": "Не обрано",
+    "unlocked": "Відкрито",
+    "empty": "У цій категорії поки немає скінів.",
+    "filters": {
+      "all": "Усі скіни",
+      "arrow": "Скін стрілки",
+      "trail": "Лінія позаду"
+    }
+  },
+  "skinCategory": {
+    "arrow": "Скін стрілки",
+    "trail": "Лінія позаду",
+    "line": "Ефект лінії",
+    "effect": "Спецефект",
+    "background": "Фон",
+    "deathEffect": "Ефект смерті",
+    "profileFrame": "Рамка профілю",
+    "badge": "Значок"
+  },
+  "profile": {
+    "title": "Профіль пілота",
+    "highScore": "Рекорд",
+    "coins": "Монети",
+    "gems": "Кристали",
+    "leaderboard": "Глобальна таблиця",
+    "rank": "Місце",
+    "player": "Гравець",
+    "score": "Рахунок",
+    "emptyLeaderboard": "Поки немає результатів."
+  },
+  "settings": {
+    "title": "Налаштування",
+    "language": "Мова",
+    "account": "Акаунт",
+    "save": "Зберегти",
+    "saved": "Збережено",
+    "payments": "Платежі",
+    "paymentsNote": "Платіжні провайдери можна підключити після production-налаштування.",
+    "ads": "Рекламні нагороди",
+    "adsNote": "Rewarded ads можна підключити до сервісу нагород гаманця."
+  },
+  "common": {
+    "loading": "Завантаження",
+    "error": "Щось пішло не так",
+    "close": "Закрити",
+    "back": "Назад"
+  },
+  "skins": {
+    "neonBlueTrail": {
+      "name": "Neon Blue Trail",
+      "description": "Чистий електрично-синій слід для перших забігів."
+    },
+    "fireLine": {
+      "name": "Fire Line",
+      "description": "Гаряча лінія з частинками іскор."
+    },
+    "iceArrow": {
+      "name": "Ice Arrow",
+      "description": "Гострі крижані грані та холодне сяйво."
+    },
+    "goldPremiumTrail": {
+      "name": "Gold Premium Trail",
+      "description": "Преміальний золотий слід для VIP-пілотів."
+    },
+    "galaxyLine": {
+      "name": "Galaxy Line",
+      "description": "Космічні кольори з частинками зірок."
+    },
+    "cyberGreen": {
+      "name": "Cyber Green",
+      "description": "Чітка стартова стрілка з аркадною енергією."
+    },
+    "rainbowTrail": {
+      "name": "Rainbow Trail",
+      "description": "Обмежений слід із райдужним рухом."
+    },
+    "shadowArrow": {
+      "name": "Shadow Arrow",
+      "description": "Прихована стрілка з темним світінням."
+    },
+    "diamondSkin": {
+      "name": "Diamond Skin",
+      "description": "Легендарний кристалічний ефект."
+    },
+    "plasmaArrow": {
+      "name": "Plasma Arrow",
+      "description": "Гостра рожево-фіолетова стрілка з нестабільним плазмовим сяйвом."
+    },
+    "solarFlareTrail": {
+      "name": "Solar Flare Trail",
+      "description": "Яскрава помаранчева лінія з гарячою аркадною енергією."
+    },
+    "toxicWaveLine": {
+      "name": "Toxic Wave Line",
+      "description": "Зелена токсична лінія, яка виглядає швидко й небезпечно."
+    },
+    "rubyArrow": {
+      "name": "Ruby Arrow",
+      "description": "Важка червона стрілка з рубіновими гранями."
+    },
+    "voidTrail": {
+      "name": "Void Trail",
+      "description": "Темно-фіолетовий слід із краю космосу."
+    },
+    "thunderLine": {
+      "name": "Thunder Line",
+      "description": "Жовто-синя електрична лінія зі штормовими іскрами."
+    },
+    "auroraTrail": {
+      "name": "Aurora Trail",
+      "description": "Обмежена бірюзово-фіолетова лінія в стилі північного сяйва."
+    },
+    "pearlArrow": {
+      "name": "Pearl Arrow",
+      "description": "Преміальна перламутрова стрілка з м'яким люксовим сяйвом."
+    },
+    "obsidianLine": {
+      "name": "Obsidian Line",
+      "description": "Темна металева лінія з холодними срібними краями."
+    },
+    "emeraldTrail": {
+      "name": "Emerald Trail",
+      "description": "Чиста зелена лінія з блиском смарагду."
+    },
+    "sapphireArrow": {
+      "name": "Sapphire Arrow",
+      "description": "Синя стрілка з крижаними сапфіровими відблисками."
+    },
+    "lavaTrail": {
+      "name": "Lava Trail",
+      "description": "Розпечена червоно-помаранчева лінія."
+    },
+    "glitchArrow": {
+      "name": "Glitch Arrow",
+      "description": "Преміальна бірюзово-рожева стрілка з ефектом зламаного сигналу."
+    },
+    "cometTrail": {
+      "name": "Comet Trail",
+      "description": "Легендарна біло-синя лінія, що летить як комета."
+    },
+    "prismLine": {
+      "name": "Prism Line",
+      "description": "Преміальна райдужна лінія зі скляним переломленням."
+    },
+    "royalGoldArrow": {
+      "name": "Royal Gold Arrow",
+      "description": "Преміальна золота стрілка для VIP-пілотів."
+    },
+    "nebulaTrail": {
+      "name": "Nebula Trail",
+      "description": "Преміальна космічна лінія з глибоким фіолетово-синім сяйвом."
+    },
+    "candyPulseTrail": {
+      "name": "Candy Pulse Trail",
+      "description": "Обмежена рожево-бірюзова event-лінія з живими імпульсами."
+    }
+  },
+  "rarity": {
+    "common": "Звичайний",
+    "rare": "Рідкісний",
+    "epic": "Епічний",
+    "legendary": "Легендарний",
+    "premium": "Преміум",
+    "limited": "Обмежений",
+    "event": "Івент"
+  },
+  "language": {
+    "en": "Англійська",
+    "nl": "Нідерландська",
+    "ru": "Російська",
+    "uk": "Українська"
+  }
+}
