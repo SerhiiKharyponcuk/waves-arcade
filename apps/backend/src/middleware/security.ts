@@ -7,8 +7,12 @@ export const helmetMiddleware = helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 });
 
+const allowedOrigins = env.CORS_ORIGIN.split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 export const corsMiddleware = cors({
-  origin: env.CORS_ORIGIN,
+  origin: allowedOrigins.length > 1 ? allowedOrigins : allowedOrigins[0],
   credentials: true
 });
 
