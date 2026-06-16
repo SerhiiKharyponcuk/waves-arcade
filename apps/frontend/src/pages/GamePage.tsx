@@ -41,6 +41,7 @@ export function GamePage() {
   const [spinBusy, setSpinBusy] = useState(false);
   const [adBusy, setAdBusy] = useState(false);
   const [error, setError] = useState("");
+  const [devtoolsBlocked, setDevtoolsBlocked] = useState(false);
 
   useEffect(() => {
     void Promise.all([shopApi.skins(), walletApi.dailyReward(), walletApi.rouletteConfig()])
@@ -54,6 +55,25 @@ export function GamePage() {
 
   const gameSkins = useMemo(() => resolveGameSkins(user, skins), [user, skins]);
 
+  useEffect(() => {
+    if (!import.meta.env.PROD || runState !== "running") {
+      return;
+    }
+
+    const checkDevtools = () => {
+      const widthGap = window.outerWidth - window.innerWidth;
+      const heightGap = window.outerHeight - window.innerHeight;
+      if (widthGap > 170 || heightGap > 170) {
+        setDevtoolsBlocked(true);
+        setRunState("paused");
+      }
+    };
+
+    const interval = window.setInterval(checkDevtools, 900);
+    checkDevtools();
+    return () => window.clearInterval(interval);
+  }, [runState]);
+
   async function startRun() {
     setBusy(true);
     setError("");
@@ -62,6 +82,7 @@ export function GamePage() {
       setSessionId(session.sessionId);
       setStats(emptyStats);
       setResult(null);
+      setDevtoolsBlocked(false);
       setRunState("running");
     } catch {
       setError(t("common.error"));
@@ -205,6 +226,31 @@ export function GamePage() {
               ) : null}
               <Button type="button" onClick={() => void startRun()} icon={<RotateCcw size={18} />}>
                 {t("game.restart")}
+              </Button>
+            </div>
+          </Modal>
+        ) : null}
+
+        {devtoolsBlocked ? (
+          <Modal
+            title={t("security.devtoolsTitle")}
+            closeLabel={t("common.close")}
+            onClose={() => {
+              setDevtoolsBlocked(false);
+              setRunState("idle");
+            }}
+          >
+            <div className="grid gap-4">
+              <p className="text-sm leading-6 text-slate-300">{t("security.devtoolsBody")}</p>
+              <Button
+                type="button"
+                variant="danger"
+                onClick={() => {
+                  setDevtoolsBlocked(false);
+                  setRunState("idle");
+                }}
+              >
+                {t("game.exit")}
               </Button>
             </div>
           </Modal>

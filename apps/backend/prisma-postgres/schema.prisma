@@ -12,6 +12,11 @@ model User {
   email         String                @unique
   passwordHash  String
   role          String                @default("PLAYER")
+  status        String                @default("ACTIVE")
+  bannedAt      DateTime?
+  bannedUntil   DateTime?
+  banReason     String?
+  termsAcceptedAt DateTime?
   createdAt     DateTime              @default(now())
   updatedAt     DateTime              @updatedAt
   profile       UserProfile?
@@ -27,6 +32,10 @@ model User {
   adRewards     AdReward[]
   extraLifeUses ExtraLifeUsage[]
   refreshTokens RefreshToken[]
+  adminActions  ModerationAction[]    @relation("AdminModerationActions")
+  receivedActions ModerationAction[]   @relation("TargetModerationActions")
+  supportTickets SupportTicket[]        @relation("UserSupportTickets")
+  answeredSupportTickets SupportTicket[] @relation("AdminSupportTickets")
 }
 
 model UserProfile {
@@ -260,4 +269,41 @@ model RefreshToken {
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+model ModerationAction {
+  id           String   @id @default(uuid())
+  adminId      String?
+  targetUserId String
+  action       String
+  reason       String?
+  message      String?
+  createdAt    DateTime @default(now())
+  admin        User?    @relation("AdminModerationActions", fields: [adminId], references: [id], onDelete: SetNull)
+  targetUser   User     @relation("TargetModerationActions", fields: [targetUserId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+  @@index([targetUserId])
+  @@index([action])
+}
+
+model SupportTicket {
+  id            String    @id @default(uuid())
+  userId        String
+  adminId       String?
+  category      String
+  subject       String
+  message       String
+  status        String    @default("OPEN")
+  adminResponse String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  closedAt      DateTime?
+  user          User      @relation("UserSupportTickets", fields: [userId], references: [id], onDelete: Cascade)
+  admin         User?     @relation("AdminSupportTickets", fields: [adminId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([adminId])
+  @@index([status])
+  @@index([createdAt])
 }

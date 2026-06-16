@@ -8,7 +8,8 @@ const fieldLabels: Record<string, string> = {
   email: "Email",
   password: "Password",
   displayName: "Display name",
-  locale: "Language"
+  locale: "Language",
+  termsAccepted: "Terms"
 };
 
 function formatApiError(error: ApiErrorDto) {

@@ -19,14 +19,43 @@ type UserWithAccount = Prisma.UserGetPayload<{
     wallet: true;
     ownedSkins: true;
     subscription: true;
+    receivedActions: {
+      take: 5;
+      orderBy: { createdAt: "desc" };
+      include: { admin: { select: { email: true } } };
+    };
   };
 }>;
+
+const accountInclude = {
+  profile: true,
+  wallet: true,
+  ownedSkins: true,
+  subscription: true,
+  receivedActions: {
+    take: 5,
+    orderBy: { createdAt: "desc" },
+    include: { admin: { select: { email: true } } }
+  }
+} satisfies Prisma.UserInclude;
 
 function signAccessToken(user: AuthUser) {
   return jwt.sign(user, env.JWT_ACCESS_SECRET, {
     expiresIn: env.JWT_ACCESS_EXPIRES_IN as SignOptions["expiresIn"],
     issuer: "waves-arcade"
   });
+}
+
+function adminEmailSet() {
+  return new Set(
+    env.ADMIN_EMAILS.split(",")
+      .map((email) => email.trim().toLowerCase())
+      .filter(Boolean)
+  );
+}
+
+function roleForEmail(email: string, currentRole: string = "PLAYER"): "PLAYER" | "ADMIN" {
+  return adminEmailSet().has(email.toLowerCase()) ? "ADMIN" : (currentRole as "PLAYER" | "ADMIN");
 }
 
 export function verifyAccessToken(token: string): AuthUser {
@@ -63,6 +92,11 @@ function toAuthUserDto(user: UserWithAccount): AuthUserDto {
   return {
     id: user.id,
     email: user.email,
+    role: user.role as AuthUserDto["role"],
+    status: user.status as AuthUserDto["status"],
+    banReason: user.banReason,
+    bannedAt: user.bannedAt?.toISOString() ?? null,
+    termsAcceptedAt: user.termsAcceptedAt?.toISOString() ?? null,
     profile: {
       id: user.profile.id,
       displayName: user.profile.displayName,
@@ -81,6 +115,14 @@ function toAuthUserDto(user: UserWithAccount): AuthUserDto {
       lifetimeCoins: user.wallet.lifetimeCoins
     },
     subscription,
+    moderationNotices: user.receivedActions.map((action) => ({
+      id: action.id,
+      action: action.action as AuthUserDto["moderationNotices"][number]["action"],
+      reason: action.reason,
+      message: action.message,
+      createdAt: action.createdAt.toISOString(),
+      adminEmail: action.admin?.email ?? null
+    })),
     ownedSkins: user.ownedSkins.map((owned) => ({
       skinId: owned.skinId,
       ownedAt: owned.ownedAt.toISOString(),
@@ -94,7 +136,7 @@ function toAuthUserDto(user: UserWithAccount): AuthUserDto {
 async function getAccountById(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    include: { profile: true, wallet: true, ownedSkins: true, subscription: true }
+    include: accountInclude
   });
 
   if (!user) {
@@ -109,7 +151,12 @@ export async function registerAccount(input: {
   password: string;
   displayName: string;
   locale: SupportedLocale;
+  termsAccepted: boolean;
 }): Promise<AuthResponseDto> {
+  if (!input.termsAccepted) {
+    throw new AppError(400, "Terms of use must be accepted.", "TERMS_REQUIRED");
+  }
+
   const existing = await prisma.user.findUnique({ where: { email: input.email.toLowerCase() } });
   if (existing) {
     throw new AppError(409, "An account with this email already exists.", "EMAIL_EXISTS");
@@ -128,6 +175,8 @@ export async function registerAccount(input: {
     data: {
       email: input.email.toLowerCase(),
       passwordHash,
+      role: roleForEmail(input.email),
+      termsAcceptedAt: new Date(),
       profile: {
         create: {
           displayName: input.displayName,
@@ -147,7 +196,7 @@ export async function registerAccount(input: {
         create: [{ skinId: starterArrow.id }, { skinId: starterTrail.id }]
       }
     },
-    include: { profile: true, wallet: true, ownedSkins: true, subscription: true }
+    include: accountInclude
   });
 
   const tokenUser: AuthUser = { userId: created.id, email: created.email, role: created.role as AuthUser["role"] };
@@ -159,9 +208,9 @@ export async function registerAccount(input: {
 }
 
 export async function loginAccount(input: { email: string; password: string }): Promise<AuthResponseDto> {
-  const user = await prisma.user.findUnique({
+  let user = await prisma.user.findUnique({
     where: { email: input.email.toLowerCase() },
-    include: { profile: true, wallet: true, ownedSkins: true, subscription: true }
+    include: accountInclude
   });
 
   if (!user) {
@@ -171,6 +220,19 @@ export async function loginAccount(input: { email: string; password: string }): 
   const valid = await bcrypt.compare(input.password, user.passwordHash);
   if (!valid) {
     throw new AppError(401, "Invalid email or password.", "INVALID_CREDENTIALS");
+  }
+
+  if (user.status === "BANNED") {
+    throw new AppError(403, user.banReason ? `Account banned: ${user.banReason}` : "Account banned.", "ACCOUNT_BANNED");
+  }
+
+  const resolvedRole = roleForEmail(user.email, user.role);
+  if (resolvedRole !== user.role) {
+    user = await prisma.user.update({
+      where: { id: user.id },
+      data: { role: resolvedRole },
+      include: accountInclude
+    });
   }
 
   const tokenUser: AuthUser = { userId: user.id, email: user.email, role: user.role as AuthUser["role"] };

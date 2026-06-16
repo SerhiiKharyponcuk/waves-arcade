@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import type { SupportedLocale } from "@waves/shared";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
+import { Modal } from "../components/ui/Modal";
 import { useAuthStore } from "../store/authStore";
 
 const supportedLocales: readonly SupportedLocale[] = ["en", "nl", "ru", "uk"];
@@ -19,6 +20,8 @@ export function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [termsOpen, setTermsOpen] = useState(false);
   const { login, register, loading, error } = useAuthStore();
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -32,7 +35,8 @@ export function AuthPage() {
       email: email.trim(),
       password,
       displayName: displayName.trim(),
-      locale: resolveAccountLocale(i18n.language)
+      locale: resolveAccountLocale(i18n.language),
+      termsAccepted
     });
   }
 
@@ -89,21 +93,42 @@ export function AuthPage() {
               minLength={mode === "register" ? 8 : 1}
             />
             {mode === "register" ? (
-              <Input
-                label={t("auth.displayName")}
-                value={displayName}
-                onChange={(event) => setDisplayName(event.target.value)}
-                required
-                minLength={3}
-                maxLength={24}
-              />
+              <>
+                <Input
+                  label={t("auth.displayName")}
+                  value={displayName}
+                  onChange={(event) => setDisplayName(event.target.value)}
+                  required
+                  minLength={3}
+                  maxLength={24}
+                />
+                <label className="flex items-start gap-3 rounded-md border border-white/10 bg-white/5 p-3 text-sm text-slate-300">
+                  <input
+                    type="checkbox"
+                    checked={termsAccepted}
+                    onChange={(event) => setTermsAccepted(event.target.checked)}
+                    className="mt-1 h-4 w-4 accent-cyanGlow"
+                    required
+                  />
+                  <span>
+                    {t("terms.acceptPrefix")}{" "}
+                    <button
+                      type="button"
+                      onClick={() => setTermsOpen(true)}
+                      className="font-bold text-cyanGlow underline-offset-4 hover:underline"
+                    >
+                      {t("terms.title")}
+                    </button>
+                  </span>
+                </label>
+              </>
             ) : null}
 
             {error ? <div className="rounded-md border border-magentaGlow/40 bg-magentaGlow/10 p-3 text-sm text-pink-200">{error}</div> : null}
 
             <Button
               type="submit"
-              disabled={loading}
+              disabled={loading || (mode === "register" && !termsAccepted)}
               icon={mode === "login" ? <LogIn size={18} /> : <UserPlus size={18} />}
               className="mt-2"
             >
@@ -121,6 +146,16 @@ export function AuthPage() {
           </form>
         </section>
       </div>
+
+      {termsOpen ? (
+        <Modal title={t("terms.title")} closeLabel={t("common.close")} onClose={() => setTermsOpen(false)}>
+          <div className="grid max-h-[60vh] gap-3 overflow-y-auto pr-2 text-sm leading-6 text-slate-300">
+            {(t("terms.items", { returnObjects: true }) as string[]).map((item) => (
+              <p key={item}>{item}</p>
+            ))}
+          </div>
+        </Modal>
+      ) : null}
     </main>
   );
 }

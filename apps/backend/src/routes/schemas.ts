@@ -6,7 +6,10 @@ export const registerSchema = z.object({
   email: z.string().trim().email("Enter a valid email address.").max(160, "Email is too long."),
   password: z.string().min(8, "Password must be at least 8 characters.").max(128, "Password is too long."),
   displayName: z.string().trim().min(3, "Display name must be at least 3 characters.").max(24, "Display name is too long."),
-  locale: localeSchema.catch("en")
+  locale: localeSchema.catch("en"),
+  termsAccepted: z.literal(true, {
+    errorMap: () => ({ message: "Terms of use must be accepted." })
+  })
 });
 
 export const loginSchema = z.object({
@@ -55,4 +58,23 @@ export const adRewardCompleteSchema = z.object({
   provider: z.enum(["mock", "crazygames", "admob", "unity", "google_ad_manager"]).optional(),
   providerEventId: z.string().trim().max(160).optional(),
   providerPayload: z.record(z.unknown()).optional()
+});
+
+export const adminBanSchema = z.object({
+  reason: z.string().trim().min(3, "Reason must be at least 3 characters.").max(500, "Reason is too long.")
+});
+
+export const adminThankSchema = z.object({
+  message: z.string().trim().min(3, "Message must be at least 3 characters.").max(500, "Message is too long.")
+});
+
+export const supportTicketSchema = z.object({
+  category: z.enum(["BUG", "BAN_APPEAL", "ACCOUNT", "PAYMENT", "SHOP", "OTHER"]).default("OTHER"),
+  subject: z.string().trim().min(3, "Subject must be at least 3 characters.").max(120, "Subject is too long."),
+  message: z.string().trim().min(10, "Message must be at least 10 characters.").max(2_000, "Message is too long.")
+});
+
+export const adminSupportTicketSchema = z.object({
+  status: z.enum(["OPEN", "ANSWERED", "CLOSED"]).optional(),
+  adminResponse: z.string().trim().min(3, "Response must be at least 3 characters.").max(2_000, "Response is too long.").optional()
 });

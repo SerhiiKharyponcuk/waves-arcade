@@ -1,5 +1,5 @@
-import { Suspense, lazy } from "react";
-import { Gamepad2, LogOut, PackageOpen, Settings, ShoppingBag, Trophy, UserRound, WalletCards } from "lucide-react";
+import { Suspense, lazy, useState } from "react";
+import { Gamepad2, LifeBuoy, LogOut, PackageOpen, Settings, ShieldCheck, ShoppingBag, Trophy, UserRound, WalletCards } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../../store/authStore";
 import { type AppView, useUiStore } from "../../store/uiStore";
@@ -10,7 +10,9 @@ const ShopPage = lazy(() => import("../../pages/ShopPage").then((module) => ({ d
 const InventoryPage = lazy(() => import("../../pages/InventoryPage").then((module) => ({ default: module.InventoryPage })));
 const ProfilePage = lazy(() => import("../../pages/ProfilePage").then((module) => ({ default: module.ProfilePage })));
 const PremiumPage = lazy(() => import("../../pages/PremiumPage").then((module) => ({ default: module.PremiumPage })));
+const SupportPage = lazy(() => import("../../pages/SupportPage").then((module) => ({ default: module.SupportPage })));
 const SettingsPage = lazy(() => import("../../pages/SettingsPage").then((module) => ({ default: module.SettingsPage })));
+const AdminPage = lazy(() => import("../../pages/AdminPage").then((module) => ({ default: module.AdminPage })));
 
 const navItems: Array<{ view: AppView; icon: typeof Gamepad2; labelKey: string }> = [
   { view: "play", icon: Gamepad2, labelKey: "nav.play" },
@@ -18,6 +20,7 @@ const navItems: Array<{ view: AppView; icon: typeof Gamepad2; labelKey: string }
   { view: "inventory", icon: PackageOpen, labelKey: "nav.inventory" },
   { view: "premium", icon: WalletCards, labelKey: "nav.premium" },
   { view: "profile", icon: Trophy, labelKey: "nav.profile" },
+  { view: "support", icon: LifeBuoy, labelKey: "nav.support" },
   { view: "settings", icon: Settings, labelKey: "nav.settings" }
 ];
 
@@ -25,6 +28,11 @@ export function MainShell() {
   const { t } = useTranslation();
   const { user, logout } = useAuthStore();
   const { view, setView } = useUiStore();
+  const [dismissedNoticeId, setDismissedNoticeId] = useState("");
+  const visibleNavItems = user?.role === "ADMIN"
+    ? [...navItems, { view: "admin" as AppView, icon: ShieldCheck, labelKey: "nav.admin" }]
+    : navItems;
+  const latestNotice = user?.moderationNotices.find((notice) => notice.action !== "CHEAT_FLAG");
 
   return (
     <div className="min-h-screen">
@@ -56,8 +64,8 @@ export function MainShell() {
           </div>
         </div>
 
-        <nav className="mx-auto grid max-w-7xl grid-cols-3 gap-2 px-4 pb-3 sm:grid-cols-6">
-          {navItems.map((item) => {
+        <nav className="mx-auto grid max-w-7xl grid-cols-3 gap-2 px-4 pb-3 sm:grid-cols-7 lg:grid-cols-8">
+          {visibleNavItems.map((item) => {
             const Icon = item.icon;
             const active = view === item.view;
             return (
@@ -80,6 +88,17 @@ export function MainShell() {
       </header>
 
       <main className="mx-auto max-w-7xl px-4 py-6">
+        {latestNotice && latestNotice.id !== dismissedNoticeId ? (
+          <div className="mb-5 flex flex-col gap-3 rounded-lg border border-cyanGlow/30 bg-cyanGlow/10 p-4 text-sm text-cyanGlow sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="font-black text-white">{t("admin.noticeTitle")}</div>
+              <div className="mt-1 text-slate-200">{latestNotice.message ?? latestNotice.reason}</div>
+            </div>
+            <Button type="button" variant="ghost" onClick={() => setDismissedNoticeId(latestNotice.id)}>
+              {t("common.close")}
+            </Button>
+          </div>
+        ) : null}
         <Suspense
           fallback={
             <div className="arcade-border rounded-lg p-6 text-sm font-bold text-slate-300">
@@ -92,7 +111,9 @@ export function MainShell() {
           {view === "inventory" ? <InventoryPage /> : null}
           {view === "premium" ? <PremiumPage /> : null}
           {view === "profile" ? <ProfilePage /> : null}
+          {view === "support" ? <SupportPage /> : null}
           {view === "settings" ? <SettingsPage /> : null}
+          {view === "admin" && user?.role === "ADMIN" ? <AdminPage /> : null}
         </Suspense>
       </main>
 

@@ -10,6 +10,16 @@ export type AdPlacement = "coins" | "roulette" | "continue";
 
 export type AdProvider = "mock" | "crazygames" | "admob" | "unity" | "google_ad_manager";
 
+export type UserRole = "PLAYER" | "ADMIN";
+
+export type UserStatus = "ACTIVE" | "BANNED";
+
+export type ModerationActionType = "BAN" | "UNBAN" | "THANK" | "CHEAT_FLAG";
+
+export type SupportTicketStatus = "OPEN" | "ANSWERED" | "CLOSED";
+
+export type SupportTicketCategory = "BUG" | "BAN_APPEAL" | "ACCOUNT" | "PAYMENT" | "SHOP" | "OTHER";
+
 export interface SkinVisualConfig {
   primaryColor: string;
   secondaryColor: string;
@@ -172,10 +182,16 @@ export interface UserProfileDto {
 export interface AuthUserDto {
   id: string;
   email: string;
+  role: UserRole;
+  status: UserStatus;
+  banReason?: string | null;
+  bannedAt?: string | null;
+  termsAcceptedAt?: string | null;
   profile: UserProfileDto;
   wallet: WalletDto;
   ownedSkins: OwnedSkinDto[];
   subscription: SubscriptionStatusDto;
+  moderationNotices: ModerationActionDto[];
 }
 
 export interface AuthResponseDto {
@@ -208,11 +224,51 @@ export interface GameSessionEndResponseDto {
 }
 
 export interface LeaderboardEntryDto {
+  scoreId?: string;
   userId: string;
   displayName: string;
   score: number;
   rank: number;
   achievedAt: string;
+}
+
+export interface ModerationActionDto {
+  id: string;
+  action: ModerationActionType;
+  reason?: string | null;
+  message?: string | null;
+  createdAt: string;
+  adminEmail?: string | null;
+}
+
+export interface AdminUserDto {
+  id: string;
+  email: string;
+  role: UserRole;
+  status: UserStatus;
+  displayName: string;
+  highScore: number;
+  coins: number;
+  createdAt: string;
+  bannedAt?: string | null;
+  banReason?: string | null;
+  lastAction?: ModerationActionDto | null;
+}
+
+export interface SupportTicketDto {
+  id: string;
+  userId: string;
+  userEmail?: string;
+  displayName?: string;
+  adminEmail?: string | null;
+  category: SupportTicketCategory;
+  subject: string;
+  message: string;
+  status: SupportTicketStatus;
+  adminResponse?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  closedAt?: string | null;
 }
 
 export interface ApiErrorDto {

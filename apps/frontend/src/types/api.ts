@@ -15,6 +15,13 @@ import type {
   SubscriptionBenefitsDto,
   SkinDto,
   SupportedLocale,
+  UserRole,
+  UserStatus,
+  AdminUserDto,
+  ModerationActionDto,
+  SupportTicketCategory,
+  SupportTicketDto,
+  SupportTicketStatus,
   UserProfileDto,
   WalletDto
 } from "@waves/shared";
@@ -24,6 +31,7 @@ export interface RegisterPayload {
   password: string;
   displayName: string;
   locale: SupportedLocale;
+  termsAccepted: boolean;
 }
 
 export interface LoginPayload {
@@ -59,6 +67,13 @@ export type {
   RouletteSpinDto,
   SubscriptionBenefitsDto,
   SupportedLocale,
+  UserRole,
+  UserStatus,
+  AdminUserDto,
+  ModerationActionDto,
+  SupportTicketCategory,
+  SupportTicketDto,
+  SupportTicketStatus,
   UserProfileDto,
   WalletDto
 };

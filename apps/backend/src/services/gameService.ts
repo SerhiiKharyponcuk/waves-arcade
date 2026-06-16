@@ -8,9 +8,11 @@ import type {
 } from "@waves/shared";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "../config/prisma.js";
+import { flagSuspiciousRun } from "./adminService.js";
 import { AppError } from "../utils/appError.js";
 
 type LeaderboardScoreRow = {
+  id: string;
   userId: string;
   score: number;
   createdAt: Date;
@@ -28,8 +30,14 @@ function scoreChecksum(userId: string, sessionId: string, score: number, distanc
     .slice(0, 16);
 }
 
-function validateSessionResult(input: GameSessionEndRequestDto) {
+function calculateServerScore(input: GameSessionEndRequestDto) {
+  return input.distance + input.coinsCollected * 125;
+}
+
+function validateSessionResult(input: GameSessionEndRequestDto, sessionStartedAt: Date) {
   const notes: string[] = [];
+  const expectedScore = calculateServerScore(input);
+  const scoreDelta = Math.abs(input.score - expectedScore);
 
   if (input.durationMs < 350) {
     notes.push("duration_too_short");
@@ -40,18 +48,35 @@ function validateSessionResult(input: GameSessionEndRequestDto) {
   if (input.score < 0 || input.coinsCollected < 0 || input.distance < 0) {
     notes.push("negative_values");
   }
-  if (input.coinsCollected > 500) {
+
+  if (scoreDelta > 3) {
+    notes.push("score_formula_mismatch");
+  }
+
+  const durationSeconds = Math.max(input.durationMs / 1000, 0.35);
+  const maxDistance = Math.floor(durationSeconds * 385 + 120);
+  if (input.distance > maxDistance) {
+    notes.push("distance_speed_cap");
+  }
+
+  const serverElapsedMs = Date.now() - sessionStartedAt.getTime();
+  if (input.durationMs > serverElapsedMs + 2_500) {
+    notes.push("duration_exceeds_server_time");
+  }
+
+  const maxReasonableCoins = Math.ceil(input.distance / 220) + 8;
+  if (input.coinsCollected > maxReasonableCoins) {
     notes.push("coin_cap_exceeded");
   }
 
-  const maxReasonableScore = Math.floor(input.distance * 4 + input.coinsCollected * 75 + 2_000);
-  if (input.score > maxReasonableScore) {
-    notes.push("score_distance_ratio");
+  if (input.obstacleHits > 1) {
+    notes.push("invalid_obstacle_hits");
   }
 
   return {
     valid: notes.length === 0,
-    notes
+    notes,
+    expectedScore
   };
 }
 
@@ -86,11 +111,12 @@ export async function endGameSession(
     throw new AppError(409, "Game session already ended.", "SESSION_ALREADY_ENDED");
   }
 
-  const validation = validateSessionResult(input);
+  const validation = validateSessionResult(input, session.startedAt);
   const expectedChecksum = scoreChecksum(userId, input.sessionId, input.score, input.distance, input.durationMs);
   const checksumMatches = !input.clientChecksum || input.clientChecksum === expectedChecksum;
   const accepted = validation.valid && checksumMatches;
-  const safeCoins = accepted ? Math.min(input.coinsCollected + Math.floor(input.score / 250), 250) : 0;
+  const acceptedScore = accepted ? validation.expectedScore : 0;
+  const safeCoins = accepted ? Math.min(input.coinsCollected + Math.floor(acceptedScore / 250), 250) : 0;
 
   const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     const profile = await tx.userProfile.findUnique({ where: { userId } });
@@ -102,7 +128,7 @@ export async function endGameSession(
       where: { id: input.sessionId },
       data: {
         endedAt: new Date(),
-        score: input.score,
+        score: acceptedScore,
         coinsCollected: input.coinsCollected,
         distance: input.distance,
         durationMs: input.durationMs,
@@ -115,14 +141,14 @@ export async function endGameSession(
       }
     });
 
-    const newHighScore = accepted && input.score > profile.highScore;
+    const newHighScore = accepted && acceptedScore > profile.highScore;
 
     if (accepted) {
       await tx.score.create({
         data: {
           userId,
           sessionId: input.sessionId,
-          score: input.score,
+          score: acceptedScore,
           distance: input.distance,
           durationMs: input.durationMs
         }
@@ -132,7 +158,7 @@ export async function endGameSession(
     if (newHighScore) {
       await tx.userProfile.update({
         where: { userId },
-        data: { highScore: input.score }
+        data: { highScore: acceptedScore }
       });
     }
 
@@ -149,9 +175,13 @@ export async function endGameSession(
     return { wallet, newHighScore };
   });
 
+  if (!accepted) {
+    await flagSuspiciousRun(userId, [...validation.notes, checksumMatches ? "" : "checksum_mismatch"].filter(Boolean).join(","));
+  }
+
   return {
     accepted,
-    score: accepted ? input.score : 0,
+    score: acceptedScore,
     coinsAwarded: safeCoins,
     newHighScore: result.newHighScore,
     wallet: {
@@ -167,11 +197,13 @@ export async function endGameSession(
 export async function getLeaderboard(limit = 10): Promise<LeaderboardEntryDto[]> {
   const scores = await prisma.score.findMany({
     take: limit,
+    where: { user: { status: "ACTIVE" } },
     orderBy: [{ score: "desc" }, { createdAt: "asc" }],
     include: { user: { include: { profile: true } } }
   });
 
   return scores.map((score: LeaderboardScoreRow, index: number) => ({
+    scoreId: score.id,
     userId: score.userId,
     displayName: score.user.profile?.displayName ?? "Player",
     score: score.score,

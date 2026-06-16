@@ -1,8 +1,9 @@
 import type { NextFunction, Request, Response } from "express";
 import { verifyAccessToken } from "../services/authService.js";
+import { prisma } from "../config/prisma.js";
 import { AppError } from "../utils/appError.js";
 
-export function requireAuth(request: Request, _response: Response, next: NextFunction) {
+export async function requireAuth(request: Request, _response: Response, next: NextFunction) {
   try {
     const header = request.headers.authorization;
 
@@ -12,9 +13,33 @@ export function requireAuth(request: Request, _response: Response, next: NextFun
     }
 
     const token = header.slice("Bearer ".length);
-    request.auth = verifyAccessToken(token);
+    const auth = verifyAccessToken(token);
+    const user = await prisma.user.findUnique({
+      where: { id: auth.userId },
+      select: { id: true, email: true, role: true, status: true, banReason: true }
+    });
+
+    if (!user) {
+      next(new AppError(401, "Account not found.", "ACCOUNT_NOT_FOUND"));
+      return;
+    }
+    if (user.status === "BANNED") {
+      next(new AppError(403, user.banReason ? `Account banned: ${user.banReason}` : "Account banned.", "ACCOUNT_BANNED"));
+      return;
+    }
+
+    request.auth = { userId: user.id, email: user.email, role: user.role as "PLAYER" | "ADMIN" };
     next();
   } catch (error) {
     next(error);
   }
+}
+
+export function requireAdmin(request: Request, _response: Response, next: NextFunction) {
+  if (request.auth?.role !== "ADMIN") {
+    next(new AppError(403, "Admin access required.", "ADMIN_REQUIRED"));
+    return;
+  }
+
+  next();
 }

@@ -6,7 +6,9 @@
     "inventory": "Inventory",
     "premium": "Premium",
     "profile": "Profile",
-    "settings": "Settings"
+    "support": "Support",
+    "settings": "Settings",
+    "admin": "Admin"
   },
   "auth": {
     "welcome": "Enter the arena",
@@ -160,6 +162,69 @@
     "paymentsNote": "Payment providers are ready to connect after production configuration.",
     "ads": "Rewarded ads",
     "adsNote": "Rewarded ads can plug into the wallet reward service."
+  },
+  "terms": {
+    "title": "Terms of use",
+    "acceptPrefix": "I accept the",
+    "items": [
+      "You agree to play fairly and not manipulate score, coins, skins, ads, requests, or game sessions.",
+      "Developer tools, request editing, automation, scripts, modified clients, and score tampering are not allowed during gameplay.",
+      "The game may pause or block a run when developer tools or suspicious behavior are detected.",
+      "Admins may review suspicious activity, remove unfair leaderboard results, ban accounts, unban accounts, and send moderation notices.",
+      "Bans include a reason written by an admin. Players who report real security issues can receive public or private thanks.",
+      "Purchases, ad rewards, roulette rewards, and coins are validated server-side. Client-only changes are not trusted."
+    ]
+  },
+  "security": {
+    "devtoolsTitle": "Developer tools detected",
+    "devtoolsBody": "This run was paused for fair play. Close developer tools and start a new run."
+  },
+  "admin": {
+    "title": "Admin control",
+    "subtitle": "Review players, protect the leaderboard, ban rule breakers, unban accounts, and thank people who help improve the game.",
+    "search": "Search player or email",
+    "searchButton": "Search",
+    "player": "Player",
+    "status": "Status",
+    "score": "Score",
+    "coins": "Coins",
+    "lastAction": "Last action",
+    "actions": "Actions",
+    "ban": "Ban",
+    "unban": "Unban",
+    "thank": "Thank",
+    "reason": "Reason",
+    "message": "Message",
+    "confirm": "Confirm",
+    "empty": "No players found.",
+    "noticeTitle": "Admin notice",
+    "supportInbox": "Support inbox",
+    "refresh": "Refresh",
+    "reply": "Reply",
+    "closeTicket": "Close ticket",
+    "noTickets": "No support tickets.",
+    "defaultBanReason": "Score manipulation or Terms of use violation.",
+    "defaultUnbanReason": "Reviewed by admin.",
+    "defaultThanks": "Thank you for helping us find and fix a security issue in Waves Arcade."
+  },
+  "support": {
+    "title": "Support",
+    "subtitle": "Send a message to the admin team about bugs, accounts, shop issues, payments, bans, or anything that needs review.",
+    "category": "Category",
+    "subject": "Subject",
+    "message": "Message",
+    "send": "Send request",
+    "myTickets": "My requests",
+    "adminResponse": "Admin response",
+    "empty": "No support requests yet.",
+    "categories": {
+      "BUG": "Bug report",
+      "BAN_APPEAL": "Ban appeal",
+      "ACCOUNT": "Account",
+      "PAYMENT": "Payment",
+      "SHOP": "Shop",
+      "OTHER": "Other"
+    }
   },
   "common": {
     "loading": "Loading",
