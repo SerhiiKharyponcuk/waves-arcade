@@ -3,20 +3,20 @@ import { z } from "zod";
 export const localeSchema = z.enum(["en", "nl", "ru", "uk"]);
 
 export const registerSchema = z.object({
-  email: z.string().email().max(160),
-  password: z.string().min(8).max(128),
-  displayName: z.string().trim().min(3).max(24),
-  locale: localeSchema.default("en")
+  email: z.string().trim().email("Enter a valid email address.").max(160, "Email is too long."),
+  password: z.string().min(8, "Password must be at least 8 characters.").max(128, "Password is too long."),
+  displayName: z.string().trim().min(3, "Display name must be at least 3 characters.").max(24, "Display name is too long."),
+  locale: localeSchema.catch("en")
 });
 
 export const loginSchema = z.object({
-  email: z.string().email().max(160),
+  email: z.string().trim().email("Enter a valid email address.").max(160, "Email is too long."),
   password: z.string().min(1).max(128)
 });
 
 export const updateProfileSchema = z.object({
-  displayName: z.string().trim().min(3).max(24).optional(),
-  locale: localeSchema.optional(),
+  displayName: z.string().trim().min(3, "Display name must be at least 3 characters.").max(24, "Display name is too long.").optional(),
+  locale: localeSchema.catch("en").optional(),
   avatarUrl: z.string().url().nullable().optional()
 });
 

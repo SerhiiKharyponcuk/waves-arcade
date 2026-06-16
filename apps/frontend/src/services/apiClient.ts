@@ -4,6 +4,21 @@ const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000/api";
 
 let accessToken = localStorage.getItem("waves_access_token") ?? "";
 
+const fieldLabels: Record<string, string> = {
+  email: "Email",
+  password: "Password",
+  displayName: "Display name",
+  locale: "Language"
+};
+
+function formatApiError(error: ApiErrorDto) {
+  const fieldMessages = Object.entries(error.fields ?? {})
+    .flatMap(([field, messages]) => messages.map((message) => `${fieldLabels[field] ?? field}: ${message}`))
+    .join(" ");
+
+  return fieldMessages || error.message;
+}
+
 export function setAccessToken(token: string) {
   accessToken = token;
   if (token) {
@@ -28,7 +43,7 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
       message: "Request failed",
       code: "REQUEST_FAILED"
     }))) as ApiErrorDto;
-    throw new Error(error.message);
+    throw new Error(formatApiError(error));
   }
 
   if (response.status === 204) {

@@ -6,6 +6,13 @@ import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { useAuthStore } from "../store/authStore";
 
+const supportedLocales: readonly SupportedLocale[] = ["en", "nl", "ru", "uk"];
+
+function resolveAccountLocale(language: string): SupportedLocale {
+  const locale = language.slice(0, 2) as SupportedLocale;
+  return supportedLocales.includes(locale) ? locale : "en";
+}
+
 export function AuthPage() {
   const { t, i18n } = useTranslation();
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -17,15 +24,15 @@ export function AuthPage() {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (mode === "login") {
-      await login({ email, password });
+      await login({ email: email.trim(), password });
       return;
     }
 
     await register({
-      email,
+      email: email.trim(),
       password,
-      displayName,
-      locale: (i18n.language.slice(0, 2) || "en") as SupportedLocale
+      displayName: displayName.trim(),
+      locale: resolveAccountLocale(i18n.language)
     });
   }
 
