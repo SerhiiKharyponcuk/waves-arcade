@@ -15,6 +15,17 @@ type RouletteOutcome = {
   rewardSkin?: ReturnType<typeof mapSkinDto>;
 };
 
+type WalletBalanceUpdateData = {
+  coins?: { increment: number };
+  gems?: { increment: number };
+  rouletteTickets?: { increment: number };
+  extraLives?: { increment: number };
+  lifetimeCoins?: { increment: number };
+};
+
+type SkinRecord = Parameters<typeof mapSkinDto>[0] & { id: string };
+type OwnedSkinIdRecord = { skinId: string };
+
 function toWalletDto(wallet: {
   coins: number;
   gems: number;
@@ -110,7 +121,7 @@ async function updateWalletBalance(
   type: string,
   metadata?: Record<string, unknown>
 ) {
-  const data: Prisma.WalletUpdateInput = {
+  const data: WalletBalanceUpdateData = {
     coins: changes.coins ? { increment: changes.coins } : undefined,
     gems: changes.gems ? { increment: changes.gems } : undefined,
     rouletteTickets: changes.tickets ? { increment: changes.tickets } : undefined,
@@ -225,7 +236,7 @@ export async function claimDailyReward(userId: string): Promise<{ reward: DailyR
   const rewardTickets = dailyReward.tickets + (hasPremium ? 1 : 0);
   const rewardLives = dailyReward.lives + (hasPremium ? 1 : 0);
 
-  const result = await prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     const updatedClaim = await tx.dailyRewardClaim.update({
       where: { userId },
       data: {
@@ -315,7 +326,7 @@ async function awardWalletReward(
   type: string,
   metadata: Record<string, unknown>
 ) {
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     const wallet = await updateWalletBalance(tx, userId, reward, provider, type, metadata);
     return toWalletDto(wallet);
   });
@@ -380,7 +391,7 @@ export async function spinRoulette(userId: string, adsWatched: number) {
   const outcome = await getRouletteOutcome(userId);
   const reward = outcome.reward;
 
-  const result = await prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     const wallet = await updateWalletBalance(tx, userId, {
       ...reward,
       tickets: (reward.tickets ?? 0) - requiredAds
@@ -509,7 +520,7 @@ export async function completeAdRewardSession(
     throw new AppError(400, "Ad provider mismatch.", "AD_PROVIDER_MISMATCH");
   }
 
-  const result = await prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     const updatedAdReward = await tx.adReward.update({
       where: { id: adReward.id },
       data: { status: "completed" }
@@ -638,14 +649,14 @@ async function getRouletteOutcome(userId: string): Promise<RouletteOutcome> {
   }
   if (roll < 0.94) {
     const owned = await prisma.ownedSkin.findMany({ where: { userId }, select: { skinId: true } });
-    const ownedIds = new Set(owned.map((item) => item.skinId));
+    const ownedIds = new Set(owned.map((item: OwnedSkinIdRecord) => item.skinId));
     const candidates = await prisma.skin.findMany({
       where: {
         active: true,
         isPremium: false
       }
     });
-    const availableSkins = candidates.filter((skin) => !ownedIds.has(skin.id));
+    const availableSkins = candidates.filter((skin: SkinRecord) => !ownedIds.has(skin.id));
     const selectedSkin = availableSkins[Math.floor(Math.random() * availableSkins.length)];
 
     if (selectedSkin) {
@@ -676,7 +687,7 @@ export async function grantWalletReward(
   type: string,
   metadata?: Record<string, unknown>
 ) {
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     const wallet = await updateWalletBalance(tx, userId, changes, provider, type, metadata);
     return toWalletDto(wallet);
   });

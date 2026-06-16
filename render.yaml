@@ -3,7 +3,7 @@ services:
     name: waves-api
     runtime: node
     plan: free
-    buildCommand: npm install && npm run build:backend:prod
+    buildCommand: npm install --include=dev && npm run build:backend:prod
     preDeployCommand: npm run db:migrate:prod
     startCommand: npm run start --workspace @waves/backend
     healthCheckPath: /api/health

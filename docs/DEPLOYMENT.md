@@ -65,7 +65,7 @@ AD_SESSION_TTL_SECONDS=600
 Render build command:
 
 ```bash
-npm install && npm run build:backend:prod
+npm install --include=dev && npm run build:backend:prod
 ```
 
 Render pre-deploy command:

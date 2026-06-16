@@ -6,8 +6,20 @@ import type {
   GameSessionStartResponseDto,
   LeaderboardEntryDto
 } from "@waves/shared";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "../config/prisma.js";
 import { AppError } from "../utils/appError.js";
+
+type LeaderboardScoreRow = {
+  userId: string;
+  score: number;
+  createdAt: Date;
+  user: {
+    profile: {
+      displayName: string;
+    } | null;
+  };
+};
 
 function scoreChecksum(userId: string, sessionId: string, score: number, distance: number, durationMs: number) {
   return createHash("sha256")
@@ -80,7 +92,7 @@ export async function endGameSession(
   const accepted = validation.valid && checksumMatches;
   const safeCoins = accepted ? Math.min(input.coinsCollected + Math.floor(input.score / 250), 250) : 0;
 
-  const result = await prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     const profile = await tx.userProfile.findUnique({ where: { userId } });
     if (!profile) {
       throw new AppError(404, "Profile not found.", "PROFILE_NOT_FOUND");
@@ -159,7 +171,7 @@ export async function getLeaderboard(limit = 10): Promise<LeaderboardEntryDto[]>
     include: { user: { include: { profile: true } } }
   });
 
-  return scores.map((score, index) => ({
+  return scores.map((score: LeaderboardScoreRow, index: number) => ({
     userId: score.userId,
     displayName: score.user.profile?.displayName ?? "Player",
     score: score.score,

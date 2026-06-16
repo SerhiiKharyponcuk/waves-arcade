@@ -1,7 +1,16 @@
 import type { SkinDto, WalletDto } from "@waves/shared";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "../config/prisma.js";
 import { AppError } from "../utils/appError.js";
 import { mapSkinDto } from "./skinCatalogService.js";
+
+type SkinRecord = Parameters<typeof mapSkinDto>[0] & { id: string };
+
+type OwnedSkinRecord = {
+  skinId: string;
+  ownedAt: Date;
+  skin: SkinRecord;
+};
 
 function toWalletDto(wallet: { coins: number; gems: number; rouletteTickets: number; extraLives: number; lifetimeCoins: number }): WalletDto {
   return {
@@ -55,8 +64,8 @@ export async function listShopSkins(userId?: string): Promise<Array<SkinDto & { 
     userId ? prisma.userProfile.findUnique({ where: { userId } }) : Promise.resolve(null)
   ]);
 
-  const ownedSkinIds = new Set(owned.map((item) => item.skinId));
-  return skins.map((skin) => {
+  const ownedSkinIds = new Set(owned.map((item: { skinId: string }) => item.skinId));
+  return skins.map((skin: SkinRecord) => {
     const dto = mapSkinDto(skin);
     return {
       ...dto,
@@ -75,7 +84,7 @@ export async function getOwnedSkins(userId: string) {
 
   const profile = await prisma.userProfile.findUnique({ where: { userId } });
 
-  return owned.map((item) => ({
+  return owned.map((item: OwnedSkinRecord) => ({
     ...mapSkinDto(item.skin),
     owned: true,
     equipped: item.skinId === profile?.selectedArrowSkinId || item.skinId === profile?.selectedTrailSkinId,
@@ -106,7 +115,7 @@ export async function buySkin(userId: string, skinId: string): Promise<{ skin: S
     throw new AppError(402, "Not enough currency.", "INSUFFICIENT_FUNDS");
   }
 
-  const result = await prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     const updatedWallet = await tx.wallet.update({
       where: { userId },
       data: {
