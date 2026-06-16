@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc -p tsconfig.json",
+    "build:backend:prod": "npm run build:prod",
     "build:prod": "prisma generate --schema prisma-postgres/schema.prisma && tsc -p tsconfig.json",
     "start": "node dist/apps/backend/src/server.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",

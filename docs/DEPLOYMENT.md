@@ -80,6 +80,19 @@ Render start command:
 npm run start --workspace @waves/backend
 ```
 
+If the Render service has `Root Directory` set to `apps/backend`, use these commands instead:
+
+```bash
+# Build Command
+npm install --include=dev && npm run build:backend:prod
+
+# Pre-Deploy Command
+npm run db:migrate:prod
+
+# Start Command
+npm run start
+```
+
 After deployment, check:
 
 ```text
