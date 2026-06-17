@@ -17,6 +17,20 @@
     "register": "Registreren",
     "email": "E-mail",
     "password": "Wachtwoord",
+    "forgotPassword": "Forgot password?",
+    "verifyEmail": "E-mail bevestigen",
+    "verificationCode": "Verificatiecode",
+    "verificationSent": "We hebben een 6-cijferige code naar je e-mail gestuurd.",
+    "verificationCreated": "Verificatiecode gemaakt. E-mailbezorging is nog niet geconfigureerd.",
+    "devCode": "Dev-code:",
+    "resendCode": "Code opnieuw sturen",
+    "forgotHelp": "Enter your account email. If the account exists, a secure reset link will be sent.",
+    "sendReset": "Send reset link",
+    "resetSent": "If that email exists, reset instructions have been sent.",
+    "resetReady": "Development reset link:",
+    "newPassword": "New password",
+    "savePassword": "Save password",
+    "passwordResetDone": "Password changed. You can log in now.",
     "displayName": "Spelersnaam",
     "createAccount": "Account maken",
     "haveAccount": "Ik heb al een account",
@@ -155,7 +169,9 @@
       "The game may pause or block a run when developer tools or suspicious behavior are detected.",
       "Admins may review suspicious activity, remove unfair leaderboard results, ban accounts, unban accounts, and send moderation notices.",
       "Bans include a reason written by an admin. Players who report real security issues can receive public or private thanks.",
-      "Purchases, ad rewards, roulette rewards, and coins are validated server-side. Client-only changes are not trusted."
+      "Purchases, ad rewards, roulette rewards, and coins are validated server-side. Client-only changes are not trusted.",
+      "Bots, mass account creation, spam, harassment, insults, threats, offensive support messages, payment abuse, and attempts to bypass restrictions are forbidden.",
+      "Support requests must be respectful and honest. Abusive messages can be rejected and may lead to account moderation."
     ]
   },
   "security": {
@@ -188,7 +204,18 @@
     "noTickets": "No support tickets.",
     "defaultBanReason": "Score manipulation or Terms of use violation.",
     "defaultUnbanReason": "Reviewed by admin.",
-    "defaultThanks": "Thank you for helping us find and fix a security issue in Waves Arcade."
+    "defaultThanks": "Thank you for helping us find and fix a security issue in Waves Arcade.",
+    "banReasons": {
+      "scoreManipulation": "Score manipulation or leaderboard cheating.",
+      "botAccount": "Bot account or automated registration.",
+      "abusiveSupport": "Abusive or disrespectful support message.",
+      "harassment": "Harassment, threats, hate speech, or insults.",
+      "spam": "Spam, repeated fake reports, or flooding support.",
+      "multiAccount": "Multiple accounts used to bypass limits or bans.",
+      "paymentFraud": "Payment, ad reward, or shop abuse.",
+      "devtools": "Developer tools or modified client used during gameplay.",
+      "termsViolation": "Terms of use violation."
+    }
   },
   "support": {
     "title": "Support",

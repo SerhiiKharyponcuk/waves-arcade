@@ -11,6 +11,18 @@ import type { AdminUserDto, SupportTicketDto, SupportTicketStatus } from "../typ
 type AdminAction = "ban" | "unban" | "thank";
 type SupportAction = { ticket: SupportTicketDto; status: SupportTicketStatus };
 
+const banReasonKeys = [
+  "scoreManipulation",
+  "botAccount",
+  "abusiveSupport",
+  "harassment",
+  "spam",
+  "multiAccount",
+  "paymentFraud",
+  "devtools",
+  "termsViolation"
+];
+
 export function AdminPage() {
   const { t } = useTranslation();
   const [users, setUsers] = useState<AdminUserDto[]>([]);
@@ -20,6 +32,7 @@ export function AdminPage() {
   const [action, setAction] = useState<{ type: AdminAction; user: AdminUserDto } | null>(null);
   const [actionText, setActionText] = useState("");
   const [supportTickets, setSupportTickets] = useState<SupportTicketDto[]>([]);
+  const [supportStatus, setSupportStatus] = useState<SupportTicketStatus | "ALL">("ALL");
   const [supportAction, setSupportAction] = useState<SupportAction | null>(null);
   const [supportResponse, setSupportResponse] = useState("");
 
@@ -42,9 +55,9 @@ export function AdminPage() {
     }
   }
 
-  async function loadSupportTickets() {
+  async function loadSupportTickets(status = supportStatus) {
     try {
-      setSupportTickets(await supportApi.adminTickets("ALL"));
+      setSupportTickets(await supportApi.adminTickets(status));
     } catch (error) {
       setError(error instanceof Error ? error.message : t("common.error"));
     }
@@ -221,6 +234,25 @@ export function AdminPage() {
             {t("admin.refresh")}
           </Button>
         </div>
+        <div className="mb-4 flex flex-wrap gap-2">
+          {(["ALL", "OPEN", "ANSWERED", "CLOSED"] as Array<SupportTicketStatus | "ALL">).map((status) => (
+            <button
+              key={status}
+              type="button"
+              onClick={() => {
+                setSupportStatus(status);
+                void loadSupportTickets(status);
+              }}
+              className={`rounded-md border px-3 py-2 text-xs font-black transition ${
+                supportStatus === status
+                  ? "border-cyanGlow bg-cyanGlow text-ink"
+                  : "border-white/10 bg-white/5 text-slate-300 hover:border-cyanGlow"
+              }`}
+            >
+              {status}
+            </button>
+          ))}
+        </div>
         <div className="grid gap-3">
           {supportTickets.map((ticket) => (
             <article key={ticket.id} className="rounded-lg border border-white/10 bg-white/5 p-4">
@@ -260,6 +292,20 @@ export function AdminPage() {
             </div>
             <label className="grid gap-2 text-sm text-slate-300">
               <span>{action.type === "thank" ? t("admin.message") : t("admin.reason")}</span>
+              {action.type === "ban" ? (
+                <div className="grid grid-cols-2 gap-2">
+                  {banReasonKeys.map((key) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setActionText(t(`admin.banReasons.${key}`))}
+                      className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-left text-xs font-bold text-slate-300 hover:border-cyanGlow hover:text-white"
+                    >
+                      {t(`admin.banReasons.${key}`)}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
               <textarea
                 value={actionText}
                 onChange={(event) => setActionText(event.target.value)}

@@ -30,3 +30,11 @@ export const authRateLimit = rateLimit({
   legacyHeaders: false,
   message: { message: "Too many auth attempts. Please try again soon.", code: "RATE_LIMITED" }
 });
+
+export const supportRateLimit = rateLimit({
+  windowMs: 60_000,
+  max: env.NODE_ENV === "production" ? 5 : 50,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many support requests. Please wait a minute.", code: "SUPPORT_RATE_LIMITED" }
+});

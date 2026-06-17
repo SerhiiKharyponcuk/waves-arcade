@@ -11,6 +11,10 @@ const envSchema = z.object({
   JWT_REFRESH_EXPIRES_IN: z.string().default("7d"),
   CORS_ORIGIN: z.string().default("http://localhost:5173"),
   ADMIN_EMAILS: z.string().default(""),
+  PASSWORD_RESET_BASE_URL: z.string().url().default("http://localhost:5173"),
+  EMAIL_PROVIDER: z.enum(["none", "resend"]).default("none"),
+  EMAIL_FROM: z.string().email().optional(),
+  RESEND_API_KEY: z.string().optional(),
   AD_PROVIDER: z.enum(["mock", "crazygames", "admob", "unity", "google_ad_manager"]).default("mock"),
   AD_SESSION_TTL_SECONDS: z.coerce.number().int().positive().default(600)
 });

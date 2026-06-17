@@ -14,6 +14,8 @@ export function SupportPage() {
   const [category, setCategory] = useState<SupportTicketCategory>("BUG");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
+  const [botWebsite, setBotWebsite] = useState("");
+  const [formStartedAt] = useState(() => Date.now());
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -34,7 +36,13 @@ export function SupportPage() {
     setBusy(true);
     setError("");
     try {
-      const ticket = await supportApi.createTicket({ category, subject: subject.trim(), message: message.trim() });
+      const ticket = await supportApi.createTicket({
+        category,
+        subject: subject.trim(),
+        message: message.trim(),
+        website: botWebsite,
+        formStartedAt
+      });
       setTickets((current) => [ticket, ...current]);
       setSubject("");
       setMessage("");
@@ -56,6 +64,15 @@ export function SupportPage() {
         <p className="mt-2 max-w-2xl text-slate-300">{t("support.subtitle")}</p>
 
         <form className="mt-6 grid gap-4 rounded-lg border border-white/10 bg-white/5 p-4" onSubmit={(event) => void submit(event)}>
+          <input
+            aria-hidden="true"
+            autoComplete="off"
+            className="hidden"
+            tabIndex={-1}
+            value={botWebsite}
+            onChange={(event) => setBotWebsite(event.target.value)}
+            name="website"
+          />
           <label className="grid gap-2 text-sm text-slate-300">
             <span>{t("support.category")}</span>
             <select

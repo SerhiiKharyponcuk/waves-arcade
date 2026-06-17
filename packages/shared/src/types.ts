@@ -187,6 +187,7 @@ export interface AuthUserDto {
   banReason?: string | null;
   bannedAt?: string | null;
   termsAcceptedAt?: string | null;
+  emailVerifiedAt?: string | null;
   profile: UserProfileDto;
   wallet: WalletDto;
   ownedSkins: OwnedSkinDto[];
@@ -197,6 +198,14 @@ export interface AuthUserDto {
 export interface AuthResponseDto {
   user: AuthUserDto;
   accessToken: string;
+}
+
+export interface EmailVerificationRequiredDto {
+  success: true;
+  emailVerificationRequired: true;
+  email: string;
+  emailSent: boolean;
+  devCode?: string;
 }
 
 export interface GameSessionStartResponseDto {

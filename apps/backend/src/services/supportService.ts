@@ -3,6 +3,18 @@ import type { SupportTicketCategory, SupportTicketDto, SupportTicketStatus } fro
 import { prisma } from "../config/prisma.js";
 import { AppError } from "../utils/appError.js";
 
+const blockedSupportTerms = [
+  "fuck",
+  "shit",
+  "bitch",
+  "idiot",
+  "сука",
+  "бля",
+  "дебил",
+  "ідіот",
+  "лох"
+];
+
 type SupportTicketRow = Prisma.SupportTicketGetPayload<{
   include: {
     user: { include: { profile: true } };
@@ -32,6 +44,11 @@ export async function createSupportTicket(
   userId: string,
   input: { category: SupportTicketCategory; subject: string; message: string }
 ): Promise<SupportTicketDto> {
+  const normalizedText = `${input.subject} ${input.message}`.toLowerCase();
+  if (blockedSupportTerms.some((term) => normalizedText.includes(term))) {
+    throw new AppError(400, "Support messages must be respectful.", "ABUSIVE_SUPPORT_MESSAGE");
+  }
+
   const ticket = await prisma.supportTicket.create({
     data: {
       userId,
@@ -87,7 +104,7 @@ export async function updateSupportTicketByAdmin(
     throw new AppError(404, "Support ticket not found.", "SUPPORT_TICKET_NOT_FOUND");
   }
 
-  const status = input.status ?? (input.adminResponse ? "ANSWERED" : existing.status);
+  const status = input.adminResponse ? "CLOSED" : input.status ?? existing.status;
   const ticket = await prisma.supportTicket.update({
     where: { id: ticketId },
     data: {

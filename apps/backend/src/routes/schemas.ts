@@ -2,6 +2,20 @@ import { z } from "zod";
 
 export const localeSchema = z.enum(["en", "nl", "ru", "uk"]);
 
+const botGuardSchema = {
+  website: z.string().max(0, "Bot check failed.").optional().default(""),
+  formStartedAt: z.number().int().positive().optional()
+};
+
+function rejectFastBots(value: { website?: string; formStartedAt?: number }, context: z.RefinementCtx) {
+  if (value.website) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["website"], message: "Bot check failed." });
+  }
+  if (value.formStartedAt && Date.now() - value.formStartedAt < 1_200) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["formStartedAt"], message: "Please wait a moment before submitting." });
+  }
+}
+
 export const registerSchema = z.object({
   email: z.string().trim().email("Enter a valid email address.").max(160, "Email is too long."),
   password: z.string().min(8, "Password must be at least 8 characters.").max(128, "Password is too long."),
@@ -9,8 +23,9 @@ export const registerSchema = z.object({
   locale: localeSchema.catch("en"),
   termsAccepted: z.literal(true, {
     errorMap: () => ({ message: "Terms of use must be accepted." })
-  })
-});
+  }),
+  ...botGuardSchema
+}).superRefine(rejectFastBots);
 
 export const loginSchema = z.object({
   email: z.string().trim().email("Enter a valid email address.").max(160, "Email is too long."),
@@ -71,10 +86,31 @@ export const adminThankSchema = z.object({
 export const supportTicketSchema = z.object({
   category: z.enum(["BUG", "BAN_APPEAL", "ACCOUNT", "PAYMENT", "SHOP", "OTHER"]).default("OTHER"),
   subject: z.string().trim().min(3, "Subject must be at least 3 characters.").max(120, "Subject is too long."),
-  message: z.string().trim().min(10, "Message must be at least 10 characters.").max(2_000, "Message is too long.")
-});
+  message: z.string().trim().min(10, "Message must be at least 10 characters.").max(2_000, "Message is too long."),
+  ...botGuardSchema
+}).superRefine(rejectFastBots);
 
 export const adminSupportTicketSchema = z.object({
   status: z.enum(["OPEN", "ANSWERED", "CLOSED"]).optional(),
   adminResponse: z.string().trim().min(3, "Response must be at least 3 characters.").max(2_000, "Response is too long.").optional()
 });
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().trim().email("Enter a valid email address.").max(160, "Email is too long."),
+  ...botGuardSchema
+}).superRefine(rejectFastBots);
+
+export const resetPasswordSchema = z.object({
+  token: z.string().trim().min(40, "Reset token is invalid.").max(200, "Reset token is invalid."),
+  password: z.string().min(8, "Password must be at least 8 characters.").max(128, "Password is too long.")
+});
+
+export const verifyEmailSchema = z.object({
+  email: z.string().trim().email("Enter a valid email address.").max(160, "Email is too long."),
+  code: z.string().trim().regex(/^\d{6}$/, "Verification code must be 6 digits.")
+});
+
+export const resendVerificationSchema = z.object({
+  email: z.string().trim().email("Enter a valid email address.").max(160, "Email is too long."),
+  ...botGuardSchema
+}).superRefine(rejectFastBots);

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { AuthResponse, CurrentUser, LoginPayload, RegisterPayload, UserProfileDto, WalletDto } from "../types/api";
+import type { AuthResponse, CurrentUser, LoginPayload, RegisterPayload, RegisterResponse, UserProfileDto, VerifyEmailPayload, WalletDto } from "../types/api";
 import { authApi } from "../services/authApi";
 import { setAccessToken } from "../services/apiClient";
 
@@ -10,7 +10,8 @@ interface AuthState {
   error: string;
   bootstrap: () => Promise<void>;
   login: (payload: LoginPayload) => Promise<void>;
-  register: (payload: RegisterPayload) => Promise<void>;
+  register: (payload: RegisterPayload) => Promise<RegisterResponse | null>;
+  verifyEmail: (payload: VerifyEmailPayload) => Promise<void>;
   logout: () => Promise<void>;
   patchProfile: (profile: UserProfileDto) => void;
   patchWallet: (wallet: WalletDto) => void;
@@ -54,9 +55,24 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ loading: true, error: "" });
     try {
       const result = await authApi.register(payload);
-      set({ ...applyAuthResponse(result), loading: false });
+      if ("accessToken" in result) {
+        set({ ...applyAuthResponse(result), loading: false });
+      } else {
+        set({ loading: false, error: "" });
+      }
+      return result;
     } catch (error) {
       set({ loading: false, error: error instanceof Error ? error.message : "Registration failed" });
+      return null;
+    }
+  },
+  verifyEmail: async (payload) => {
+    set({ loading: true, error: "" });
+    try {
+      const result = await authApi.verifyEmail(payload);
+      set({ ...applyAuthResponse(result), loading: false });
+    } catch (error) {
+      set({ loading: false, error: error instanceof Error ? error.message : "Email verification failed" });
     }
   },
   logout: async () => {

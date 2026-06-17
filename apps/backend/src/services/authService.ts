@@ -1,10 +1,12 @@
+import { createHash, randomBytes, randomInt } from "node:crypto";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import type { SignOptions } from "jsonwebtoken";
 import type { Prisma } from "@prisma/client";
-import type { AuthResponseDto, AuthUserDto, SupportedLocale } from "@waves/shared";
+import type { AuthResponseDto, AuthUserDto, EmailVerificationRequiredDto, SupportedLocale } from "@waves/shared";
 import { prisma } from "../config/prisma.js";
 import { env } from "../config/env.js";
+import { sendEmailVerificationCode, sendPasswordResetEmail } from "./emailService.js";
 import { AppError } from "../utils/appError.js";
 
 export interface AuthUser {
@@ -44,6 +46,18 @@ function signAccessToken(user: AuthUser) {
     expiresIn: env.JWT_ACCESS_EXPIRES_IN as SignOptions["expiresIn"],
     issuer: "waves-arcade"
   });
+}
+
+function hashResetToken(token: string) {
+  return createHash("sha256").update(token).digest("hex");
+}
+
+function hashEmailCode(email: string, code: string) {
+  return createHash("sha256").update(`${email.toLowerCase()}:${code}:waves-email-v1`).digest("hex");
+}
+
+function generateEmailCode() {
+  return String(randomInt(100_000, 1_000_000));
 }
 
 function adminEmailSet() {
@@ -97,6 +111,7 @@ function toAuthUserDto(user: UserWithAccount): AuthUserDto {
     banReason: user.banReason,
     bannedAt: user.bannedAt?.toISOString() ?? null,
     termsAcceptedAt: user.termsAcceptedAt?.toISOString() ?? null,
+    emailVerifiedAt: user.emailVerifiedAt?.toISOString() ?? null,
     profile: {
       id: user.profile.id,
       displayName: user.profile.displayName,
@@ -152,7 +167,7 @@ export async function registerAccount(input: {
   displayName: string;
   locale: SupportedLocale;
   termsAccepted: boolean;
-}): Promise<AuthResponseDto> {
+}): Promise<EmailVerificationRequiredDto> {
   if (!input.termsAccepted) {
     throw new AppError(400, "Terms of use must be accepted.", "TERMS_REQUIRED");
   }
@@ -199,12 +214,7 @@ export async function registerAccount(input: {
     include: accountInclude
   });
 
-  const tokenUser: AuthUser = { userId: created.id, email: created.email, role: created.role as AuthUser["role"] };
-
-  return {
-    user: toAuthUserDto(created),
-    accessToken: signAccessToken(tokenUser)
-  };
+  return issueEmailVerificationCode(created.id, created.email);
 }
 
 export async function loginAccount(input: { email: string; password: string }): Promise<AuthResponseDto> {
@@ -224,6 +234,9 @@ export async function loginAccount(input: { email: string; password: string }): 
 
   if (user.status === "BANNED") {
     throw new AppError(403, user.banReason ? `Account banned: ${user.banReason}` : "Account banned.", "ACCOUNT_BANNED");
+  }
+  if (!user.emailVerifiedAt) {
+    throw new AppError(403, "Email address is not verified. Please enter the verification code from your email.", "EMAIL_NOT_VERIFIED");
   }
 
   const resolvedRole = roleForEmail(user.email, user.role);
@@ -245,4 +258,132 @@ export async function loginAccount(input: { email: string; password: string }): 
 
 export async function getCurrentAccount(userId: string): Promise<AuthUserDto> {
   return toAuthUserDto(await getAccountById(userId));
+}
+
+async function issueEmailVerificationCode(userId: string, email: string): Promise<EmailVerificationRequiredDto> {
+  const code = generateEmailCode();
+
+  await prisma.emailVerificationCode.create({
+    data: {
+      userId,
+      codeHash: hashEmailCode(email, code),
+      expiresAt: new Date(Date.now() + 15 * 60_000)
+    }
+  });
+
+  const emailResult = await sendEmailVerificationCode(email, code);
+  return {
+    success: true,
+    emailVerificationRequired: true,
+    email,
+    emailSent: emailResult.sent,
+    devCode: env.NODE_ENV === "development" && !emailResult.sent ? code : undefined
+  };
+}
+
+export async function resendEmailVerification(input: { email: string }): Promise<EmailVerificationRequiredDto> {
+  const user = await prisma.user.findUnique({ where: { email: input.email.toLowerCase() } });
+  if (!user) {
+    return { success: true, emailVerificationRequired: true, email: input.email.toLowerCase(), emailSent: true };
+  }
+  if (user.emailVerifiedAt) {
+    return { success: true, emailVerificationRequired: true, email: user.email, emailSent: true };
+  }
+
+  return issueEmailVerificationCode(user.id, user.email);
+}
+
+export async function verifyEmailCode(input: { email: string; code: string }): Promise<AuthResponseDto> {
+  const email = input.email.toLowerCase();
+  const user = await prisma.user.findUnique({
+    where: { email },
+    include: accountInclude
+  });
+  if (!user) {
+    throw new AppError(400, "Verification code is invalid or expired.", "EMAIL_CODE_INVALID");
+  }
+  if (user.status === "BANNED") {
+    throw new AppError(403, user.banReason ? `Account banned: ${user.banReason}` : "Account banned.", "ACCOUNT_BANNED");
+  }
+  if (user.emailVerifiedAt) {
+    const tokenUser: AuthUser = { userId: user.id, email: user.email, role: user.role as AuthUser["role"] };
+    return { user: toAuthUserDto(user), accessToken: signAccessToken(tokenUser) };
+  }
+
+  const codeHash = hashEmailCode(email, input.code);
+  const verification = await prisma.emailVerificationCode.findFirst({
+    where: {
+      userId: user.id,
+      codeHash,
+      usedAt: null,
+      expiresAt: { gt: new Date() }
+    },
+    orderBy: { createdAt: "desc" }
+  });
+
+  if (!verification || verification.attempts >= 5) {
+    throw new AppError(400, "Verification code is invalid or expired.", "EMAIL_CODE_INVALID");
+  }
+
+  const verified = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await tx.emailVerificationCode.update({
+      where: { id: verification.id },
+      data: { usedAt: new Date(), attempts: { increment: 1 } }
+    });
+    return tx.user.update({
+      where: { id: user.id },
+      data: { emailVerifiedAt: new Date() },
+      include: accountInclude
+    });
+  });
+
+  const tokenUser: AuthUser = { userId: verified.id, email: verified.email, role: verified.role as AuthUser["role"] };
+  return { user: toAuthUserDto(verified), accessToken: signAccessToken(tokenUser) };
+}
+
+export async function requestPasswordReset(input: { email: string }) {
+  const user = await prisma.user.findUnique({ where: { email: input.email.toLowerCase() } });
+  if (!user || user.status === "BANNED") {
+    return { success: true };
+  }
+
+  const token = randomBytes(32).toString("hex");
+  const resetUrl = `${env.PASSWORD_RESET_BASE_URL.replace(/\/$/, "")}/?resetToken=${encodeURIComponent(token)}`;
+
+  await prisma.passwordResetToken.create({
+    data: {
+      userId: user.id,
+      tokenHash: hashResetToken(token),
+      expiresAt: new Date(Date.now() + 30 * 60_000)
+    }
+  });
+
+  const emailResult = await sendPasswordResetEmail(user.email, resetUrl);
+  return {
+    success: true,
+    emailSent: emailResult.sent,
+    resetUrl: env.NODE_ENV === "development" && !emailResult.sent ? resetUrl : undefined
+  };
+}
+
+export async function resetPassword(input: { token: string; password: string }) {
+  const tokenHash = hashResetToken(input.token);
+  const resetToken = await prisma.passwordResetToken.findUnique({ where: { tokenHash } });
+  if (!resetToken || resetToken.usedAt || resetToken.expiresAt.getTime() < Date.now()) {
+    throw new AppError(400, "Password reset link is invalid or expired.", "PASSWORD_RESET_INVALID");
+  }
+
+  const passwordHash = await bcrypt.hash(input.password, 12);
+  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await tx.user.update({
+      where: { id: resetToken.userId },
+      data: { passwordHash }
+    });
+    await tx.passwordResetToken.update({
+      where: { id: resetToken.id },
+      data: { usedAt: new Date() }
+    });
+  });
+
+  return { success: true };
 }

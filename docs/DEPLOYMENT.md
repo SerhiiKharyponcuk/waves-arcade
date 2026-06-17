@@ -58,9 +58,16 @@ DATABASE_URL=your-neon-postgres-url
 JWT_ACCESS_SECRET=long-random-secret
 JWT_REFRESH_SECRET=another-long-random-secret
 CORS_ORIGIN=https://your-vercel-app.vercel.app
+ADMIN_EMAILS=your-admin-email@example.com
+PASSWORD_RESET_BASE_URL=https://your-vercel-app.vercel.app
+EMAIL_PROVIDER=resend
+EMAIL_FROM=Waves Arcade <noreply@your-domain.com>
+RESEND_API_KEY=your-resend-api-key
 AD_PROVIDER=google_ad_manager
 AD_SESSION_TTL_SECONDS=600
 ```
+
+Email verification and password reset use these email settings. If `EMAIL_PROVIDER=none`, accounts can still be created, but real players will not receive the verification code in production.
 
 Render build command:
 

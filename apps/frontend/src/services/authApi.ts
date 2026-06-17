@@ -1,15 +1,50 @@
-import type { AuthResponse, CurrentUser, LoginPayload, RegisterPayload, UserProfileDto } from "../types/api";
+import type {
+  AuthResponse,
+  CurrentUser,
+  ForgotPasswordPayload,
+  LoginPayload,
+  RegisterPayload,
+  RegisterResponse,
+  ResendVerificationPayload,
+  ResetPasswordPayload,
+  UserProfileDto,
+  VerifyEmailPayload
+} from "../types/api";
 import { apiRequest } from "./apiClient";
 
 export const authApi = {
   register(payload: RegisterPayload) {
-    return apiRequest<AuthResponse>("/auth/register", {
+    return apiRequest<RegisterResponse>("/auth/register", {
       method: "POST",
       body: JSON.stringify(payload)
     });
   },
   login(payload: LoginPayload) {
     return apiRequest<AuthResponse>("/auth/login", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+  },
+  forgotPassword(payload: ForgotPasswordPayload) {
+    return apiRequest<{ success: boolean; emailSent?: boolean; resetUrl?: string }>("/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+  },
+  resetPassword(payload: ResetPasswordPayload) {
+    return apiRequest<{ success: boolean }>("/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+  },
+  verifyEmail(payload: VerifyEmailPayload) {
+    return apiRequest<AuthResponse>("/auth/verify-email", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+  },
+  resendVerification(payload: ResendVerificationPayload) {
+    return apiRequest<RegisterResponse>("/auth/resend-verification", {
       method: "POST",
       body: JSON.stringify(payload)
     });

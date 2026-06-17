@@ -9,7 +9,12 @@ const fieldLabels: Record<string, string> = {
   password: "Password",
   displayName: "Display name",
   locale: "Language",
-  termsAccepted: "Terms"
+  termsAccepted: "Terms",
+  website: "Security check",
+  formStartedAt: "Security check",
+  subject: "Subject",
+  message: "Message",
+  token: "Reset token"
 };
 
 function formatApiError(error: ApiErrorDto) {

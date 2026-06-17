@@ -5,7 +5,7 @@ export const supportApi = {
   myTickets() {
     return apiRequest<SupportTicketDto[]>("/support/tickets");
   },
-  createTicket(payload: { category: SupportTicketCategory; subject: string; message: string }) {
+  createTicket(payload: { category: SupportTicketCategory; subject: string; message: string; website?: string; formStartedAt?: number }) {
     return apiRequest<SupportTicketDto>("/support/tickets", {
       method: "POST",
       body: JSON.stringify(payload)

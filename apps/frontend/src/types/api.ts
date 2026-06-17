@@ -1,6 +1,7 @@
 import type {
   AuthResponseDto,
   AuthUserDto,
+  EmailVerificationRequiredDto,
   AdPlacement,
   AdProvider,
   AdRewardCompleteDto,
@@ -32,6 +33,8 @@ export interface RegisterPayload {
   displayName: string;
   locale: SupportedLocale;
   termsAccepted: boolean;
+  website?: string;
+  formStartedAt?: number;
 }
 
 export interface LoginPayload {
@@ -39,7 +42,30 @@ export interface LoginPayload {
   password: string;
 }
 
+export interface ForgotPasswordPayload {
+  email: string;
+  website?: string;
+  formStartedAt?: number;
+}
+
+export interface ResetPasswordPayload {
+  token: string;
+  password: string;
+}
+
+export interface VerifyEmailPayload {
+  email: string;
+  code: string;
+}
+
+export interface ResendVerificationPayload {
+  email: string;
+  website?: string;
+  formStartedAt?: number;
+}
+
 export type AuthResponse = AuthResponseDto;
+export type RegisterResponse = AuthResponseDto | EmailVerificationRequiredDto;
 export type CurrentUser = AuthUserDto;
 
 export type ShopSkin = SkinDto & {
