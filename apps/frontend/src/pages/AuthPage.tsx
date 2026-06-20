@@ -1,14 +1,18 @@
 import { FormEvent, useEffect, useState } from "react";
-import { ArrowRight, LogIn, MailCheck, UserPlus } from "lucide-react";
+import { ArrowRight, Gamepad2, LifeBuoy, LogIn, MailCheck, Send, UserPlus } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import type { SupportedLocale } from "@waves/shared";
+import type { SupportedLocale, SupportTicketCategory } from "@waves/shared";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { Modal } from "../components/ui/Modal";
 import { authApi } from "../services/authApi";
+import { supportApi } from "../services/supportApi";
 import { useAuthStore } from "../store/authStore";
+import { useGuestStore } from "../store/guestStore";
+import { gameRuleSections } from "../data/gameRules";
 
 const supportedLocales: readonly SupportedLocale[] = ["en", "nl", "ru", "uk"];
+const publicSupportCategories: SupportTicketCategory[] = ["APPEAL", "ACCOUNT", "SCORE", "BUG", "PAYMENT", "SHOP", "OTHER"];
 
 function resolveAccountLocale(language: string): SupportedLocale {
   const locale = language.slice(0, 2) as SupportedLocale;
@@ -17,7 +21,10 @@ function resolveAccountLocale(language: string): SupportedLocale {
 
 export function AuthPage() {
   const { t, i18n } = useTranslation();
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const requestedAuthMode = useGuestStore((state) => state.requestedAuthMode);
+  const clearAuthenticationRequest = useGuestStore((state) => state.clearAuthenticationRequest);
+  const continueAsGuest = useGuestStore((state) => state.continueAsGuest);
+  const [mode, setMode] = useState<"login" | "register">(requestedAuthMode ?? "login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -35,6 +42,14 @@ export function AuthPage() {
   const [verificationCode, setVerificationCode] = useState("");
   const [verificationMessage, setVerificationMessage] = useState("");
   const [verificationDevCode, setVerificationDevCode] = useState("");
+  const [supportOpen, setSupportOpen] = useState(false);
+  const [supportEmail, setSupportEmail] = useState("");
+  const [supportName, setSupportName] = useState("");
+  const [supportCategory, setSupportCategory] = useState<SupportTicketCategory>("ACCOUNT");
+  const [supportSubject, setSupportSubject] = useState("");
+  const [supportMessage, setSupportMessage] = useState("");
+  const [supportResult, setSupportResult] = useState("");
+  const [supportBusy, setSupportBusy] = useState(false);
   const [passwordBusy, setPasswordBusy] = useState(false);
   const { login, register, verifyEmail, loading, error } = useAuthStore();
 
@@ -44,6 +59,13 @@ export function AuthPage() {
       setResetToken(token);
     }
   }, []);
+
+  useEffect(() => {
+    if (requestedAuthMode) {
+      setMode(requestedAuthMode);
+      clearAuthenticationRequest();
+    }
+  }, [clearAuthenticationRequest, requestedAuthMode]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -127,6 +149,36 @@ export function AuthPage() {
       setVerificationMessage(error instanceof Error ? error.message : t("common.error"));
     } finally {
       setPasswordBusy(false);
+    }
+  }
+
+  function openPublicSupport() {
+    setSupportEmail(email.trim());
+    setSupportResult("");
+    setSupportOpen(true);
+  }
+
+  async function submitPublicSupport(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSupportBusy(true);
+    setSupportResult("");
+    try {
+      const ticket = await supportApi.createPublicTicket({
+        email: supportEmail.trim(),
+        displayName: supportName.trim() || undefined,
+        category: supportCategory,
+        subject: supportSubject.trim(),
+        message: supportMessage.trim(),
+        website: botWebsite,
+        formStartedAt
+      });
+      setSupportResult(`${t("support.guestSent")} ${ticket.id}`);
+      setSupportSubject("");
+      setSupportMessage("");
+    } catch (error) {
+      setSupportResult(error instanceof Error ? error.message : t("common.error"));
+    } finally {
+      setSupportBusy(false);
     }
   }
 
@@ -248,20 +300,29 @@ export function AuthPage() {
               {mode === "login" ? t("auth.needAccount") : t("auth.haveAccount")}
             </Button>
             {mode === "login" ? (
-              <Button type="button" variant="ghost" onClick={() => setForgotOpen(true)}>
-                {t("auth.forgotPassword")}
-              </Button>
+              <>
+                <Button type="button" variant="secondary" onClick={continueAsGuest} icon={<Gamepad2 size={18} />}>
+                  Continue as guest
+                </Button>
+                <Button type="button" variant="ghost" onClick={() => setForgotOpen(true)}>
+                  {t("auth.forgotPassword")}
+                </Button>
+                <Button type="button" variant="ghost" onClick={openPublicSupport} icon={<LifeBuoy size={18} />}>
+                  {t("support.contactWithoutAccount")}
+                </Button>
+              </>
             ) : null}
+            <Button type="button" variant="ghost" onClick={() => setTermsOpen(true)}>
+              Game Rules and Terms
+            </Button>
           </form>
         </section>
       </div>
 
       {termsOpen ? (
-        <Modal title={t("terms.title")} closeLabel={t("common.close")} onClose={() => setTermsOpen(false)}>
-          <div className="grid max-h-[60vh] gap-3 overflow-y-auto pr-2 text-sm leading-6 text-slate-300">
-            {(t("terms.items", { returnObjects: true }) as string[]).map((item) => (
-              <p key={item}>{item}</p>
-            ))}
+        <Modal title="Game Rules and Terms" closeLabel={t("common.close")} onClose={() => setTermsOpen(false)}>
+          <div className="grid max-h-[65vh] gap-5 overflow-y-auto pr-2 text-sm leading-6 text-slate-300">
+            {gameRuleSections.map((section) => <section key={section.title}><h3 className="font-black text-white">{section.title}</h3><ol start={section.start} className="mt-2 grid gap-2">{section.rules.map((rule) => <li key={rule} className="ml-6 pl-1">{rule}</li>)}</ol></section>)}
           </div>
         </Modal>
       ) : null}
@@ -283,6 +344,78 @@ export function AuthPage() {
             {forgotMessage ? <div className="rounded-md border border-cyanGlow/30 bg-cyanGlow/10 p-3 text-sm text-slate-100">{forgotMessage}</div> : null}
             <Button type="submit" disabled={passwordBusy}>
               {t("auth.sendReset")}
+            </Button>
+          </form>
+        </Modal>
+      ) : null}
+
+      {supportOpen ? (
+        <Modal title={t("support.guestTitle")} closeLabel={t("common.close")} onClose={() => setSupportOpen(false)}>
+          <form className="grid gap-4" onSubmit={(event) => void submitPublicSupport(event)}>
+            <input
+              aria-hidden="true"
+              autoComplete="off"
+              className="hidden"
+              tabIndex={-1}
+              value={botWebsite}
+              onChange={(event) => setBotWebsite(event.target.value)}
+              name="website"
+            />
+            <div className="rounded-md border border-goldGlow/30 bg-goldGlow/10 p-3 text-sm leading-6 text-slate-200">
+              {t("support.passwordWarning")}
+            </div>
+            <Input
+              label={t("support.loginEmail")}
+              type="email"
+              value={supportEmail}
+              onChange={(event) => setSupportEmail(event.target.value)}
+              required
+              maxLength={160}
+            />
+            <Input
+              label={t("support.contactName")}
+              value={supportName}
+              onChange={(event) => setSupportName(event.target.value)}
+              maxLength={60}
+            />
+            <label className="grid gap-2 text-sm text-slate-300">
+              <span>{t("support.category")}</span>
+              <select
+                value={supportCategory}
+                onChange={(event) => setSupportCategory(event.target.value as SupportTicketCategory)}
+                className="min-h-11 rounded-md border border-slate-700 bg-ink/70 px-3 py-2 text-slate-50 outline-none transition focus:border-cyanGlow focus:ring-2 focus:ring-cyanGlow/20"
+              >
+                {publicSupportCategories.map((category) => (
+                  <option key={category} value={category}>
+                    {t(`support.categories.${category}`)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <Input
+              label={t("support.subject")}
+              value={supportSubject}
+              onChange={(event) => setSupportSubject(event.target.value)}
+              required
+              maxLength={120}
+            />
+            <label className="grid gap-2 text-sm text-slate-300">
+              <span>{t("support.message")}</span>
+              <textarea
+                value={supportMessage}
+                onChange={(event) => setSupportMessage(event.target.value)}
+                required
+                minLength={10}
+                maxLength={2000}
+                rows={6}
+                className="rounded-md border border-slate-700 bg-ink/70 px-3 py-2 text-slate-50 outline-none transition placeholder:text-slate-500 focus:border-cyanGlow focus:ring-2 focus:ring-cyanGlow/20"
+              />
+            </label>
+            {supportResult ? (
+              <div className="rounded-md border border-cyanGlow/30 bg-cyanGlow/10 p-3 text-sm text-slate-100">{supportResult}</div>
+            ) : null}
+            <Button type="submit" disabled={supportBusy} icon={<Send size={18} />}>
+              {t("support.send")}
             </Button>
           </form>
         </Modal>

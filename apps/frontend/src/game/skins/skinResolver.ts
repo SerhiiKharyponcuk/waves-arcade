@@ -22,8 +22,10 @@ export const defaultTrailVisual: SkinVisualConfig = {
   trailTexture: "solid"
 };
 
-export function resolveGameSkins(user: CurrentUser | null, skins: ShopSkin[]): GameSkinBundle {
-  const selectedArrow = skins.find((skin) => skin.id === user?.profile.selectedArrowSkinId);
+export function resolveGameSkins(user: CurrentUser | null, skins: ShopSkin[], guestSkinSlug?: string): GameSkinBundle {
+  const selectedArrow = user
+    ? skins.find((skin) => skin.id === user.profile.selectedArrowSkinId)
+    : skins.find((skin) => skin.slug === guestSkinSlug && skin.priceCoins === 0 && skin.priceGems === 0 && !skin.isPremium);
   const selectedTrail = skins.find((skin) => skin.id === user?.profile.selectedTrailSkinId);
 
   return {

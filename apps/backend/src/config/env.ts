@@ -15,6 +15,7 @@ const envSchema = z.object({
   EMAIL_PROVIDER: z.enum(["none", "resend"]).default("none"),
   EMAIL_FROM: z.string().email().optional(),
   RESEND_API_KEY: z.string().optional(),
+  EMAIL_VERIFICATION_REQUIRED: z.enum(["true", "false"]).default("false").transform((value) => value === "true"),
   AD_PROVIDER: z.enum(["mock", "crazygames", "admob", "unity", "google_ad_manager"]).default("mock"),
   AD_SESSION_TTL_SECONDS: z.coerce.number().int().positive().default(600)
 });

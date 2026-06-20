@@ -3,6 +3,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "../config/prisma.js";
 import { AppError } from "../utils/appError.js";
 import { mapSkinDto } from "./skinCatalogService.js";
+import { assertNoActiveRestriction } from "./restrictionService.js";
 
 type SkinRecord = Parameters<typeof mapSkinDto>[0] & { id: string };
 
@@ -33,14 +34,18 @@ const rarityRank: Record<string, number> = {
 };
 
 const categoryRank: Record<string, number> = {
-  arrow: 0,
-  trail: 1,
-  line: 2,
-  effect: 3,
-  background: 4,
-  deathEffect: 5,
-  profileFrame: 6,
-  badge: 7
+  player: 0,
+  arrow: 1,
+  trail: 2,
+  line: 3,
+  effect: 4,
+  hitEffect: 5,
+  coinEffect: 6,
+  deathEffect: 7,
+  background: 8,
+  profileAvatar: 9,
+  profileFrame: 10,
+  badge: 11
 };
 
 function sortShopSkin(a: SkinDto & { owned: boolean; equipped: boolean }, b: SkinDto & { owned: boolean; equipped: boolean }) {
@@ -93,6 +98,7 @@ export async function getOwnedSkins(userId: string) {
 }
 
 export async function buySkin(userId: string, skinId: string): Promise<{ skin: SkinDto; wallet: WalletDto }> {
+  await assertNoActiveRestriction(userId, ["shop_restriction", "temporary_ban", "permanent_ban"], "Shop access");
   const skin = await prisma.skin.findFirst({ where: { id: skinId, active: true } });
   if (!skin) {
     throw new AppError(404, "Skin not found.", "SKIN_NOT_FOUND");
@@ -148,6 +154,7 @@ export async function buySkin(userId: string, skinId: string): Promise<{ skin: S
 }
 
 export async function equipSkin(userId: string, skinId: string) {
+  await assertNoActiveRestriction(userId, ["shop_restriction", "temporary_ban", "permanent_ban"], "Skin equipment");
   const owned = await prisma.ownedSkin.findUnique({
     where: { userId_skinId: { userId, skinId } },
     include: { skin: true }
@@ -157,10 +164,19 @@ export async function equipSkin(userId: string, skinId: string) {
     throw new AppError(403, "You do not own this skin.", "SKIN_NOT_OWNED");
   }
 
-  const data =
-    owned.skin.category === "arrow"
-      ? { selectedArrowSkinId: skinId }
-      : { selectedTrailSkinId: skinId };
+  const profile = await prisma.userProfile.findUniqueOrThrow({ where: { userId } });
+  const customization = (() => {
+    try {
+      return JSON.parse(profile.customizationJson) as Record<string, string>;
+    } catch {
+      return {};
+    }
+  })();
+  const data = owned.skin.category === "arrow" || owned.skin.category === "player"
+    ? { selectedArrowSkinId: skinId }
+    : owned.skin.category === "trail" || owned.skin.category === "line"
+      ? { selectedTrailSkinId: skinId }
+      : { customizationJson: JSON.stringify({ ...customization, [owned.skin.category]: skinId }) };
 
   await prisma.userProfile.update({
     where: { userId },

@@ -5,7 +5,7 @@ export function createWavesGame(parent: HTMLElement, options: WavesSceneOptions)
   return new Phaser.Game({
     type: Phaser.AUTO,
     parent,
-    backgroundColor: "#070914",
+    backgroundColor: options.theme.backgroundStyle,
     scale: {
       mode: Phaser.Scale.RESIZE,
       autoCenter: Phaser.Scale.CENTER_BOTH,

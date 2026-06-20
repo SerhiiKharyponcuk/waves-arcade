@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { forgotPassword, login, logout, me, register, resendVerification, resetPasswordController, verifyEmail } from "../controllers/authController.js";
+import { forgotPassword, guestTransfer, login, logout, me, register, resendVerification, resetPasswordController, verifyEmail } from "../controllers/authController.js";
 import { requireAuth } from "../middleware/auth.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { authRateLimit } from "../middleware/security.js";
 import { validateBody } from "../middleware/validate.js";
-import { forgotPasswordSchema, loginSchema, registerSchema, resendVerificationSchema, resetPasswordSchema, verifyEmailSchema } from "./schemas.js";
+import { forgotPasswordSchema, guestTransferSchema, loginSchema, registerSchema, resendVerificationSchema, resetPasswordSchema, verifyEmailSchema } from "./schemas.js";
 
 export const authRoutes = Router();
 
@@ -16,3 +16,4 @@ authRoutes.post("/verify-email", authRateLimit, validateBody(verifyEmailSchema),
 authRoutes.post("/resend-verification", authRateLimit, validateBody(resendVerificationSchema), asyncHandler(resendVerification));
 authRoutes.post("/logout", requireAuth, asyncHandler(logout));
 authRoutes.get("/me", requireAuth, asyncHandler(me));
+authRoutes.post("/guest-transfer", requireAuth, validateBody(guestTransferSchema), asyncHandler(guestTransfer));

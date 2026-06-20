@@ -35,6 +35,24 @@ export async function requireAuth(request: Request, _response: Response, next: N
   }
 }
 
+export async function optionalAuth(request: Request, _response: Response, next: NextFunction) {
+  const header = request.headers.authorization;
+  if (!header?.startsWith("Bearer ")) {
+    next();
+    return;
+  }
+  try {
+    const auth = verifyAccessToken(header.slice("Bearer ".length));
+    const user = await prisma.user.findUnique({ where: { id: auth.userId }, select: { id: true, email: true, role: true, status: true } });
+    if (user?.status === "ACTIVE") {
+      request.auth = { userId: user.id, email: user.email, role: user.role as "PLAYER" | "ADMIN" };
+    }
+  } catch {
+    // Public catalog remains available when an optional stale token is present.
+  }
+  next();
+}
+
 export function requireAdmin(request: Request, _response: Response, next: NextFunction) {
   if (request.auth?.role !== "ADMIN") {
     next(new AppError(403, "Admin access required.", "ADMIN_REQUIRED"));

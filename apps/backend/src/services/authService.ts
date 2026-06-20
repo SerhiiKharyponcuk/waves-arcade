@@ -21,6 +21,11 @@ type UserWithAccount = Prisma.UserGetPayload<{
     wallet: true;
     ownedSkins: true;
     subscription: true;
+    ownedThemes: true;
+    restrictions: {
+      where: { active: true };
+      orderBy: { createdAt: "desc" };
+    };
     receivedActions: {
       take: 5;
       orderBy: { createdAt: "desc" };
@@ -34,12 +39,26 @@ const accountInclude = {
   wallet: true,
   ownedSkins: true,
   subscription: true,
+  ownedThemes: true,
+  restrictions: {
+    where: { active: true },
+    orderBy: { createdAt: "desc" }
+  },
   receivedActions: {
     take: 5,
     orderBy: { createdAt: "desc" },
     include: { admin: { select: { email: true } } }
   }
 } satisfies Prisma.UserInclude;
+
+function parseRecord(value: string): Record<string, unknown> {
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed as Record<string, unknown> : {};
+  } catch {
+    return {};
+  }
+}
 
 function signAccessToken(user: AuthUser) {
   return jwt.sign(user, env.JWT_ACCESS_SECRET, {
@@ -112,6 +131,10 @@ function toAuthUserDto(user: UserWithAccount): AuthUserDto {
     bannedAt: user.bannedAt?.toISOString() ?? null,
     termsAcceptedAt: user.termsAcceptedAt?.toISOString() ?? null,
     emailVerifiedAt: user.emailVerifiedAt?.toISOString() ?? null,
+    mustChangePassword: user.mustChangePassword,
+    temporaryPasswordUsed: user.temporaryPasswordUsed,
+    lastPasswordChangeAt: user.lastPasswordChangeAt.toISOString(),
+    trustStatus: user.trustStatus as AuthUserDto["trustStatus"],
     profile: {
       id: user.profile.id,
       displayName: user.profile.displayName,
@@ -120,6 +143,11 @@ function toAuthUserDto(user: UserWithAccount): AuthUserDto {
       highScore: user.profile.highScore,
       selectedArrowSkinId: user.profile.selectedArrowSkinId,
       selectedTrailSkinId: user.profile.selectedTrailSkinId,
+      selectedThemeId: user.profile.selectedThemeId,
+      customization: parseRecord(user.profile.customizationJson) as Record<string, string>,
+      gameSettings: parseRecord(user.profile.gameSettingsJson),
+      showUsernameInLeaderboard: user.profile.showUsernameInLeaderboard,
+      hideProfile: user.profile.hideProfile,
       createdAt: user.profile.createdAt.toISOString()
     },
     wallet: {
@@ -138,6 +166,18 @@ function toAuthUserDto(user: UserWithAccount): AuthUserDto {
       createdAt: action.createdAt.toISOString(),
       adminEmail: action.admin?.email ?? null
     })),
+    activeRestrictions: user.restrictions.map((restriction) => ({
+      id: restriction.id,
+      userId: restriction.userId,
+      type: restriction.type as AuthUserDto["activeRestrictions"][number]["type"],
+      reason: restriction.reason,
+      notes: restriction.notes,
+      startsAt: restriction.startsAt.toISOString(),
+      endsAt: restriction.endsAt?.toISOString() ?? null,
+      active: restriction.active,
+      appealPossible: true
+    })),
+    ownedThemes: user.ownedThemes.map((theme) => theme.themeId),
     ownedSkins: user.ownedSkins.map((owned) => ({
       skinId: owned.skinId,
       ownedAt: owned.ownedAt.toISOString(),
@@ -167,7 +207,7 @@ export async function registerAccount(input: {
   displayName: string;
   locale: SupportedLocale;
   termsAccepted: boolean;
-}): Promise<EmailVerificationRequiredDto> {
+}): Promise<AuthResponseDto | EmailVerificationRequiredDto> {
   if (!input.termsAccepted) {
     throw new AppError(400, "Terms of use must be accepted.", "TERMS_REQUIRED");
   }
@@ -192,6 +232,7 @@ export async function registerAccount(input: {
       passwordHash,
       role: roleForEmail(input.email),
       termsAcceptedAt: new Date(),
+      emailVerifiedAt: env.EMAIL_VERIFICATION_REQUIRED ? undefined : new Date(),
       profile: {
         create: {
           displayName: input.displayName,
@@ -214,6 +255,11 @@ export async function registerAccount(input: {
     include: accountInclude
   });
 
+  if (!env.EMAIL_VERIFICATION_REQUIRED) {
+    const tokenUser: AuthUser = { userId: created.id, email: created.email, role: created.role as AuthUser["role"] };
+    return { user: toAuthUserDto(created), accessToken: signAccessToken(tokenUser) };
+  }
+
   return issueEmailVerificationCode(created.id, created.email);
 }
 
@@ -235,15 +281,27 @@ export async function loginAccount(input: { email: string; password: string }): 
   if (user.status === "BANNED") {
     throw new AppError(403, user.banReason ? `Account banned: ${user.banReason}` : "Account banned.", "ACCOUNT_BANNED");
   }
-  if (!user.emailVerifiedAt) {
+  if (env.EMAIL_VERIFICATION_REQUIRED && !user.emailVerifiedAt) {
     throw new AppError(403, "Email address is not verified. Please enter the verification code from your email.", "EMAIL_NOT_VERIFIED");
   }
 
   const resolvedRole = roleForEmail(user.email, user.role);
-  if (resolvedRole !== user.role) {
+  const shouldMarkEmailVerified = !env.EMAIL_VERIFICATION_REQUIRED && !user.emailVerifiedAt;
+  if (resolvedRole !== user.role || shouldMarkEmailVerified) {
     user = await prisma.user.update({
       where: { id: user.id },
-      data: { role: resolvedRole },
+      data: {
+        role: resolvedRole,
+        emailVerifiedAt: shouldMarkEmailVerified ? new Date() : undefined
+      },
+      include: accountInclude
+    });
+  }
+
+  if (user.mustChangePassword && !user.temporaryPasswordUsed) {
+    user = await prisma.user.update({
+      where: { id: user.id },
+      data: { temporaryPasswordUsed: true },
       include: accountInclude
     });
   }
@@ -260,7 +318,7 @@ export async function getCurrentAccount(userId: string): Promise<AuthUserDto> {
   return toAuthUserDto(await getAccountById(userId));
 }
 
-async function issueEmailVerificationCode(userId: string, email: string): Promise<EmailVerificationRequiredDto> {
+export async function issueEmailVerificationCode(userId: string, email: string): Promise<EmailVerificationRequiredDto> {
   const code = generateEmailCode();
 
   await prisma.emailVerificationCode.create({
@@ -377,7 +435,12 @@ export async function resetPassword(input: { token: string; password: string }) 
   await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     await tx.user.update({
       where: { id: resetToken.userId },
-      data: { passwordHash }
+      data: {
+        passwordHash,
+        mustChangePassword: false,
+        temporaryPasswordUsed: true,
+        lastPasswordChangeAt: new Date()
+      }
     });
     await tx.passwordResetToken.update({
       where: { id: resetToken.id },

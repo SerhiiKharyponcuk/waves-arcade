@@ -8,7 +8,9 @@ import type {
   ResendVerificationPayload,
   ResetPasswordPayload,
   UserProfileDto,
-  VerifyEmailPayload
+  VerifyEmailPayload,
+  GuestTransferPayloadDto,
+  GuestTransferResultDto
 } from "../types/api";
 import { apiRequest } from "./apiClient";
 
@@ -57,7 +59,19 @@ export const authApi = {
   me() {
     return apiRequest<CurrentUser>("/auth/me");
   },
-  updateProfile(payload: Partial<Pick<UserProfileDto, "displayName" | "locale" | "avatarUrl">>) {
+  transferGuestProgress(payload: GuestTransferPayloadDto) {
+    return apiRequest<GuestTransferResultDto>("/auth/guest-transfer", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+  },
+  changePassword(payload: { currentPassword?: string; newPassword: string; confirmPassword: string }) {
+    return apiRequest<{ success: boolean; lastPasswordChangeAt: string }>("/user/password", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+  },
+  updateProfile(payload: Partial<Pick<UserProfileDto, "displayName" | "locale" | "avatarUrl" | "selectedThemeId" | "customization" | "gameSettings" | "showUsernameInLeaderboard" | "hideProfile">>) {
     return apiRequest<UserProfileDto>("/user/profile", {
       method: "PATCH",
       body: JSON.stringify(payload)

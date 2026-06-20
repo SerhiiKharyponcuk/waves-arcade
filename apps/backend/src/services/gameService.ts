@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto";
 import { nanoid } from "nanoid";
 import type {
   GameSessionEndRequestDto,
@@ -10,6 +9,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "../config/prisma.js";
 import { flagSuspiciousRun } from "./adminService.js";
 import { AppError } from "../utils/appError.js";
+import { validateScoreSubmission } from "./antiCheatService.js";
 
 type LeaderboardScoreRow = {
   id: string;
@@ -22,63 +22,6 @@ type LeaderboardScoreRow = {
     } | null;
   };
 };
-
-function scoreChecksum(userId: string, sessionId: string, score: number, distance: number, durationMs: number) {
-  return createHash("sha256")
-    .update(`${userId}:${sessionId}:${score}:${distance}:${durationMs}:waves-v1`)
-    .digest("hex")
-    .slice(0, 16);
-}
-
-function calculateServerScore(input: GameSessionEndRequestDto) {
-  return input.distance + input.coinsCollected * 125;
-}
-
-function validateSessionResult(input: GameSessionEndRequestDto, sessionStartedAt: Date) {
-  const notes: string[] = [];
-  const expectedScore = calculateServerScore(input);
-  const scoreDelta = Math.abs(input.score - expectedScore);
-
-  if (input.durationMs < 350) {
-    notes.push("duration_too_short");
-  }
-  if (input.durationMs > 900_000) {
-    notes.push("duration_too_long");
-  }
-  if (input.score < 0 || input.coinsCollected < 0 || input.distance < 0) {
-    notes.push("negative_values");
-  }
-
-  if (scoreDelta > 3) {
-    notes.push("score_formula_mismatch");
-  }
-
-  const durationSeconds = Math.max(input.durationMs / 1000, 0.35);
-  const maxDistance = Math.floor(durationSeconds * 385 + 120);
-  if (input.distance > maxDistance) {
-    notes.push("distance_speed_cap");
-  }
-
-  const serverElapsedMs = Date.now() - sessionStartedAt.getTime();
-  if (input.durationMs > serverElapsedMs + 2_500) {
-    notes.push("duration_exceeds_server_time");
-  }
-
-  const maxReasonableCoins = Math.ceil(input.distance / 220) + 8;
-  if (input.coinsCollected > maxReasonableCoins) {
-    notes.push("coin_cap_exceeded");
-  }
-
-  if (input.obstacleHits > 1) {
-    notes.push("invalid_obstacle_hits");
-  }
-
-  return {
-    valid: notes.length === 0,
-    notes,
-    expectedScore
-  };
-}
 
 export async function startGameSession(userId: string): Promise<GameSessionStartResponseDto> {
   const seed = nanoid(18);
@@ -111,10 +54,8 @@ export async function endGameSession(
     throw new AppError(409, "Game session already ended.", "SESSION_ALREADY_ENDED");
   }
 
-  const validation = validateSessionResult(input, session.startedAt);
-  const expectedChecksum = scoreChecksum(userId, input.sessionId, input.score, input.distance, input.durationMs);
-  const checksumMatches = !input.clientChecksum || input.clientChecksum === expectedChecksum;
-  const accepted = validation.valid && checksumMatches;
+  const validation = await validateScoreSubmission({ userId, sessionStartedAt: session.startedAt, payload: input });
+  const accepted = validation.status === "valid";
   const acceptedScore = accepted ? validation.expectedScore : 0;
   const safeCoins = accepted ? Math.min(input.coinsCollected + Math.floor(acceptedScore / 250), 250) : 0;
 
@@ -135,25 +76,24 @@ export async function endGameSession(
         obstacleHits: input.obstacleHits,
         checksum: input.clientChecksum,
         valid: accepted,
-        antiCheatNotes: [...validation.notes, checksumMatches ? "" : "checksum_mismatch"]
-          .filter(Boolean)
-          .join(",")
+        status: "ended",
+        antiCheatNotes: validation.reasons.join(",")
       }
     });
 
     const newHighScore = accepted && acceptedScore > profile.highScore;
 
-    if (accepted) {
-      await tx.score.create({
-        data: {
-          userId,
-          sessionId: input.sessionId,
-          score: acceptedScore,
-          distance: input.distance,
-          durationMs: input.durationMs
-        }
-      });
-    }
+    await tx.score.create({
+      data: {
+        userId,
+        sessionId: input.sessionId,
+        score: accepted ? acceptedScore : input.score,
+        distance: input.distance,
+        durationMs: input.durationMs,
+        status: validation.status,
+        reviewReason: validation.reasons.join(",") || null
+      }
+    });
 
     if (newHighScore) {
       await tx.userProfile.update({
@@ -176,11 +116,13 @@ export async function endGameSession(
   });
 
   if (!accepted) {
-    await flagSuspiciousRun(userId, [...validation.notes, checksumMatches ? "" : "checksum_mismatch"].filter(Boolean).join(","));
+    await flagSuspiciousRun(userId, validation.reasons.join(","));
   }
 
   return {
     accepted,
+    status: validation.status,
+    reviewReason: validation.status === "pending_review" ? validation.reasons.join(", ") : undefined,
     score: acceptedScore,
     coinsAwarded: safeCoins,
     newHighScore: result.newHighScore,
@@ -197,7 +139,14 @@ export async function endGameSession(
 export async function getLeaderboard(limit = 10): Promise<LeaderboardEntryDto[]> {
   const scores = await prisma.score.findMany({
     take: limit,
-    where: { user: { status: "ACTIVE" } },
+    where: {
+      status: "valid",
+      user: {
+        status: "ACTIVE",
+        profile: { showUsernameInLeaderboard: true },
+        restrictions: { none: { active: true, type: { in: ["leaderboard_restriction", "temporary_ban", "permanent_ban"] } } }
+      }
+    },
     orderBy: [{ score: "desc" }, { createdAt: "asc" }],
     include: { user: { include: { profile: true } } }
   });
@@ -219,8 +168,4 @@ export async function getMyBestScore(userId: string) {
   }
 
   return { highScore: profile.highScore };
-}
-
-export function createClientChecksum(userId: string, sessionId: string, score: number, distance: number, durationMs: number) {
-  return scoreChecksum(userId, sessionId, score, distance, durationMs);
 }

@@ -15,6 +15,7 @@ interface AuthState {
   logout: () => Promise<void>;
   patchProfile: (profile: UserProfileDto) => void;
   patchWallet: (wallet: WalletDto) => void;
+  replaceUser: (user: CurrentUser) => void;
 }
 
 function applyAuthResponse(result: AuthResponse) {
@@ -95,5 +96,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (user) {
       set({ user: { ...user, wallet } });
     }
-  }
+  },
+  replaceUser: (user) => set({ user })
 }));

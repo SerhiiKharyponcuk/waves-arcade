@@ -1,4 +1,5 @@
 import type { ShopSkin, WalletDto } from "../types/api";
+import type { GameThemeDto } from "@waves/shared";
 import { apiRequest } from "./apiClient";
 
 export const shopApi = {
@@ -18,6 +19,21 @@ export const shopApi = {
     return apiRequest<ShopSkin[]>("/shop/equip-skin", {
       method: "POST",
       body: JSON.stringify({ skinId })
+    });
+  },
+  themes() {
+    return apiRequest<Array<GameThemeDto & { owned: boolean; equipped: boolean; canUnlockByScore: boolean }>>("/shop/themes");
+  },
+  unlockTheme(themeId: string) {
+    return apiRequest<Array<GameThemeDto & { owned: boolean; equipped: boolean; canUnlockByScore: boolean }>>("/shop/unlock-theme", {
+      method: "POST",
+      body: JSON.stringify({ themeId })
+    });
+  },
+  equipTheme(themeId: string) {
+    return apiRequest<Array<GameThemeDto & { owned: boolean; equipped: boolean; canUnlockByScore: boolean }>>("/shop/equip-theme", {
+      method: "POST",
+      body: JSON.stringify({ themeId })
     });
   }
 };

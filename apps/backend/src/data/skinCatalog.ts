@@ -513,5 +513,37 @@ export const skinCatalog: SkinDto[] = [
       particleColor: "#fce7f3",
       trailTexture: "rainbow"
     }
+  },
+  {
+    id: "seed-neon-death-burst", slug: "neon-death-burst", nameKey: "skins.neonDeathBurst.name", descriptionKey: "skins.neonDeathBurst.description", category: "deathEffect", rarity: "rare", priceCoins: 1300, priceGems: 0, isPremium: false, isLimited: false,
+    visual: { primaryColor: "#22d3ee", secondaryColor: "#f43f5e", glowColor: "#67e8f9", particleColor: "#ffffff", trailTexture: "solid" }
+  },
+  {
+    id: "seed-plasma-hit", slug: "plasma-hit", nameKey: "skins.plasmaHit.name", descriptionKey: "skins.plasmaHit.description", category: "hitEffect", rarity: "epic", priceCoins: 2800, priceGems: 0, isPremium: false, isLimited: false,
+    visual: { primaryColor: "#a855f7", secondaryColor: "#ec4899", glowColor: "#c084fc", particleColor: "#f5d0fe", trailTexture: "galaxy" }
+  },
+  {
+    id: "seed-gold-coin-pop", slug: "gold-coin-pop", nameKey: "skins.goldCoinPop.name", descriptionKey: "skins.goldCoinPop.description", category: "coinEffect", rarity: "rare", priceCoins: 1800, priceGems: 0, isPremium: false, isLimited: false,
+    visual: { primaryColor: "#facc15", secondaryColor: "#f97316", glowColor: "#fde047", particleColor: "#fef9c3", trailTexture: "solid" }
+  },
+  {
+    id: "seed-void-background", slug: "void-background", nameKey: "skins.voidBackground.name", descriptionKey: "skins.voidBackground.description", category: "background", rarity: "epic", priceCoins: 3500, priceGems: 0, isPremium: false, isLimited: false,
+    visual: { primaryColor: "#020617", secondaryColor: "#312e81", glowColor: "#818cf8", particleColor: "#c7d2fe", trailTexture: "shadow" }
+  },
+  {
+    id: "seed-pilot-avatar", slug: "pilot-avatar", nameKey: "skins.pilotAvatar.name", descriptionKey: "skins.pilotAvatar.description", category: "profileAvatar", rarity: "common", priceCoins: 0, priceGems: 0, isPremium: false, isLimited: false,
+    visual: { primaryColor: "#38bdf8", secondaryColor: "#0f172a", glowColor: "#22d3ee", particleColor: "#e0f2fe", trailTexture: "solid" }
+  },
+  {
+    id: "seed-champion-badge", slug: "champion-badge", nameKey: "skins.championBadge.name", descriptionKey: "skins.championBadge.description", category: "badge", rarity: "legendary", priceCoins: 6500, priceGems: 0, isPremium: false, isLimited: false,
+    visual: { primaryColor: "#fbbf24", secondaryColor: "#b45309", glowColor: "#fde68a", particleColor: "#fffbeb", trailTexture: "diamond" }
+  },
+  {
+    id: "seed-diamond-frame", slug: "diamond-frame", nameKey: "skins.diamondFrame.name", descriptionKey: "skins.diamondFrame.description", category: "profileFrame", rarity: "premium", priceCoins: 0, priceGems: 500, isPremium: true, isLimited: false,
+    visual: { primaryColor: "#e0f2fe", secondaryColor: "#a5b4fc", glowColor: "#ffffff", particleColor: "#ffffff", trailTexture: "diamond" }
+  },
+  {
+    id: "seed-prism-player", slug: "prism-player", nameKey: "skins.prismPlayer.name", descriptionKey: "skins.prismPlayer.description", category: "player", rarity: "premium", priceCoins: 0, priceGems: 750, isPremium: true, isLimited: false,
+    visual: { primaryColor: "#f0abfc", secondaryColor: "#67e8f9", glowColor: "#ffffff", particleColor: "#ffffff", trailTexture: "rainbow" }
   }
 ];

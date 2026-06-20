@@ -64,6 +64,7 @@ export function mapSkinDto(skin: {
     priceGems: skin.priceGems,
     isPremium: skin.isPremium,
     isLimited: skin.isLimited,
+    unlockType: skin.isPremium ? "premium" : skin.priceCoins > 0 || skin.priceGems > 0 ? "coins" : "free",
     visual: parseVisual(skin.visualJson)
   };
 }
