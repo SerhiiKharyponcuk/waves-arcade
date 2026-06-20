@@ -2,9 +2,26 @@ export type SupportedLocale = "en" | "nl" | "ru" | "uk";
 
 export type SkinRarity = "common" | "rare" | "epic" | "legendary" | "premium" | "limited" | "event";
 
-export type SkinCategory = "arrow" | "trail" | "line" | "effect" | "background" | "deathEffect" | "profileFrame" | "badge";
+export type SkinCategory = "player" | "arrow" | "trail" | "line" | "effect" | "hitEffect" | "coinEffect" | "background" | "deathEffect" | "profileAvatar" | "profileFrame" | "badge";
+
+export type CustomizationUnlockType = "free" | "score" | "coins" | "reward_ad" | "premium" | "admin_granted";
 
 export type CurrencyCode = "coins" | "gems";
+
+export type ThemeType = "free" | "unlockable" | "premium";
+
+export interface GameThemeDto {
+  id: string;
+  name: string;
+  type: ThemeType;
+  backgroundStyle: string;
+  playerTrailStyle: string;
+  obstacleStyle: string;
+  uiAccentColor: string;
+  particleStyle: string;
+  unlockCondition: string;
+  priceCoins: number;
+}
 
 export type AdPlacement = "coins" | "roulette" | "continue";
 
@@ -14,11 +31,19 @@ export type UserRole = "PLAYER" | "ADMIN";
 
 export type UserStatus = "ACTIVE" | "BANNED";
 
-export type ModerationActionType = "BAN" | "UNBAN" | "THANK" | "CHEAT_FLAG";
+export type ScoreStatus = "valid" | "suspicious" | "pending_review" | "rejected" | "hidden";
+
+export type UserTrustStatus = "NORMAL" | "TRUSTED" | "SUSPICIOUS";
+
+export type RestrictionType = "warning" | "temporary_restriction" | "support_restriction" | "shop_restriction" | "leaderboard_restriction" | "score_reset" | "score_hidden" | "rewards_removed" | "temporary_ban" | "permanent_ban";
+
+export type ModerationActionType = "BAN" | "UNBAN" | "THANK" | "CHEAT_FLAG" | "EMAIL_VERIFY";
 
 export type SupportTicketStatus = "OPEN" | "ANSWERED" | "CLOSED";
 
-export type SupportTicketCategory = "BUG" | "BAN_APPEAL" | "ACCOUNT" | "PAYMENT" | "SHOP" | "OTHER";
+export type SupportTicketCategory = "BUG" | "BAN_APPEAL" | "APPEAL" | "ACCOUNT" | "SCORE" | "PAYMENT" | "SHOP" | "OTHER";
+
+export type SupportTicketSource = "ACCOUNT" | "GUEST";
 
 export interface SkinVisualConfig {
   primaryColor: string;
@@ -39,6 +64,7 @@ export interface SkinDto {
   priceGems: number;
   isPremium: boolean;
   isLimited: boolean;
+  unlockType?: CustomizationUnlockType;
   visual: SkinVisualConfig;
 }
 
@@ -176,6 +202,11 @@ export interface UserProfileDto {
   highScore: number;
   selectedArrowSkinId?: string | null;
   selectedTrailSkinId?: string | null;
+  selectedThemeId: string;
+  customization: Record<string, string>;
+  gameSettings: Record<string, unknown>;
+  showUsernameInLeaderboard: boolean;
+  hideProfile: boolean;
   createdAt: string;
 }
 
@@ -188,11 +219,17 @@ export interface AuthUserDto {
   bannedAt?: string | null;
   termsAcceptedAt?: string | null;
   emailVerifiedAt?: string | null;
+  mustChangePassword: boolean;
+  temporaryPasswordUsed: boolean;
+  lastPasswordChangeAt: string;
+  trustStatus: UserTrustStatus;
   profile: UserProfileDto;
   wallet: WalletDto;
   ownedSkins: OwnedSkinDto[];
   subscription: SubscriptionStatusDto;
   moderationNotices: ModerationActionDto[];
+  activeRestrictions: RestrictionDto[];
+  ownedThemes: string[];
 }
 
 export interface AuthResponseDto {
@@ -226,6 +263,8 @@ export interface GameSessionEndRequestDto {
 
 export interface GameSessionEndResponseDto {
   accepted: boolean;
+  status: ScoreStatus;
+  reviewReason?: string;
   score: number;
   coinsAwarded: number;
   newHighScore: boolean;
@@ -239,6 +278,69 @@ export interface LeaderboardEntryDto {
   score: number;
   rank: number;
   achievedAt: string;
+}
+
+export interface ScoreReviewDto {
+  id: string;
+  userId: string;
+  displayName: string;
+  sessionId?: string | null;
+  score: number;
+  distance: number;
+  durationMs: number;
+  status: ScoreStatus;
+  reviewReason?: string | null;
+  createdAt: string;
+  session?: {
+    startedAt: string;
+    endedAt?: string | null;
+    coinsCollected: number;
+    obstacleHits: number;
+    antiCheatNotes?: string | null;
+  } | null;
+}
+
+export interface RestrictionDto {
+  id: string;
+  userId: string;
+  type: RestrictionType;
+  reason: string;
+  notes?: string | null;
+  startsAt: string;
+  endsAt?: string | null;
+  active: boolean;
+  appealPossible: boolean;
+}
+
+export interface AdminAuditLogDto {
+  id: string;
+  adminId?: string | null;
+  adminEmail?: string | null;
+  actionType: string;
+  targetUserId?: string | null;
+  targetEntityId?: string | null;
+  reason?: string | null;
+  metadata?: Record<string, unknown> | null;
+  createdAt: string;
+}
+
+export interface GuestTransferPayloadDto {
+  guestId: string;
+  gamesPlayed: number;
+  bestGuestScore: number;
+  selectedBasicTheme: string;
+  selectedBasicSkin?: string;
+  selectedBasicControls: Record<string, unknown>;
+  temporarySettings: Record<string, unknown>;
+  temporaryCoins?: number;
+}
+
+export interface GuestTransferResultDto {
+  status: "accepted" | "partial" | "rejected";
+  transferredScore: number;
+  selectedThemeId: string;
+  reason?: string;
+  user: AuthUserDto;
 }
 
 export interface ModerationActionDto {
@@ -259,22 +361,41 @@ export interface AdminUserDto {
   highScore: number;
   coins: number;
   createdAt: string;
+  emailVerifiedAt?: string | null;
   bannedAt?: string | null;
   banReason?: string | null;
   lastAction?: ModerationActionDto | null;
+  mustChangePassword: boolean;
+  lastPasswordChangeAt: string;
+  trustStatus: UserTrustStatus;
+  activeRestrictions: RestrictionDto[];
+}
+
+export interface AdminPasswordResetDto {
+  temporaryPassword: string;
+  user: AdminUserDto;
+}
+
+export interface AdminEmailVerificationDto {
+  user: AdminUserDto;
+  emailSent: boolean;
 }
 
 export interface SupportTicketDto {
   id: string;
-  userId: string;
+  userId?: string | null;
   userEmail?: string;
   displayName?: string;
+  source: SupportTicketSource;
   adminEmail?: string | null;
   category: SupportTicketCategory;
   subject: string;
   message: string;
   status: SupportTicketStatus;
   adminResponse?: string | null;
+  relatedEntityId?: string | null;
+  internalNote?: string | null;
+  appealStatus?: string | null;
   createdAt: string;
   updatedAt: string;
   closedAt?: string | null;

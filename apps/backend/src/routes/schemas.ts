@@ -35,7 +35,21 @@ export const loginSchema = z.object({
 export const updateProfileSchema = z.object({
   displayName: z.string().trim().min(3, "Display name must be at least 3 characters.").max(24, "Display name is too long.").optional(),
   locale: localeSchema.catch("en").optional(),
-  avatarUrl: z.string().url().nullable().optional()
+  avatarUrl: z.string().url().nullable().optional(),
+  selectedThemeId: z.string().trim().min(2).max(60).optional(),
+  customization: z.record(z.string().max(80)).optional(),
+  gameSettings: z.record(z.union([z.string(), z.number(), z.boolean(), z.null()])).optional(),
+  showUsernameInLeaderboard: z.boolean().optional(),
+  hideProfile: z.boolean().optional()
+});
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().max(128).optional(),
+  newPassword: z.string().min(10).max(128),
+  confirmPassword: z.string().min(10).max(128)
+}).refine((value) => value.newPassword === value.confirmPassword, {
+  path: ["confirmPassword"],
+  message: "New password and confirmation must match."
 });
 
 export const gameSessionEndSchema = z.object({
@@ -51,6 +65,8 @@ export const gameSessionEndSchema = z.object({
 export const skinMutationSchema = z.object({
   skinId: z.string().uuid()
 });
+
+export const themeMutationSchema = z.object({ themeId: z.string().trim().min(2).max(60) });
 
 export const purchasePlaceholderSchema = z.object({
   sku: z.string().min(3).max(80),
@@ -83,8 +99,36 @@ export const adminThankSchema = z.object({
   message: z.string().trim().min(3, "Message must be at least 3 characters.").max(500, "Message is too long.")
 });
 
+export const adminScoreModerationSchema = z.object({
+  status: z.enum(["valid", "rejected", "hidden"]),
+  reason: z.string().trim().min(3).max(500)
+});
+
+export const adminTrustSchema = z.object({
+  trustStatus: z.enum(["TRUSTED", "SUSPICIOUS", "NORMAL"]),
+  reason: z.string().trim().min(3).max(500)
+});
+
+export const adminRestrictionSchema = z.object({
+  type: z.enum(["warning", "temporary_restriction", "support_restriction", "shop_restriction", "leaderboard_restriction", "score_reset", "score_hidden", "rewards_removed", "temporary_ban", "permanent_ban"]),
+  reason: z.string().trim().min(3).max(500),
+  notes: z.string().trim().max(1_000).optional(),
+  endsAt: z.string().datetime().nullable().optional()
+});
+
 export const supportTicketSchema = z.object({
-  category: z.enum(["BUG", "BAN_APPEAL", "ACCOUNT", "PAYMENT", "SHOP", "OTHER"]).default("OTHER"),
+  category: z.enum(["BUG", "BAN_APPEAL", "APPEAL", "ACCOUNT", "SCORE", "PAYMENT", "SHOP", "OTHER"]).default("OTHER"),
+  subject: z.string().trim().min(3, "Subject must be at least 3 characters.").max(120, "Subject is too long."),
+  message: z.string().trim().min(10, "Message must be at least 10 characters.").max(2_000, "Message is too long."),
+  relatedEntityId: z.string().trim().max(100).optional(),
+  ...botGuardSchema
+}).superRefine(rejectFastBots);
+
+export const publicSupportTicketSchema = z.object({
+  email: z.string().trim().email("Enter a valid email address.").max(160, "Email is too long."),
+  displayName: z.string().trim().max(60, "Name is too long.").optional().default(""),
+  category: z.enum(["BUG", "BAN_APPEAL", "APPEAL", "ACCOUNT", "SCORE", "PAYMENT", "SHOP", "OTHER"]).default("ACCOUNT"),
+  relatedEntityId: z.string().trim().max(100).optional(),
   subject: z.string().trim().min(3, "Subject must be at least 3 characters.").max(120, "Subject is too long."),
   message: z.string().trim().min(10, "Message must be at least 10 characters.").max(2_000, "Message is too long."),
   ...botGuardSchema
@@ -92,7 +136,9 @@ export const supportTicketSchema = z.object({
 
 export const adminSupportTicketSchema = z.object({
   status: z.enum(["OPEN", "ANSWERED", "CLOSED"]).optional(),
-  adminResponse: z.string().trim().min(3, "Response must be at least 3 characters.").max(2_000, "Response is too long.").optional()
+  adminResponse: z.string().trim().min(3, "Response must be at least 3 characters.").max(2_000, "Response is too long.").optional(),
+  internalNote: z.string().trim().max(2_000).optional(),
+  appealStatus: z.enum(["UNDER_REVIEW", "UPHELD", "REMOVED", "RESTORED", "REJECTED"]).optional()
 });
 
 export const forgotPasswordSchema = z.object({
@@ -108,6 +154,17 @@ export const resetPasswordSchema = z.object({
 export const verifyEmailSchema = z.object({
   email: z.string().trim().email("Enter a valid email address.").max(160, "Email is too long."),
   code: z.string().trim().regex(/^\d{6}$/, "Verification code must be 6 digits.")
+});
+
+export const guestTransferSchema = z.object({
+  guestId: z.string().trim().min(8).max(100),
+  gamesPlayed: z.number().int().min(0).max(100_000),
+  bestGuestScore: z.number().int().min(0).max(5_000_000),
+  selectedBasicTheme: z.string().trim().min(2).max(60),
+  selectedBasicSkin: z.string().trim().max(60).optional(),
+  selectedBasicControls: z.record(z.unknown()),
+  temporarySettings: z.record(z.unknown()),
+  temporaryCoins: z.number().int().min(0).max(100_000).optional()
 });
 
 export const resendVerificationSchema = z.object({

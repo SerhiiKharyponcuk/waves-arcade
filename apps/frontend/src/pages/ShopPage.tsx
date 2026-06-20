@@ -2,9 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import { Coins, Gem, Lock, PackageOpen, ShoppingBag } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { SkinCard } from "../components/shop/SkinCard";
+import { AccountRequiredModal } from "../components/auth/AccountRequiredModal";
+import { GoogleAdSlot } from "../components/ads/GoogleAdSlot";
 import { StatCard } from "../components/ui/StatCard";
 import { shopApi } from "../services/shopApi";
 import { useAuthStore } from "../store/authStore";
+import { useGuestStore } from "../store/guestStore";
+import { recordAdShown, shouldShowGuestAd } from "../services/ads/guestAdPolicy";
 import type { ShopSkin } from "../types/api";
 import { matchesSkinFilter, profileWithEquippedSkin, type SkinFilter } from "../utils/skinSelection";
 
@@ -13,10 +17,14 @@ const skinFilters: SkinFilter[] = ["all", "arrow", "trail"];
 export function ShopPage() {
   const { t } = useTranslation();
   const { user, patchProfile, patchWallet } = useAuthStore();
+  const { active: guestActive, session: guestSession, requestAuthentication, updateSession } = useGuestStore();
+  const isGuest = guestActive && !user;
   const [skins, setSkins] = useState<ShopSkin[]>([]);
   const [filter, setFilter] = useState<SkinFilter>("all");
   const [busySkinId, setBusySkinId] = useState("");
   const [error, setError] = useState("");
+  const [accountRequired, setAccountRequired] = useState(false);
+  const [showGuestAd, setShowGuestAd] = useState(false);
   const ownedCount = useMemo(() => skins.filter((skin) => skin.owned).length, [skins]);
   const lockedCount = Math.max(0, skins.length - ownedCount);
 
@@ -29,7 +37,18 @@ export function ShopPage() {
     void refresh().catch(() => setError(t("common.error")));
   }, [t]);
 
+  useEffect(() => {
+    if (isGuest && guestSession && shouldShowGuestAd("open_shop", guestSession)) {
+      updateSession(recordAdShown);
+      setShowGuestAd(true);
+    }
+  }, [isGuest]);
+
   async function buySkin(skinId: string) {
+    if (isGuest) {
+      setAccountRequired(true);
+      return;
+    }
     setBusySkinId(skinId);
     setError("");
     try {
@@ -44,6 +63,15 @@ export function ShopPage() {
   }
 
   async function equipSkin(skinId: string) {
+    if (isGuest) {
+      const skin = skins.find((item) => item.id === skinId);
+      if (skin && skin.priceCoins === 0 && skin.priceGems === 0 && !skin.isPremium && (skin.category === "arrow" || skin.category === "player")) {
+        updateSession((current) => ({ ...current, selectedBasicSkin: skin.slug }));
+        return;
+      }
+      setAccountRequired(true);
+      return;
+    }
     setBusySkinId(skinId);
     setError("");
     try {
@@ -88,6 +116,13 @@ export function ShopPage() {
 
       {error ? <div className="rounded-md border border-magentaGlow/40 bg-magentaGlow/10 p-3 text-sm text-pink-200">{error}</div> : null}
 
+      {isGuest ? (
+        <div className="rounded-md border border-cyanGlow/30 bg-cyanGlow/10 p-4 text-sm leading-6 text-slate-200">
+          You can preview every skin as a Guest. Create an account to buy, unlock, or equip items.
+        </div>
+      ) : null}
+      {isGuest && showGuestAd ? <GoogleAdSlot /> : null}
+
       <div className="flex flex-wrap gap-2">
         {skinFilters.map((item) => (
           <button
@@ -106,16 +141,29 @@ export function ShopPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {skins.filter((skin) => matchesSkinFilter(skin, filter)).map((skin) => (
-          <SkinCard
-            key={skin.id}
-            skin={skin}
-            busy={busySkinId === skin.id}
-            onBuy={(skinId) => void buySkin(skinId)}
-            onEquip={(skinId) => void equipSkin(skinId)}
-          />
-        ))}
+        {skins.filter((skin) => matchesSkinFilter(skin, filter)).map((skin) => {
+          const guestFree = isGuest && skin.priceCoins === 0 && skin.priceGems === 0 && !skin.isPremium;
+          const visibleSkin = isGuest ? { ...skin, owned: guestFree, equipped: guestFree && guestSession?.selectedBasicSkin === skin.slug } : skin;
+          return (
+            <SkinCard
+              key={skin.id}
+              skin={visibleSkin}
+              busy={busySkinId === skin.id}
+              onBuy={(skinId) => void buySkin(skinId)}
+              onEquip={(skinId) => void equipSkin(skinId)}
+            />
+          );
+        })}
       </div>
+
+      {accountRequired ? (
+        <AccountRequiredModal
+          message="You need an account to buy or equip skins."
+          onLogin={() => requestAuthentication("login")}
+          onRegister={() => requestAuthentication("register")}
+          onContinue={() => setAccountRequired(false)}
+        />
+      ) : null}
     </section>
   );
 }

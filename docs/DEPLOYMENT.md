@@ -63,11 +63,12 @@ PASSWORD_RESET_BASE_URL=https://your-vercel-app.vercel.app
 EMAIL_PROVIDER=resend
 EMAIL_FROM=Waves Arcade <noreply@your-domain.com>
 RESEND_API_KEY=your-resend-api-key
+EMAIL_VERIFICATION_REQUIRED=false
 AD_PROVIDER=google_ad_manager
 AD_SESSION_TTL_SECONDS=600
 ```
 
-Email verification and password reset use these email settings. If `EMAIL_PROVIDER=none`, accounts can still be created, but real players will not receive the verification code in production.
+Email verification and password reset use these email settings. Keep `EMAIL_VERIFICATION_REQUIRED=false` while no public email provider is configured. Registration and login will work immediately. Change it to `true` only after verification emails can reach every player.
 
 Render build command:
 

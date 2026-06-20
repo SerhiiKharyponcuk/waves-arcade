@@ -1,8 +1,11 @@
 import Phaser from "phaser";
 
 const sectorColors = [0x8bd600, 0x2dd4be, 0x42a5f5, 0xd6336c, 0xf59f1f];
-const wallColor = 0x081116;
-const outlineColor = 0xffffff;
+interface ObstacleTheme {
+  obstacleColor: string;
+  accentColor: string;
+  backgroundColor: string;
+}
 
 type CleanupObject = Phaser.GameObjects.GameObject & { x?: number; width?: number; destroy: () => void };
 
@@ -17,9 +20,19 @@ export class ObstacleManager {
   private topY = 86;
   private bottomY = 486;
   private sectorIndex = 0;
+  private readonly wallColor: number;
+  private readonly outlineColor: number;
+  private readonly themedSectorColors: number[];
 
-  constructor(scene: Phaser.Scene) {
+  constructor(scene: Phaser.Scene, theme: ObstacleTheme) {
     this.scene = scene;
+    this.wallColor = Phaser.Display.Color.HexStringToColor(theme.backgroundColor).color;
+    this.outlineColor = Phaser.Display.Color.HexStringToColor(theme.obstacleColor).color;
+    this.themedSectorColors = [
+      Phaser.Display.Color.HexStringToColor(theme.accentColor).color,
+      Phaser.Display.Color.HexStringToColor(theme.obstacleColor).color,
+      ...sectorColors.slice(0, 3)
+    ];
     this.obstacleGroup = scene.physics.add.staticGroup();
     this.coinGroup = scene.physics.add.group({ allowGravity: false, immovable: true });
     this.bottomY = scene.scale.height - 86;
@@ -39,7 +52,7 @@ export class ObstacleManager {
 
   private spawnCorridorSector(x: number, difficulty: number) {
     const width = Phaser.Math.Between(260, 430);
-    const color = sectorColors[this.sectorIndex % sectorColors.length] ?? 0x8bd600;
+    const color = this.themedSectorColors[this.sectorIndex % this.themedSectorColors.length] ?? 0x8bd600;
     this.sectorIndex += 1;
 
     const previousTop = this.topY;
@@ -101,8 +114,8 @@ export class ObstacleManager {
     fill.setDepth(-8);
     this.visuals.push(fill);
 
-    const topLine = this.scene.add.rectangle(x + width / 2, this.topY, width, 3, outlineColor, 0.95);
-    const bottomLine = this.scene.add.rectangle(x + width / 2, this.bottomY, width, 3, outlineColor, 0.95);
+    const topLine = this.scene.add.rectangle(x + width / 2, this.topY, width, 3, this.outlineColor, 0.95);
+    const bottomLine = this.scene.add.rectangle(x + width / 2, this.bottomY, width, 3, this.outlineColor, 0.95);
     topLine.setDepth(4);
     bottomLine.setDepth(4);
     this.visuals.push(topLine, bottomLine);
@@ -113,8 +126,8 @@ export class ObstacleManager {
       return;
     }
 
-    const block = this.scene.add.rectangle(x + width / 2, y + height / 2, width, height, wallColor, 0.96);
-    block.setStrokeStyle(4, outlineColor, 1);
+    const block = this.scene.add.rectangle(x + width / 2, y + height / 2, width, height, this.wallColor, 0.96);
+    block.setStrokeStyle(4, this.outlineColor, 1);
     block.setDepth(2);
     this.scene.physics.add.existing(block, true);
     const body = block.body as Phaser.Physics.Arcade.StaticBody;
@@ -131,8 +144,8 @@ export class ObstacleManager {
 
     const y = Math.min(fromY, toY);
     const height = Math.max(24, delta);
-    const connector = this.scene.add.rectangle(x + 8, y + height / 2, 18, height, wallColor, 0.96);
-    connector.setStrokeStyle(4, outlineColor, 1);
+    const connector = this.scene.add.rectangle(x + 8, y + height / 2, 18, height, this.wallColor, 0.96);
+    connector.setStrokeStyle(4, this.outlineColor, 1);
     connector.setDepth(5);
     this.scene.physics.add.existing(connector, true);
     (connector.body as Phaser.Physics.Arcade.StaticBody).updateFromGameObject();
@@ -169,8 +182,8 @@ export class ObstacleManager {
 
   private addPillar(x: number, edgeY: number, height: number, side: "floor" | "ceiling") {
     const y = side === "floor" ? edgeY - height / 2 : edgeY + height / 2;
-    const pillar = this.scene.add.rectangle(x, y, 40, height, wallColor, 0.96);
-    pillar.setStrokeStyle(3, outlineColor, 0.82);
+    const pillar = this.scene.add.rectangle(x, y, 40, height, this.wallColor, 0.96);
+    pillar.setStrokeStyle(3, this.outlineColor, 0.82);
     pillar.setDepth(6);
     this.scene.physics.add.existing(pillar, true);
     (pillar.body as Phaser.Physics.Arcade.StaticBody).updateFromGameObject();
@@ -180,8 +193,8 @@ export class ObstacleManager {
   }
 
   private addFloatingBlock(x: number, y: number) {
-    const block = this.scene.add.rectangle(x, y, 58, 58, wallColor, 0.94);
-    block.setStrokeStyle(4, outlineColor, 0.9);
+    const block = this.scene.add.rectangle(x, y, 58, 58, this.wallColor, 0.94);
+    block.setStrokeStyle(4, this.outlineColor, 0.9);
     block.setDepth(7);
     this.scene.physics.add.existing(block, true);
     (block.body as Phaser.Physics.Arcade.StaticBody).updateFromGameObject();
@@ -213,7 +226,7 @@ export class ObstacleManager {
   private addDiamond(x: number, y: number) {
     const diamond = this.scene.add.rectangle(x, y, 20, 20, 0x45e7ff, 0.92);
     diamond.setRotation(Math.PI / 4);
-    diamond.setStrokeStyle(3, outlineColor, 0.8);
+    diamond.setStrokeStyle(3, this.outlineColor, 0.8);
     diamond.setDepth(8);
     this.scene.physics.add.existing(diamond);
     const body = diamond.body as Phaser.Physics.Arcade.Body;

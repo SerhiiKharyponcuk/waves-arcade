@@ -19,12 +19,23 @@ import type {
   UserRole,
   UserStatus,
   AdminUserDto,
+  AdminEmailVerificationDto,
   ModerationActionDto,
   SupportTicketCategory,
   SupportTicketDto,
+  SupportTicketSource,
   SupportTicketStatus,
   UserProfileDto,
-  WalletDto
+  WalletDto,
+  GuestTransferPayloadDto,
+  GuestTransferResultDto,
+  AdminAuditLogDto,
+  AdminPasswordResetDto,
+  RestrictionDto,
+  RestrictionType,
+  ScoreReviewDto,
+  ScoreStatus,
+  UserTrustStatus
 } from "@waves/shared";
 
 export interface RegisterPayload {
@@ -96,10 +107,21 @@ export type {
   UserRole,
   UserStatus,
   AdminUserDto,
+  AdminEmailVerificationDto,
   ModerationActionDto,
   SupportTicketCategory,
   SupportTicketDto,
+  SupportTicketSource,
   SupportTicketStatus,
   UserProfileDto,
-  WalletDto
+  WalletDto,
+  GuestTransferPayloadDto,
+  GuestTransferResultDto,
+  AdminAuditLogDto,
+  AdminPasswordResetDto,
+  RestrictionDto,
+  RestrictionType,
+  ScoreReviewDto,
+  ScoreStatus,
+  UserTrustStatus
 };

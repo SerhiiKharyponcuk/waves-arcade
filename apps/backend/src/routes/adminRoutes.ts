@@ -1,10 +1,26 @@
 import { Router } from "express";
-import { adminBanUser, adminThankUser, adminUnbanUser, adminUsers } from "../controllers/adminController.js";
+import {
+  adminBanUser,
+  adminAuditLogs,
+  adminGuestTransfers,
+  adminModerateScore,
+  adminRemoveRestriction,
+  adminResetPassword,
+  adminResetScores,
+  adminRestrictUser,
+  adminScores,
+  adminSetTrust,
+  adminResendEmailVerification,
+  adminThankUser,
+  adminUnbanUser,
+  adminUsers,
+  adminVerifyUserEmail
+} from "../controllers/adminController.js";
 import { adminTickets, adminUpdateTicket } from "../controllers/supportController.js";
 import { requireAdmin, requireAuth } from "../middleware/auth.js";
 import { validateBody } from "../middleware/validate.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { adminBanSchema, adminSupportTicketSchema, adminThankSchema } from "./schemas.js";
+import { adminBanSchema, adminRestrictionSchema, adminScoreModerationSchema, adminSupportTicketSchema, adminThankSchema, adminTrustSchema } from "./schemas.js";
 
 export const adminRoutes = Router();
 
@@ -13,5 +29,16 @@ adminRoutes.get("/users", asyncHandler(adminUsers));
 adminRoutes.post("/users/:userId/ban", validateBody(adminBanSchema), asyncHandler(adminBanUser));
 adminRoutes.post("/users/:userId/unban", validateBody(adminBanSchema.partial()), asyncHandler(adminUnbanUser));
 adminRoutes.post("/users/:userId/thank", validateBody(adminThankSchema), asyncHandler(adminThankUser));
+adminRoutes.post("/users/:userId/email-verification/resend", asyncHandler(adminResendEmailVerification));
+adminRoutes.post("/users/:userId/email-verification/approve", asyncHandler(adminVerifyUserEmail));
+adminRoutes.post("/users/:userId/reset-password", asyncHandler(adminResetPassword));
+adminRoutes.post("/users/:userId/reset-scores", validateBody(adminBanSchema), asyncHandler(adminResetScores));
+adminRoutes.post("/users/:userId/trust", validateBody(adminTrustSchema), asyncHandler(adminSetTrust));
+adminRoutes.post("/users/:userId/restrictions", validateBody(adminRestrictionSchema), asyncHandler(adminRestrictUser));
+adminRoutes.delete("/restrictions/:restrictionId", validateBody(adminBanSchema), asyncHandler(adminRemoveRestriction));
+adminRoutes.get("/scores", asyncHandler(adminScores));
+adminRoutes.patch("/scores/:scoreId", validateBody(adminScoreModerationSchema), asyncHandler(adminModerateScore));
+adminRoutes.get("/audit-logs", asyncHandler(adminAuditLogs));
+adminRoutes.get("/guest-transfers", asyncHandler(adminGuestTransfers));
 adminRoutes.get("/support/tickets", asyncHandler(adminTickets));
 adminRoutes.patch("/support/tickets/:ticketId", validateBody(adminSupportTicketSchema), asyncHandler(adminUpdateTicket));

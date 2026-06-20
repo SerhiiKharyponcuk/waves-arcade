@@ -3,6 +3,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "../config/prisma.js";
 import { env } from "../config/env.js";
 import { AppError } from "../utils/appError.js";
+import { assertNoActiveRestriction } from "./restrictionService.js";
 import { paymentProvider } from "./paymentProvider.js";
 import { mapSkinDto } from "./skinCatalogService.js";
 
@@ -199,6 +200,7 @@ export async function getDailyRewardStatus(userId: string): Promise<DailyRewardD
 }
 
 export async function claimDailyReward(userId: string): Promise<{ reward: DailyRewardDto; wallet: WalletDto }> {
+  await assertNoActiveRestriction(userId, ["rewards_removed", "temporary_ban", "permanent_ban"], "Rewards");
   const user = await prisma.user.findUnique({
     where: { id: userId },
     include: { subscription: true, dailyClaim: true }
@@ -372,6 +374,7 @@ export async function getRouletteConfig(userId: string) {
 }
 
 export async function spinRoulette(userId: string, adsWatched: number) {
+  await assertNoActiveRestriction(userId, ["rewards_removed", "temporary_ban", "permanent_ban"], "Roulette rewards");
   const user = await prisma.user.findUnique({
     where: { id: userId },
     include: { wallet: true, subscription: true }
@@ -687,6 +690,7 @@ export async function grantWalletReward(
   type: string,
   metadata?: Record<string, unknown>
 ) {
+  await assertNoActiveRestriction(userId, ["rewards_removed", "temporary_ban", "permanent_ban"], "Ad rewards");
   return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     const wallet = await updateWalletBalance(tx, userId, changes, provider, type, metadata);
     return toWalletDto(wallet);

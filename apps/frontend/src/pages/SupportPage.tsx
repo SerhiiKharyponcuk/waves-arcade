@@ -5,11 +5,18 @@ import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { supportApi } from "../services/supportApi";
 import type { SupportTicketCategory, SupportTicketDto } from "../types/api";
+import { useAuthStore } from "../store/authStore";
+import { useGuestStore } from "../store/guestStore";
+import { useUiStore } from "../store/uiStore";
 
-const categories: SupportTicketCategory[] = ["BUG", "BAN_APPEAL", "ACCOUNT", "PAYMENT", "SHOP", "OTHER"];
+const categories: SupportTicketCategory[] = ["APPEAL", "ACCOUNT", "SCORE", "PAYMENT", "SHOP", "BUG", "OTHER"];
 
 export function SupportPage() {
   const { t } = useTranslation();
+  const user = useAuthStore((state) => state.user);
+  const guestActive = useGuestStore((state) => state.active);
+  const isGuest = guestActive && !user;
+  const setView = useUiStore((state) => state.setView);
   const [tickets, setTickets] = useState<SupportTicketDto[]>([]);
   const [category, setCategory] = useState<SupportTicketCategory>("BUG");
   const [subject, setSubject] = useState("");
@@ -18,8 +25,13 @@ export function SupportPage() {
   const [formStartedAt] = useState(() => Date.now());
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactName, setContactName] = useState("");
+  const [relatedEntityId, setRelatedEntityId] = useState("");
+  const [success, setSuccess] = useState("");
 
   async function loadTickets() {
+    if (isGuest) return;
     try {
       setTickets(await supportApi.myTickets());
     } catch (error) {
@@ -29,21 +41,20 @@ export function SupportPage() {
 
   useEffect(() => {
     void loadTickets();
-  }, []);
+  }, [isGuest]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true);
     setError("");
+    setSuccess("");
     try {
-      const ticket = await supportApi.createTicket({
-        category,
-        subject: subject.trim(),
-        message: message.trim(),
-        website: botWebsite,
-        formStartedAt
-      });
-      setTickets((current) => [ticket, ...current]);
+      const payload = { category, subject: subject.trim(), message: message.trim(), relatedEntityId: relatedEntityId.trim() || undefined, website: botWebsite, formStartedAt };
+      const ticket = isGuest
+        ? await supportApi.createPublicTicket({ ...payload, email: contactEmail.trim(), displayName: contactName.trim() || undefined })
+        : await supportApi.createTicket(payload);
+      if (!isGuest) setTickets((current) => [ticket, ...current]);
+      setSuccess(`Ticket created: ${ticket.id}`);
       setSubject("");
       setMessage("");
     } catch (error) {
@@ -73,6 +84,9 @@ export function SupportPage() {
             onChange={(event) => setBotWebsite(event.target.value)}
             name="website"
           />
+          <div className="rounded-md border border-goldGlow/30 bg-goldGlow/10 p-3 text-sm leading-6 text-slate-200">Never send your password. Support will never ask for your password.</div>
+          <button type="button" onClick={() => setView("rules")} className="justify-self-start text-sm font-bold text-cyanGlow hover:text-white">Read Support Rules and Terms</button>
+          {isGuest ? <><Input label="Email for reply" type="email" value={contactEmail} onChange={(event) => setContactEmail(event.target.value)} required maxLength={160} /><Input label="Display name (optional)" value={contactName} onChange={(event) => setContactName(event.target.value)} maxLength={60} /></> : null}
           <label className="grid gap-2 text-sm text-slate-300">
             <span>{t("support.category")}</span>
             <select
@@ -88,6 +102,7 @@ export function SupportPage() {
             </select>
           </label>
           <Input label={t("support.subject")} value={subject} onChange={(event) => setSubject(event.target.value)} required maxLength={120} />
+          {(category === "APPEAL" || category === "SCORE") ? <Input label="Related restriction or score ID (optional)" value={relatedEntityId} onChange={(event) => setRelatedEntityId(event.target.value)} maxLength={100} /> : null}
           <label className="grid gap-2 text-sm text-slate-300">
             <span>{t("support.message")}</span>
             <textarea
@@ -101,13 +116,14 @@ export function SupportPage() {
             />
           </label>
           {error ? <div className="rounded-md border border-magentaGlow/40 bg-magentaGlow/10 p-3 text-sm text-pink-200">{error}</div> : null}
+          {success ? <div className="rounded-md border border-cyanGlow/30 bg-cyanGlow/10 p-3 text-sm text-cyanGlow">{success}</div> : null}
           <Button type="submit" disabled={busy} icon={<Send size={18} />}>
             {t("support.send")}
           </Button>
         </form>
       </div>
 
-      <div className="arcade-border rounded-lg p-5">
+      {!isGuest ? <div className="arcade-border rounded-lg p-5">
         <h2 className="text-xl font-black text-white">{t("support.myTickets")}</h2>
         <div className="mt-4 grid gap-3">
           {tickets.map((ticket) => (
@@ -128,7 +144,7 @@ export function SupportPage() {
           ))}
           {!tickets.length ? <div className="text-sm text-slate-400">{t("support.empty")}</div> : null}
         </div>
-      </div>
+      </div> : <div className="arcade-border rounded-lg p-5 text-sm leading-7 text-slate-300"><h2 className="text-xl font-black text-white">Guest support rules</h2><p className="mt-3">Use a valid email for replies. Spam, offensive messages, false reports, and repeated abuse can lead to restrictions. Support cannot guarantee restoration of a suspicious score.</p></div>}
     </section>
   );
 }

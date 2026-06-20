@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Coins, Gem, Medal, Trophy } from "lucide-react";
+import { Coins, Gem, Medal, Star, Trophy } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { StatCard } from "../components/ui/StatCard";
 import { gameApi } from "../services/gameApi";
@@ -64,6 +64,17 @@ export function ProfilePage() {
               )}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      <div className="arcade-border rounded-lg p-5">
+        <h2 className="flex items-center gap-2 text-xl font-black text-white"><Star size={20} className="text-goldGlow" /> Achievements</h2>
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          {[
+            { name: "First Flight", unlocked: (user?.profile.highScore ?? 0) > 0, requirement: "Finish one valid run" },
+            { name: "Neon Sprinter", unlocked: (user?.profile.highScore ?? 0) >= 10_000, requirement: "Reach 10,000 score" },
+            { name: "Arena Master", unlocked: (user?.profile.highScore ?? 0) >= 50_000, requirement: "Reach 50,000 score" }
+          ].map((achievement) => <div key={achievement.name} className={`rounded-md border p-4 ${achievement.unlocked ? "border-goldGlow/40 bg-goldGlow/10" : "border-white/10 bg-white/5 opacity-60"}`}><div className="font-black text-white">{achievement.name}</div><div className="mt-1 text-xs text-slate-400">{achievement.requirement}</div><div className={`mt-3 text-xs font-black ${achievement.unlocked ? "text-goldGlow" : "text-slate-500"}`}>{achievement.unlocked ? "Unlocked" : "Locked"}</div></div>)}
         </div>
       </div>
     </section>

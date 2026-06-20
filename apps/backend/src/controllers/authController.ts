@@ -8,6 +8,7 @@ import {
   resetPassword,
   verifyEmailCode
 } from "../services/authService.js";
+import { transferGuestProgress } from "../services/guestTransferService.js";
 
 export async function register(request: Request, response: Response) {
   const result = await registerAccount(request.body);
@@ -42,4 +43,8 @@ export async function verifyEmail(request: Request, response: Response) {
 
 export async function resendVerification(request: Request, response: Response) {
   response.json(await resendEmailVerification(request.body));
+}
+
+export async function guestTransfer(request: Request, response: Response) {
+  response.json(await transferGuestProgress(request.auth!.userId, request.body));
 }

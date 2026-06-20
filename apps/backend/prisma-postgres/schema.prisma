@@ -8,66 +8,83 @@ datasource db {
 }
 
 model User {
-  id            String                @id @default(uuid())
-  email         String                @unique
-  passwordHash  String
-  role          String                @default("PLAYER")
-  status        String                @default("ACTIVE")
-  bannedAt      DateTime?
-  bannedUntil   DateTime?
-  banReason     String?
-  termsAcceptedAt DateTime?
-  emailVerifiedAt DateTime?
-  createdAt     DateTime              @default(now())
-  updatedAt     DateTime              @updatedAt
-  profile       UserProfile?
-  wallet        Wallet?
-  subscription  Subscription?
-  dailyClaim    DailyRewardClaim?
-  ownedSkins    OwnedSkin[]
-  scores        Score[]
-  purchases     PurchaseTransaction[]
-  walletTransactions WalletTransaction[]
-  sessions      GameSession[]
-  rouletteSpins RouletteSpin[]
-  adRewards     AdReward[]
-  extraLifeUses ExtraLifeUsage[]
-  refreshTokens RefreshToken[]
-  passwordResetTokens PasswordResetToken[]
+  id                     String                  @id @default(uuid())
+  email                  String                  @unique
+  passwordHash           String
+  role                   String                  @default("PLAYER")
+  status                 String                  @default("ACTIVE")
+  bannedAt               DateTime?
+  bannedUntil            DateTime?
+  banReason              String?
+  termsAcceptedAt        DateTime?
+  emailVerifiedAt        DateTime?
+  mustChangePassword     Boolean                 @default(false)
+  passwordResetAt        DateTime?
+  temporaryPasswordUsed  Boolean                 @default(false)
+  lastPasswordChangeAt   DateTime                @default(now())
+  trustStatus            String                  @default("NORMAL")
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  profile                UserProfile?
+  wallet                 Wallet?
+  subscription           Subscription?
+  dailyClaim             DailyRewardClaim?
+  ownedSkins             OwnedSkin[]
+  scores                 Score[]
+  purchases              PurchaseTransaction[]
+  walletTransactions     WalletTransaction[]
+  sessions               GameSession[]
+  rouletteSpins          RouletteSpin[]
+  adRewards              AdReward[]
+  extraLifeUses          ExtraLifeUsage[]
+  refreshTokens          RefreshToken[]
+  passwordResetTokens    PasswordResetToken[]
   emailVerificationCodes EmailVerificationCode[]
-  adminActions  ModerationAction[]    @relation("AdminModerationActions")
-  receivedActions ModerationAction[]   @relation("TargetModerationActions")
-  supportTickets SupportTicket[]        @relation("UserSupportTickets")
-  answeredSupportTickets SupportTicket[] @relation("AdminSupportTickets")
+  adminActions           ModerationAction[]      @relation("AdminModerationActions")
+  receivedActions        ModerationAction[]      @relation("TargetModerationActions")
+  supportTickets         SupportTicket[]         @relation("UserSupportTickets")
+  answeredSupportTickets SupportTicket[]         @relation("AdminSupportTickets")
+  scoreReviews           Score[]                 @relation("ScoreReviewer")
+  restrictions           Restriction[]           @relation("RestrictedUser")
+  issuedRestrictions     Restriction[]           @relation("RestrictionAdmin")
+  adminAuditLogs         AdminAuditLog[]         @relation("AuditAdmin")
+  targetedAuditLogs      AdminAuditLog[]         @relation("AuditTargetUser")
+  guestTransferAttempts  GuestTransferAttempt[]
+  ownedThemes            OwnedTheme[]
 }
 
 model UserProfile {
-  id                  String    @id @default(uuid())
-  userId              String    @unique
-  displayName         String
-  locale              String    @default("en")
-  avatarUrl           String?
-  highScore           Int       @default(0)
-  selectedArrowSkinId String?
-  selectedTrailSkinId String?
-  lastDailyRewardAt   DateTime?
-  dailyRewardStreak   Int       @default(0)
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                        String    @id @default(uuid())
+  userId                    String    @unique
+  displayName               String
+  locale                    String    @default("en")
+  avatarUrl                 String?
+  highScore                 Int       @default(0)
+  selectedArrowSkinId       String?
+  selectedTrailSkinId       String?
+  lastDailyRewardAt         DateTime?
+  dailyRewardStreak         Int       @default(0)
+  selectedThemeId           String    @default("classic-neon")
+  customizationJson         String    @default("{}")
+  gameSettingsJson          String    @default("{}")
+  showUsernameInLeaderboard Boolean   @default(true)
+  hideProfile               Boolean   @default(false)
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+  user                      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Wallet {
-  id              String               @id @default(uuid())
-  userId          String               @unique
-  coins           Int                  @default(0)
-  gems            Int                  @default(0)
-  rouletteTickets Int                  @default(0)
-  extraLives      Int                  @default(0)
-  lifetimeCoins   Int                  @default(0)
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
-  user            User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id              String              @id @default(uuid())
+  userId          String              @unique
+  coins           Int                 @default(0)
+  gems            Int                 @default(0)
+  rouletteTickets Int                 @default(0)
+  extraLives      Int                 @default(0)
+  lifetimeCoins   Int                 @default(0)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions    WalletTransaction[]
   rouletteSpins   RouletteSpin[]
   adRewards       AdReward[]
@@ -107,17 +124,23 @@ model OwnedSkin {
 }
 
 model Score {
-  id         String   @id @default(uuid())
-  userId     String
-  sessionId  String?
-  score      Int
-  distance   Int
-  durationMs Int
-  createdAt  DateTime @default(now())
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String    @id @default(uuid())
+  userId       String
+  sessionId    String?
+  score        Int
+  distance     Int
+  durationMs   Int
+  status       String    @default("valid")
+  reviewReason String?
+  reviewedAt   DateTime?
+  reviewedById String?
+  createdAt    DateTime  @default(now())
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviewedBy   User?     @relation("ScoreReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
 
   @@index([score])
   @@index([createdAt])
+  @@index([status])
 }
 
 model PurchaseTransaction {
@@ -256,6 +279,7 @@ model GameSession {
   checksum       String?
   valid          Boolean   @default(false)
   antiCheatNotes String?
+  status         String    @default("started")
   user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
@@ -318,22 +342,93 @@ model ModerationAction {
 }
 
 model SupportTicket {
-  id            String    @id @default(uuid())
-  userId        String
-  adminId       String?
-  category      String
-  subject       String
-  message       String
-  status        String    @default("OPEN")
-  adminResponse String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  closedAt      DateTime?
-  user          User      @relation("UserSupportTickets", fields: [userId], references: [id], onDelete: Cascade)
-  admin         User?     @relation("AdminSupportTickets", fields: [adminId], references: [id], onDelete: SetNull)
+  id              String    @id @default(uuid())
+  userId          String?
+  adminId         String?
+  contactEmail    String?
+  contactName     String?
+  category        String
+  subject         String
+  message         String
+  status          String    @default("OPEN")
+  adminResponse   String?
+  relatedEntityId String?
+  internalNote    String?
+  appealStatus    String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  closedAt        DateTime?
+  user            User?     @relation("UserSupportTickets", fields: [userId], references: [id], onDelete: SetNull)
+  admin           User?     @relation("AdminSupportTickets", fields: [adminId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([adminId])
   @@index([status])
   @@index([createdAt])
+}
+
+model OwnedTheme {
+  id      String   @id @default(uuid())
+  userId  String
+  themeId String
+  source  String   @default("unlock")
+  ownedAt DateTime @default(now())
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, themeId])
+  @@index([userId])
+}
+
+model Restriction {
+  id        String    @id @default(uuid())
+  userId    String
+  adminId   String?
+  type      String
+  reason    String
+  notes     String?
+  startsAt  DateTime  @default(now())
+  endsAt    DateTime?
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user      User      @relation("RestrictedUser", fields: [userId], references: [id], onDelete: Cascade)
+  admin     User?     @relation("RestrictionAdmin", fields: [adminId], references: [id], onDelete: SetNull)
+
+  @@index([userId, active])
+  @@index([type])
+}
+
+model AdminAuditLog {
+  id             String   @id @default(uuid())
+  adminId        String?
+  actionType     String
+  targetUserId   String?
+  targetEntityId String?
+  reason         String?
+  metadata       String?
+  createdAt      DateTime @default(now())
+  admin          User?    @relation("AuditAdmin", fields: [adminId], references: [id], onDelete: SetNull)
+  targetUser     User?    @relation("AuditTargetUser", fields: [targetUserId], references: [id], onDelete: SetNull)
+
+  @@index([adminId])
+  @@index([targetUserId])
+  @@index([actionType])
+  @@index([createdAt])
+}
+
+model GuestTransferAttempt {
+  id               String   @id @default(uuid())
+  userId           String
+  guestIdHash      String
+  status           String
+  bestScore        Int      @default(0)
+  transferredScore Int      @default(0)
+  reason           String?
+  metadata         String?
+  createdAt        DateTime @default(now())
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([guestIdHash])
+  @@index([status])
 }

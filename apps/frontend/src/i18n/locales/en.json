@@ -4,11 +4,13 @@
     "play": "Play",
     "shop": "Shop",
     "inventory": "Inventory",
+    "themes": "Themes",
     "premium": "Premium",
     "profile": "Profile",
     "support": "Support",
     "settings": "Settings",
-    "admin": "Admin"
+    "admin": "Admin",
+    "rules": "Rules"
   },
   "auth": {
     "welcome": "Enter the arena",
@@ -129,12 +131,16 @@
     }
   },
   "skinCategory": {
+    "player": "Player skin",
     "arrow": "Arrow skin",
     "trail": "Trail line",
     "line": "Line effect",
     "effect": "Special effect",
+    "hitEffect": "Hit effect",
+    "coinEffect": "Coin effect",
     "background": "Background",
     "deathEffect": "Death effect",
+    "profileAvatar": "Profile avatar",
     "profileFrame": "Profile frame",
     "badge": "Badge"
   },
@@ -209,6 +215,14 @@
     "ban": "Ban",
     "unban": "Unban",
     "thank": "Thank",
+    "emailVerified": "Email verified",
+    "emailUnverified": "Email not verified",
+    "resendVerification": "Resend code",
+    "verifyEmailManually": "Verify manually",
+    "verificationEmailSent": "A new verification code was sent by email.",
+    "verificationEmailFailed": "The email provider did not send the code. Verify manually or configure a verified sending domain.",
+    "emailVerifiedManually": "Email address verified manually.",
+    "manualVerifyWarning": "Only approve this address when you have confirmed that it belongs to the player. This bypasses the email code.",
     "reason": "Reason",
     "message": "Message",
     "confirm": "Confirm",
@@ -219,6 +233,13 @@
     "reply": "Reply",
     "closeTicket": "Close ticket",
     "noTickets": "No support tickets.",
+    "copyEmail": "Copy email",
+    "emailCopied": "Email copied.",
+    "ticketSources": {
+      "ALL": "All sources",
+      "GUEST": "Guest",
+      "ACCOUNT": "Account"
+    },
     "defaultBanReason": "Score manipulation or Terms of use violation.",
     "defaultUnbanReason": "Reviewed by admin.",
     "defaultThanks": "Thank you for helping us find and fix a security issue in Waves Arcade.",
@@ -236,6 +257,12 @@
   },
   "support": {
     "title": "Support",
+    "contactWithoutAccount": "Contact support",
+    "guestTitle": "Support without an account",
+    "loginEmail": "Login email",
+    "contactName": "Name (optional)",
+    "passwordWarning": "Never send your password. Support and admins do not need it and cannot ask for it.",
+    "guestSent": "Request sent. Reference:",
     "subtitle": "Send a message to the admin team about bugs, accounts, shop issues, payments, bans, or anything that needs review.",
     "category": "Category",
     "subject": "Subject",
@@ -247,7 +274,9 @@
     "categories": {
       "BUG": "Bug report",
       "BAN_APPEAL": "Ban appeal",
+      "APPEAL": "Appeal",
       "ACCOUNT": "Account",
+      "SCORE": "Score problem",
       "PAYMENT": "Payment",
       "SHOP": "Shop",
       "OTHER": "Other"
@@ -367,6 +396,38 @@
     "candyPulseTrail": {
       "name": "Candy Pulse Trail",
       "description": "A limited pink-cyan event trail with playful pulses."
+    },
+    "neonDeathBurst": {
+      "name": "Neon Death Burst",
+      "description": "A bright cyan-pink death animation."
+    },
+    "plasmaHit": {
+      "name": "Plasma Hit",
+      "description": "A violet impact effect for collisions."
+    },
+    "goldCoinPop": {
+      "name": "Gold Coin Pop",
+      "description": "A polished golden coin collection effect."
+    },
+    "voidBackground": {
+      "name": "Void Background",
+      "description": "A deep-space background customization."
+    },
+    "pilotAvatar": {
+      "name": "Pilot Avatar",
+      "description": "A free profile avatar for every pilot."
+    },
+    "championBadge": {
+      "name": "Champion Badge",
+      "description": "A legendary badge for the leaderboard."
+    },
+    "diamondFrame": {
+      "name": "Diamond Frame",
+      "description": "A premium profile and leaderboard frame."
+    },
+    "prismPlayer": {
+      "name": "Prism Player",
+      "description": "A premium rainbow player body."
     }
   },
   "rarity": {

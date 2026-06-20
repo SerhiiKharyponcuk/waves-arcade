@@ -3,6 +3,7 @@ import type { GameSkinBundle } from "../skins/skinResolver";
 import { ObstacleManager } from "../obstacles/ObstacleManager";
 import { ParticleBurst } from "../effects/ParticleBurst";
 import { PlayerController } from "../player/PlayerController";
+import type { GameThemeDto } from "@waves/shared";
 
 export interface GameStats {
   score: number;
@@ -14,6 +15,7 @@ export interface GameStats {
 
 export interface WavesSceneOptions {
   skins: GameSkinBundle;
+  theme: GameThemeDto;
   onStats: (stats: GameStats) => void;
   onGameOver: (stats: GameStats) => void | Promise<void>;
 }
@@ -39,14 +41,18 @@ export class WavesScene extends Phaser.Scene {
   }
 
   create() {
-    this.cameras.main.setBackgroundColor("#081116");
+    this.cameras.main.setBackgroundColor(this.options.theme.backgroundStyle);
     this.physics.world.setBounds(0, 0, 100_000, this.scale.height);
     this.drawBackdrop();
 
     this.cursors = this.input.keyboard?.createCursorKeys();
     this.wasd = this.input.keyboard?.addKeys("W,A,S,D,SPACE") as Record<string, Phaser.Input.Keyboard.Key>;
     this.player = new PlayerController(this, this.options.skins.arrow, this.options.skins.trail);
-    this.obstacles = new ObstacleManager(this);
+    this.obstacles = new ObstacleManager(this, {
+      obstacleColor: this.options.theme.obstacleStyle,
+      accentColor: this.options.theme.uiAccentColor,
+      backgroundColor: this.options.theme.backgroundStyle
+    });
     this.particles = new ParticleBurst(this);
     this.startedAt = performance.now();
 
@@ -106,17 +112,20 @@ export class WavesScene extends Phaser.Scene {
 
   private drawBackdrop() {
     const graphics = this.add.graphics();
-    const stripeColors = [0x0b1414, 0x113238, 0x1b1435, 0x10222d];
+    const backgroundColor = Phaser.Display.Color.HexStringToColor(this.options.theme.backgroundStyle).color;
+    const accentColor = Phaser.Display.Color.HexStringToColor(this.options.theme.uiAccentColor).color;
+    const obstacleColor = Phaser.Display.Color.HexStringToColor(this.options.theme.obstacleStyle).color;
+    const stripeColors = [backgroundColor, accentColor, backgroundColor, obstacleColor];
     const sectionWidth = 1800;
 
     for (let x = 0; x < 100_000; x += sectionWidth) {
       const colorIndex = Math.floor(x / sectionWidth) % stripeColors.length;
       const stripeColor = stripeColors[colorIndex] ?? 0x081116;
-      graphics.fillStyle(stripeColor, 0.96);
+      graphics.fillStyle(stripeColor, colorIndex % 2 ? 0.24 : 0.96);
       graphics.fillRect(x, 0, sectionWidth, this.scale.height);
     }
 
-    graphics.lineStyle(2, 0xffffffff, 0.6);
+    graphics.lineStyle(2, accentColor, 0.42);
     for (let x = 0; x < 100_000; x += 1600) {
       graphics.lineBetween(x, 0, x, this.scale.height);
     }

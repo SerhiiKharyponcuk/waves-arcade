@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Coins, Gift, Pause, Play, RotateCcw, Zap } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { GoogleAdSlot } from "../components/ads/GoogleAdSlot";
+import { AccountRequiredModal } from "../components/auth/AccountRequiredModal";
 import { GameCanvas } from "../components/game/GameCanvas";
 import { RouletteWheel } from "../components/game/RouletteWheel";
 import { Button } from "../components/ui/Button";
@@ -10,11 +11,14 @@ import { StatCard } from "../components/ui/StatCard";
 import type { GameStats } from "../game/engine/WavesScene";
 import { resolveGameSkins } from "../game/skins/skinResolver";
 import { earnRewardedAdReward } from "../services/ads/adRewardClient";
+import { recordAdShown, shouldShowGuestAd } from "../services/ads/guestAdPolicy";
 import { gameApi } from "../services/gameApi";
 import { shopApi } from "../services/shopApi";
 import { walletApi } from "../services/walletApi";
 import { useAuthStore } from "../store/authStore";
+import { useGuestStore } from "../store/guestStore";
 import type { AdPlacement, DailyRewardDto, GameSessionEndResponseDto, RouletteConfigDto, RouletteSpinDto, ShopSkin } from "../types/api";
+import { gameThemes } from "@waves/shared";
 
 type RunState = "idle" | "running" | "paused" | "over";
 
@@ -29,6 +33,8 @@ const emptyStats: GameStats = {
 export function GamePage() {
   const { t } = useTranslation();
   const { user, patchWallet } = useAuthStore();
+  const { active: guestActive, session: guestSession, recordGame, updateSession, requestAuthentication } = useGuestStore();
+  const isGuest = guestActive && !user;
   const [runState, setRunState] = useState<RunState>("idle");
   const [sessionId, setSessionId] = useState("");
   const [stats, setStats] = useState<GameStats>(emptyStats);
@@ -42,8 +48,16 @@ export function GamePage() {
   const [adBusy, setAdBusy] = useState(false);
   const [error, setError] = useState("");
   const [devtoolsBlocked, setDevtoolsBlocked] = useState(false);
+  const [accountRequiredMessage, setAccountRequiredMessage] = useState("");
+  const [showGuestAd, setShowGuestAd] = useState(false);
 
   useEffect(() => {
+    if (isGuest) {
+      void shopApi.skins().then(setSkins).catch(() => setSkins([]));
+      setDailyReward(null);
+      setRouletteConfig(null);
+      return;
+    }
     void Promise.all([shopApi.skins(), walletApi.dailyReward(), walletApi.rouletteConfig()])
       .then(([shopSkins, reward, roulette]) => {
         setSkins(shopSkins);
@@ -51,9 +65,13 @@ export function GamePage() {
         setRouletteConfig(roulette);
       })
       .catch(() => setError(t("common.error")));
-  }, [t]);
+  }, [isGuest, t]);
 
-  const gameSkins = useMemo(() => resolveGameSkins(user, skins), [user, skins]);
+  const gameSkins = useMemo(() => resolveGameSkins(user, skins, guestSession?.selectedBasicSkin), [guestSession?.selectedBasicSkin, user, skins]);
+  const selectedTheme = useMemo(() => {
+    const themeId = isGuest ? guestSession?.selectedBasicTheme : user?.profile.selectedThemeId;
+    return gameThemes.find((theme) => theme.id === themeId) ?? gameThemes[0]!;
+  }, [guestSession?.selectedBasicTheme, isGuest, user?.profile.selectedThemeId]);
 
   useEffect(() => {
     if (!import.meta.env.PROD || runState !== "running") {
@@ -78,6 +96,15 @@ export function GamePage() {
     setBusy(true);
     setError("");
     try {
+      if (isGuest) {
+        setSessionId("");
+        setStats(emptyStats);
+        setResult(null);
+        setShowGuestAd(false);
+        setDevtoolsBlocked(false);
+        setRunState("running");
+        return;
+      }
       const session = await gameApi.startSession();
       setSessionId(session.sessionId);
       setStats(emptyStats);
@@ -92,6 +119,10 @@ export function GamePage() {
   }
 
   async function claimReward() {
+    if (isGuest) {
+      setAccountRequiredMessage("You need an account to claim rewards.");
+      return;
+    }
     setBusy(true);
     try {
       const claimed = await walletApi.claimDailyReward();
@@ -105,6 +136,10 @@ export function GamePage() {
   }
 
   async function spinRoulette(): Promise<RouletteSpinDto | null> {
+    if (isGuest) {
+      setAccountRequiredMessage("You need an account to use rewards.");
+      return null;
+    }
     if (!rouletteConfig) {
       return null;
     }
@@ -131,6 +166,10 @@ export function GamePage() {
   }
 
   async function watchAd(placement: AdPlacement = "coins") {
+    if (isGuest) {
+      setAccountRequiredMessage("You need an account to receive rewarded items.");
+      return;
+    }
     setAdBusy(true);
     try {
       const result = await earnRewardedAdReward(placement);
@@ -152,6 +191,16 @@ export function GamePage() {
       setRunState("over");
       setStats(finalStats);
 
+      if (isGuest) {
+        recordGame(finalStats.score);
+        const nextSession = useGuestStore.getState().session;
+        if (nextSession && shouldShowGuestAd("game_over", nextSession)) {
+          updateSession(recordAdShown);
+          setShowGuestAd(true);
+        }
+        return;
+      }
+
       if (!sessionId) {
         return;
       }
@@ -172,8 +221,16 @@ export function GamePage() {
         setError(t("common.error"));
       }
     },
-    [patchWallet, sessionId, t]
+    [isGuest, patchWallet, recordGame, sessionId, t, updateSession]
   );
+
+  function openGuestSavePrompt() {
+    setAccountRequiredMessage("Log in or create an account to save your score.");
+    if (guestSession && shouldShowGuestAd("save_score", guestSession)) {
+      updateSession(recordAdShown);
+      setShowGuestAd(true);
+    }
+  }
 
   if (runState === "running" || runState === "paused" || runState === "over") {
     return (
@@ -207,6 +264,7 @@ export function GamePage() {
 
         <GameCanvas
           skins={gameSkins}
+          theme={selectedTheme}
           paused={runState === "paused" || runState === "over"}
           onStats={setStats}
           onGameOver={handleGameOver}
@@ -217,16 +275,44 @@ export function GamePage() {
             <div className="grid gap-4">
               <div className="grid grid-cols-2 gap-3">
                 <StatCard icon={<Zap size={20} />} label={t("game.score")} value={result?.score ?? stats.score} />
-                <StatCard icon={<Coins size={20} />} label={t("game.coinsEarned")} value={result?.coinsAwarded ?? 0} />
+                <StatCard icon={<Coins size={20} />} label={isGuest ? "Local best" : t("game.coinsEarned")} value={isGuest ? guestSession?.bestGuestScore ?? stats.score : result?.coinsAwarded ?? 0} />
               </div>
               {result?.newHighScore ? (
                 <div className="rounded-md border border-cyanGlow/40 bg-cyanGlow/10 p-3 text-sm font-bold text-cyanGlow">
                   {t("game.newBest")}
                 </div>
               ) : null}
+              {result?.status === "pending_review" || result?.status === "suspicious" ? (
+                <div className="rounded-md border border-goldGlow/40 bg-goldGlow/10 p-3 text-sm font-bold text-goldGlow">
+                  Your score is under review.
+                </div>
+              ) : null}
+              {result?.status === "rejected" ? (
+                <div className="rounded-md border border-magentaGlow/40 bg-magentaGlow/10 p-3 text-sm font-bold text-pink-200">
+                  This score was rejected by server validation.
+                </div>
+              ) : null}
+              {isGuest ? (
+                <div className="rounded-md border border-cyanGlow/30 bg-cyanGlow/10 p-3 text-sm leading-6 text-slate-200">
+                  Create an account to save your score, unlock skins and keep your progress.
+                </div>
+              ) : null}
+              {isGuest && showGuestAd ? <GoogleAdSlot /> : null}
+              {isGuest ? (
+                <Button type="button" onClick={openGuestSavePrompt} icon={<Zap size={18} />}>
+                  Save score
+                </Button>
+              ) : null}
               <Button type="button" onClick={() => void startRun()} icon={<RotateCcw size={18} />}>
                 {t("game.restart")}
               </Button>
+              {isGuest ? (
+                <div className="grid grid-cols-2 gap-2">
+                  <Button type="button" variant="secondary" onClick={() => requestAuthentication("register")}>Create account</Button>
+                  <Button type="button" variant="secondary" onClick={() => requestAuthentication("login")}>Log in</Button>
+                </div>
+              ) : null}
+              {isGuest ? <Button type="button" variant="ghost" onClick={() => setRunState("idle")}>Continue as guest</Button> : null}
             </div>
           </Modal>
         ) : null}
@@ -254,6 +340,15 @@ export function GamePage() {
               </Button>
             </div>
           </Modal>
+        ) : null}
+
+        {accountRequiredMessage ? (
+          <AccountRequiredModal
+            message={accountRequiredMessage}
+            onLogin={() => requestAuthentication("login")}
+            onRegister={() => requestAuthentication("register")}
+            onContinue={() => setAccountRequiredMessage("")}
+          />
         ) : null}
       </section>
     );
@@ -299,11 +394,11 @@ export function GamePage() {
           <Button
             type="button"
             className="mt-4 w-full"
-            disabled={busy || !dailyReward?.canClaim}
+            disabled={busy || (!isGuest && !dailyReward?.canClaim)}
             onClick={() => void claimReward()}
             icon={<Gift size={18} />}
           >
-            {dailyReward?.canClaim ? t("menu.claim") : t("menu.claimed")}
+            {isGuest ? "Account required" : dailyReward?.canClaim ? t("menu.claim") : t("menu.claimed")}
           </Button>
         </div>
 
@@ -330,11 +425,20 @@ export function GamePage() {
 
         <div className="grid grid-cols-2 gap-4">
           <StatCard icon={<Zap size={20} />} label={t("profile.highScore")} value={user?.profile.highScore ?? 0} />
-          <StatCard icon={<Coins size={20} />} label={t("profile.coins")} value={user?.wallet.coins ?? 0} />
+          <StatCard icon={<Coins size={20} />} label={isGuest ? "Games" : t("profile.coins")} value={isGuest ? guestSession?.gamesPlayed ?? 0 : user?.wallet.coins ?? 0} />
         </div>
 
         <GoogleAdSlot />
       </aside>
+
+      {accountRequiredMessage ? (
+        <AccountRequiredModal
+          message={accountRequiredMessage}
+          onLogin={() => requestAuthentication("login")}
+          onRegister={() => requestAuthentication("register")}
+          onContinue={() => setAccountRequiredMessage("")}
+        />
+      ) : null}
     </section>
   );
 }

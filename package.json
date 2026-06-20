@@ -11,7 +11,7 @@
     "dev": "node scripts/dev.mjs",
     "dev:frontend": "npm run dev --workspace @waves/frontend",
     "dev:backend": "npm run dev --workspace @waves/backend",
-    "build": "npm run build --workspaces",
+    "build": "npm run build --workspace @waves/shared && npm run build --workspace @waves/backend && npm run build --workspace @waves/frontend",
     "build:backend:prod": "npm run build:prod --workspace @waves/backend",
     "lint": "npm run lint --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
