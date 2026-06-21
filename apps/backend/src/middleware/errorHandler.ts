@@ -3,12 +3,13 @@ import { ZodError } from "zod";
 import type { ApiErrorDto } from "@waves/shared";
 import { AppError } from "../utils/appError.js";
 import { env } from "../config/env.js";
+import { captureServerError } from "../services/errorTrackingService.js";
 
 export function notFoundHandler(request: Request, _response: Response, next: NextFunction) {
   next(new AppError(404, `Route not found: ${request.method} ${request.path}`, "ROUTE_NOT_FOUND"));
 }
 
-export function errorHandler(error: unknown, _request: Request, response: Response, _next: NextFunction) {
+export function errorHandler(error: unknown, request: Request, response: Response, _next: NextFunction) {
   if (error instanceof ZodError) {
     const body: ApiErrorDto = {
       message: "Invalid request data.",
@@ -33,5 +34,6 @@ export function errorHandler(error: unknown, _request: Request, response: Respon
     message: env.NODE_ENV === "production" ? "Unexpected server error." : String(error),
     code: "INTERNAL_SERVER_ERROR"
   };
+  captureServerError(error, { method: request.method, path: request.path, requestId: request.header("x-request-id") });
   response.status(500).json(body);
 }

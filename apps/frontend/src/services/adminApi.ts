@@ -1,7 +1,10 @@
-import type { AdminAuditLogDto, AdminEmailVerificationDto, AdminPasswordResetDto, AdminUserDto, ModerationActionDto, RestrictionDto, RestrictionType, ScoreReviewDto, ScoreStatus, UserTrustStatus } from "../types/api";
+import type { AdminAnalyticsDto, AdminAuditLogDto, AdminEmailVerificationDto, AdminPasswordResetDto, AdminUserDto, ModerationActionDto, RestrictionDto, RestrictionType, ScoreReviewDto, ScoreStatus, UserTrustStatus } from "../types/api";
 import { apiRequest } from "./apiClient";
 
 export const adminApi = {
+  analytics() {
+    return apiRequest<AdminAnalyticsDto>("/admin/analytics");
+  },
   users(query = "") {
     const search = query.trim() ? `?q=${encodeURIComponent(query.trim())}` : "";
     return apiRequest<AdminUserDto[]>(`/admin/users${search}`);

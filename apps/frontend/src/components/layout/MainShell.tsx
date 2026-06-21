@@ -9,6 +9,7 @@ import { AccountRequiredModal } from "../auth/AccountRequiredModal";
 import { Modal } from "../ui/Modal";
 import { authApi } from "../../services/authApi";
 import { UserMenu } from "./UserMenu";
+import { PolicyPage } from "../../pages/PolicyPage";
 
 const GamePage = lazy(() => import("../../pages/GamePage").then((module) => ({ default: module.GamePage })));
 const ShopPage = lazy(() => import("../../pages/ShopPage").then((module) => ({ default: module.ShopPage })));
@@ -45,6 +46,7 @@ export function MainShell() {
   const [transferOpen, setTransferOpen] = useState(false);
   const [transferBusy, setTransferBusy] = useState(false);
   const [transferError, setTransferError] = useState("");
+  const [rulesReturnView, setRulesReturnView] = useState<AppView>("play");
   const visibleNavItems = user?.role === "ADMIN"
     ? [...navItems, { view: "admin" as AppView, icon: ShieldCheck, labelKey: "nav.admin" }]
     : navItems;
@@ -82,7 +84,7 @@ export function MainShell() {
       clearProgress();
       setTransferOpen(false);
     } catch (error) {
-      setTransferError(error instanceof Error ? error.message : "Guest progress could not be transferred.");
+      setTransferError(error instanceof Error ? error.message : t("guest.transferError"));
     } finally {
       setTransferBusy(false);
     }
@@ -97,6 +99,9 @@ export function MainShell() {
       setAccountRequired(true);
       return;
     }
+    if (nextView === "rules" && view !== "rules") {
+      setRulesReturnView(view);
+    }
     setView(nextView);
   }
 
@@ -110,7 +115,7 @@ export function MainShell() {
             </div>
             <div className="min-w-0 text-left">
               <div className="truncate text-lg font-black text-white neon-text">{t("brand")}</div>
-              <div className="truncate text-xs text-slate-400">{user?.profile.displayName ?? "Guest - limited access"}</div>
+              <div className="truncate text-xs text-slate-400">{user?.profile.displayName ?? t("guest.limitedAccess")}</div>
             </div>
           </button>
 
@@ -118,10 +123,10 @@ export function MainShell() {
             {isGuest ? (
               <>
                 <Button type="button" variant="ghost" onClick={() => requestAuthentication("login")} icon={<LogIn size={18} />}>
-                  Log in
+                  {t("auth.login")}
                 </Button>
                 <Button type="button" onClick={() => requestAuthentication("register")} icon={<UserPlus size={18} />}>
-                  Create account
+                  {t("guest.createAccount")}
                 </Button>
               </>
             ) : (
@@ -144,7 +149,7 @@ export function MainShell() {
           <UserMenu isGuest={isGuest} navigate={navigate} requestAuthentication={requestAuthentication} logout={() => void logout()} />
         </div>
 
-        <nav className="mx-auto grid max-w-7xl grid-cols-3 gap-2 px-4 pb-3 sm:grid-cols-7 lg:grid-cols-8">
+        <nav className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 pb-3 sm:grid sm:grid-cols-7 sm:overflow-visible lg:grid-cols-8">
           {visibleNavItems.map((item) => {
             const Icon = item.icon;
             const active = view === item.view;
@@ -153,7 +158,7 @@ export function MainShell() {
                 key={item.view}
                 type="button"
                 onClick={() => navigate(item.view)}
-                className={`flex min-h-11 items-center justify-center gap-2 rounded-md border px-2 text-sm font-bold transition ${
+                className={`flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-2 rounded-md border px-2 text-sm font-bold transition sm:min-w-0 ${
                   active
                     ? "border-cyanGlow bg-cyanGlow text-ink shadow-neon"
                     : "border-white/10 bg-white/5 text-slate-300 hover:border-cyanGlow hover:text-white"
@@ -161,7 +166,7 @@ export function MainShell() {
               >
                 <Icon size={18} />
                 <span className="hidden sm:inline">{t(item.labelKey)}</span>
-                {isGuest && guestLockedViews.has(item.view) ? <Lock size={13} aria-label="Account required" /> : null}
+                {isGuest && guestLockedViews.has(item.view) ? <Lock size={13} aria-label={t("guest.accountRequired")} /> : null}
               </button>
             );
           })}
@@ -182,9 +187,9 @@ export function MainShell() {
         ) : null}
         {user?.activeRestrictions.map((restriction) => (
           <div key={restriction.id} className="mb-4 rounded-lg border border-magentaGlow/30 bg-magentaGlow/10 p-4 text-sm leading-6 text-slate-200">
-            <div className="font-black text-pink-200">{restriction.type.replaceAll("_", " ")}</div>
+            <div className="font-black text-pink-200">{t(`restrictions.types.${restriction.type}`, restriction.type.replaceAll("_", " "))}</div>
             <div>{restriction.reason}</div>
-            <div className="mt-1 text-xs text-slate-400">{restriction.endsAt ? `Temporary until ${new Date(restriction.endsAt).toLocaleString()}` : "No automatic end date"}. {restriction.appealPossible ? "You may contact Support to appeal." : "Appeal is not available."}</div>
+            <div className="mt-1 text-xs text-slate-400">{restriction.endsAt ? t("restrictions.temporaryUntil", { date: new Date(restriction.endsAt).toLocaleString() }) : t("restrictions.noEnd")}. {restriction.appealPossible ? t("restrictions.appealAvailable") : t("restrictions.noAppeal")}</div>
           </div>
         ))}
         <Suspense
@@ -202,22 +207,22 @@ export function MainShell() {
           {view === "profile" ? <ProfilePage /> : null}
           {view === "support" ? <SupportPage /> : null}
           {view === "settings" ? <SettingsPage /> : null}
-          {view === "rules" ? <RulesPage /> : null}
+          {view === "rules" ? <RulesPage onClose={() => setView(rulesReturnView)} /> : null}
+          {view === "privacy" ? <PolicyPage type="privacy" onClose={() => setView("settings")} /> : null}
+          {view === "cookies" ? <PolicyPage type="cookies" onClose={() => setView("settings")} /> : null}
           {view === "admin" && user?.role === "ADMIN" ? <AdminPage /> : null}
         </Suspense>
       </main>
 
       <footer className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 border-t border-white/10 px-4 py-5 text-xs text-slate-400">
-        <span>{isGuest ? "Guest progress is stored only on this device." : "Account progress is saved securely."}</span>
-        <button type="button" className="font-bold text-cyanGlow hover:text-white" onClick={() => navigate("rules")}>
-          Game Rules and Terms
-        </button>
+        <span>{isGuest ? t("guest.footerLocal") : t("guest.footerCloud")}</span>
+        <div className="flex flex-wrap gap-4"><button type="button" className="font-bold text-cyanGlow hover:text-white" onClick={() => navigate("rules")}>{t("rulesPage.title")}</button><button type="button" className="font-bold text-cyanGlow hover:text-white" onClick={() => setView("privacy")}>{t("policies.privacy.title")}</button><button type="button" className="font-bold text-cyanGlow hover:text-white" onClick={() => setView("cookies")}>{t("policies.cookies.title")}</button></div>
       </footer>
 
       <button
         type="button"
         onClick={() => navigate(isGuest ? "settings" : "profile")}
-        className="fixed bottom-4 right-4 z-30 grid h-12 w-12 place-items-center rounded-md border border-white/10 bg-panel text-cyanGlow shadow-neon md:hidden"
+        className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-30 grid h-12 w-12 place-items-center rounded-md border border-white/10 bg-panel text-cyanGlow shadow-neon md:hidden"
         aria-label={isGuest ? t("nav.settings") : t("nav.profile")}
         title={isGuest ? t("nav.settings") : t("nav.profile")}
       >
@@ -233,23 +238,23 @@ export function MainShell() {
       ) : null}
 
       {transferOpen && user && guestSession ? (
-        <Modal title="Save guest progress" closeLabel="Not now" onClose={() => setTransferOpen(false)}>
+        <Modal title={t("guest.transferTitle")} closeLabel={t("guest.notNow")} onClose={() => setTransferOpen(false)}>
           <div className="grid gap-4">
-            <p className="text-sm leading-6 text-slate-300">Do you want to save your guest progress to this account?</p>
+            <p className="text-sm leading-6 text-slate-300">{t("guest.transferQuestion")}</p>
             <div className="grid grid-cols-2 gap-3">
               <div className="rounded-md border border-white/10 bg-white/5 p-3 text-sm text-slate-300">
-                <span className="block text-xs font-black uppercase text-slate-500">Local best</span>
+                <span className="block text-xs font-black uppercase text-slate-500">{t("guest.localBest")}</span>
                 <strong className="mt-1 block text-xl text-white">{guestSession.bestGuestScore}</strong>
               </div>
               <div className="rounded-md border border-white/10 bg-white/5 p-3 text-sm text-slate-300">
-                <span className="block text-xs font-black uppercase text-slate-500">Games</span>
+                <span className="block text-xs font-black uppercase text-slate-500">{t("guest.games")}</span>
                 <strong className="mt-1 block text-xl text-white">{guestSession.gamesPlayed}</strong>
               </div>
             </div>
-            <p className="text-xs leading-5 text-slate-400">Only plausible scores and basic settings are transferred. Local coins, premium items, and unverified rewards are ignored.</p>
+            <p className="text-xs leading-5 text-slate-400">{t("guest.transferHelp")}</p>
             {transferError ? <div className="rounded-md border border-magentaGlow/40 bg-magentaGlow/10 p-3 text-sm text-pink-200">{transferError}</div> : null}
-            <Button type="button" disabled={transferBusy} onClick={() => void transferGuestProgress()}>Save progress</Button>
-            <Button type="button" variant="ghost" onClick={() => setTransferOpen(false)}>Not now</Button>
+            <Button type="button" disabled={transferBusy} onClick={() => void transferGuestProgress()}>{t("guest.saveProgress")}</Button>
+            <Button type="button" variant="ghost" onClick={() => setTransferOpen(false)}>{t("guest.notNow")}</Button>
           </div>
         </Modal>
       ) : null}

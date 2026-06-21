@@ -28,3 +28,21 @@ services:
         value: google_ad_manager
       - key: AD_SESSION_TTL_SECONDS
         value: "600"
+      - key: ADMIN_EMAILS
+        sync: false
+      - key: PASSWORD_RESET_BASE_URL
+        sync: false
+      - key: EMAIL_PROVIDER
+        value: none
+      - key: EMAIL_FROM
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: CAPTCHA_PROVIDER
+        value: none
+      - key: TURNSTILE_SECRET_KEY
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+      - key: SENTRY_ENVIRONMENT
+        value: production

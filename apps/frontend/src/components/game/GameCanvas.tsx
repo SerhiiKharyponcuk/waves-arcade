@@ -42,7 +42,7 @@ export function GameCanvas({ skins, theme, paused, onStats, onGameOver }: GameCa
   }, [paused]);
 
   return (
-    <div className="game-canvas relative h-[66vh] min-h-[28rem] overflow-hidden rounded-lg border border-white/10 bg-ink shadow-neon">
+    <div className="game-canvas relative h-[calc(100dvh-12rem)] min-h-[24rem] overflow-hidden rounded-lg border border-white/10 bg-ink shadow-neon sm:h-[66vh] sm:min-h-[28rem]">
       <div ref={containerRef} className="h-full w-full" />
       <div className="pointer-events-none absolute bottom-4 left-4">
         <VirtualJoystick />

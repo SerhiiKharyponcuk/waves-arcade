@@ -6,7 +6,7 @@ import { Input } from "../components/ui/Input";
 import { Modal } from "../components/ui/Modal";
 import { adminApi } from "../services/adminApi";
 import { supportApi } from "../services/supportApi";
-import type { AdminAuditLogDto, AdminUserDto, RestrictionType, ScoreReviewDto, SupportTicketDto, SupportTicketSource, SupportTicketStatus } from "../types/api";
+import type { AdminAnalyticsDto, AdminAuditLogDto, AdminUserDto, RestrictionType, ScoreReviewDto, SupportTicketDto, SupportTicketSource, SupportTicketStatus } from "../types/api";
 
 type AdminAction = "ban" | "unban" | "thank" | "resetScores";
 type SupportAction = { ticket: SupportTicketDto; status: SupportTicketStatus };
@@ -49,12 +49,13 @@ export function AdminPage() {
   const [restrictionUser, setRestrictionUser] = useState<AdminUserDto | null>(null);
   const [restrictionType, setRestrictionType] = useState<RestrictionType>("leaderboard_restriction");
   const [restrictionReason, setRestrictionReason] = useState("");
+  const [analytics, setAnalytics] = useState<AdminAnalyticsDto | null>(null);
 
   const actionTitle = useMemo(() => {
     if (!action) {
       return "";
     }
-    return action.type === "resetScores" ? "Reset user scores" : t(`admin.${action.type}`);
+    return action.type === "resetScores" ? t("adminExtra.resetUserScores") : t(`admin.${action.type}`);
   }, [action, t]);
 
   async function loadUsers(search = query) {
@@ -79,10 +80,11 @@ export function AdminPage() {
 
   async function loadModerationData() {
     try {
-      const [scoreRows, logs, transfers] = await Promise.all([adminApi.scores("all"), adminApi.auditLogs(), adminApi.guestTransfers()]);
+      const [scoreRows, logs, transfers, analyticsSummary] = await Promise.all([adminApi.scores("all"), adminApi.auditLogs(), adminApi.guestTransfers(), adminApi.analytics()]);
       setScores(scoreRows);
       setAuditLogs(logs);
       setGuestTransfers(transfers);
+      setAnalytics(analyticsSummary);
     } catch (error) {
       setError(error instanceof Error ? error.message : t("common.error"));
     }
@@ -114,7 +116,7 @@ export function AdminPage() {
         : type === "ban"
           ? t("admin.defaultBanReason")
           : type === "resetScores"
-            ? "Confirmed score manipulation or administrator correction."
+            ? t("adminExtra.defaultScoreResetReason")
             : t("admin.defaultUnbanReason")
     );
   }
@@ -169,7 +171,7 @@ export function AdminPage() {
   async function setTrust(user: AdminUserDto, trusted: boolean) {
     setBusy(true);
     try {
-      const updated = await adminApi.setTrust(user.id, trusted ? "TRUSTED" : "SUSPICIOUS", trusted ? "Administrator reviewed the account as trusted." : "Account requires additional anti-cheat review.");
+      const updated = await adminApi.setTrust(user.id, trusted ? "TRUSTED" : "SUSPICIOUS", trusted ? t("adminExtra.trustedReason") : t("adminExtra.suspiciousReason"));
       setUsers((current) => current.map((item) => item.id === updated.id ? updated : item));
       await loadModerationData();
     } catch (error) {
@@ -212,7 +214,7 @@ export function AdminPage() {
   async function removeRestriction(user: AdminUserDto, restrictionId: string) {
     setBusy(true);
     try {
-      await adminApi.removeRestriction(restrictionId, "Restriction removed by administrator.");
+      await adminApi.removeRestriction(restrictionId, t("adminExtra.restrictionRemovedReason"));
       setUsers((current) => current.map((item) => item.id === user.id ? { ...item, activeRestrictions: item.activeRestrictions.filter((restriction) => restriction.id !== restrictionId) } : item));
       await loadModerationData();
     } catch (error) {
@@ -294,6 +296,26 @@ export function AdminPage() {
         <p className="mt-2 max-w-3xl text-slate-300">{t("admin.subtitle")}</p>
       </div>
 
+      {analytics ? (
+        <section className="grid grid-cols-2 gap-3 sm:grid-cols-4" aria-label={t("adminExtra.analytics.title")}>
+          {[
+            [t("adminExtra.analytics.registered"), analytics.registeredUsers],
+            [t("adminExtra.analytics.new7d"), analytics.registeredLast7Days],
+            [t("adminExtra.analytics.active7d"), analytics.activePlayers7Days],
+            [t("adminExtra.analytics.returning7d"), analytics.returningPlayers7Days],
+            [t("adminExtra.analytics.sessions30d"), analytics.gameSessions30Days],
+            [t("adminExtra.analytics.validScores30d"), analytics.validScores30Days],
+            [t("adminExtra.analytics.adViews30d"), analytics.completedAdViews30Days],
+            [t("adminExtra.analytics.guests30d"), analytics.guestUsers30Days]
+          ].map(([label, value]) => (
+            <div key={String(label)} className="rounded-md border border-white/10 bg-white/5 p-3">
+              <div className="text-xs font-black uppercase text-slate-400">{label}</div>
+              <div className="mt-1 text-2xl font-black text-white">{value}</div>
+            </div>
+          ))}
+        </section>
+      ) : null}
+
       <form
         className="flex flex-col gap-3 rounded-lg border border-white/10 bg-white/5 p-4 sm:flex-row"
         onSubmit={(event) => {
@@ -339,12 +361,12 @@ export function AdminPage() {
                         user.status === "BANNED" ? "bg-magentaGlow/20 text-pink-200" : "bg-cyanGlow/15 text-cyanGlow"
                       }`}
                     >
-                      {user.status}
+                      {t(`adminExtra.userStatuses.${user.status}`, user.status)}
                     </span>
                     {user.banReason ? <div className="mt-2 max-w-xs text-xs text-slate-400">{user.banReason}</div> : null}
-                    <div className="mt-2 text-xs font-black text-goldGlow">{user.trustStatus}</div>
-                    {user.activeRestrictions.length ? <div className="mt-1 text-xs text-pink-200">{user.activeRestrictions.length} active restriction(s)</div> : null}
-                    {user.activeRestrictions.map((restriction) => <button key={restriction.id} type="button" disabled={busy} onClick={() => void removeRestriction(user, restriction.id)} className="mt-1 block text-xs font-bold text-cyanGlow hover:text-white">Remove {restriction.type.replaceAll("_", " ")}</button>)}
+                    <div className="mt-2 text-xs font-black text-goldGlow">{t(`adminExtra.trustStatuses.${user.trustStatus}`, user.trustStatus)}</div>
+                    {user.activeRestrictions.length ? <div className="mt-1 text-xs text-pink-200">{t("adminExtra.activeRestrictions", { count: user.activeRestrictions.length })}</div> : null}
+                    {user.activeRestrictions.map((restriction) => <button key={restriction.id} type="button" disabled={busy} onClick={() => void removeRestriction(user, restriction.id)} className="mt-1 block text-xs font-bold text-cyanGlow hover:text-white">{t("adminExtra.removeRestriction", { type: t(`restrictions.types.${restriction.type}`, restriction.type.replaceAll("_", " ")) })}</button>)}
                   </td>
                   <td className="p-4 font-bold text-white">{user.highScore}</td>
                   <td className="p-4 text-goldGlow">{user.coins}</td>
@@ -364,16 +386,16 @@ export function AdminPage() {
                         {t("admin.thank")}
                       </Button>
                       <Button type="button" variant="secondary" disabled={busy} onClick={() => void resetPassword(user)} icon={<KeyRound size={16} />}>
-                        Reset password
+                        {t("adminExtra.resetPassword")}
                       </Button>
                       <Button type="button" variant="ghost" onClick={() => openAction("resetScores", user)} icon={<Trophy size={16} />}>
-                        Reset scores
+                        {t("adminExtra.resetScores")}
                       </Button>
                       <Button type="button" variant="ghost" onClick={() => void setTrust(user, user.trustStatus !== "TRUSTED")} icon={<ClipboardCheck size={16} />}>
-                        {user.trustStatus === "TRUSTED" ? "Mark suspicious" : "Mark trusted"}
+                        {user.trustStatus === "TRUSTED" ? t("adminExtra.markSuspicious") : t("adminExtra.markTrusted")}
                       </Button>
                       <Button type="button" variant="ghost" onClick={() => { setRestrictionUser(user); setRestrictionReason(""); }} icon={<ShieldAlert size={16} />}>
-                        Restrict
+                        {t("adminExtra.restrict")}
                       </Button>
                       {!user.emailVerifiedAt ? (
                         <>
@@ -415,43 +437,43 @@ export function AdminPage() {
 
       <div className="arcade-border rounded-lg p-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="flex items-center gap-2 text-xl font-black text-white"><Trophy size={20} className="text-goldGlow" /> Score moderation</h2>
-          <Button type="button" variant="ghost" onClick={() => void loadModerationData()}>Refresh</Button>
+          <h2 className="flex items-center gap-2 text-xl font-black text-white"><Trophy size={20} className="text-goldGlow" /> {t("adminExtra.scoreModeration")}</h2>
+          <Button type="button" variant="ghost" onClick={() => void loadModerationData()}>{t("admin.refresh")}</Button>
         </div>
         <div className="grid gap-3">
           {scores.filter((score) => score.status !== "valid" || score.reviewReason).map((score) => (
             <article key={score.id} className="rounded-lg border border-white/10 bg-white/5 p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
-                <div><div className="font-black text-white">{score.displayName} | {score.score}</div><div className="mt-1 text-xs text-slate-400">{score.status} | {score.durationMs} ms | distance {score.distance}</div></div>
-                <span className="rounded-md bg-magentaGlow/15 px-2 py-1 text-xs font-black text-pink-200">{score.status}</span>
+                <div><div className="font-black text-white">{score.displayName} | {score.score}</div><div className="mt-1 text-xs text-slate-400">{t(`adminExtra.scoreStatuses.${score.status}`, score.status)} | {score.durationMs} {t("adminExtra.ms")} | {t("game.distance")} {score.distance}</div></div>
+                <span className="rounded-md bg-magentaGlow/15 px-2 py-1 text-xs font-black text-pink-200">{t(`adminExtra.scoreStatuses.${score.status}`, score.status)}</span>
               </div>
-              <p className="mt-3 text-sm leading-6 text-slate-300">Reason: {score.reviewReason || "No reason recorded"}</p>
-              {score.session ? <div className="mt-2 text-xs text-slate-500">Coins {score.session.coinsCollected} | hits {score.session.obstacleHits} | {score.session.antiCheatNotes || "no session flags"}</div> : null}
+              <p className="mt-3 text-sm leading-6 text-slate-300">{t("admin.reason")}: {score.reviewReason || t("adminExtra.noReasonRecorded")}</p>
+              {score.session ? <div className="mt-2 text-xs text-slate-500">{t("game.coins")} {score.session.coinsCollected} | {t("adminExtra.hits")} {score.session.obstacleHits} | {score.session.antiCheatNotes || t("adminExtra.noSessionFlags")}</div> : null}
               <div className="mt-4 flex flex-wrap gap-2">
-                <Button type="button" variant="secondary" onClick={() => { setScoreAction({ score, status: "valid" }); setScoreReason("Score reviewed and approved by administrator."); }}>Approve</Button>
-                <Button type="button" variant="danger" onClick={() => { setScoreAction({ score, status: "rejected" }); setScoreReason(score.reviewReason || "Score rejected after review."); }}>Reject</Button>
-                <Button type="button" variant="ghost" onClick={() => { setScoreAction({ score, status: "hidden" }); setScoreReason("Score hidden by administrator."); }}>Hide</Button>
-                {users.find((user) => user.id === score.userId) ? <Button type="button" variant="danger" onClick={() => { const target = users.find((user) => user.id === score.userId); if (target) { openAction("ban", target); setActionText(`Cheating: ${score.reviewReason || "invalid score submission"}`); } }}>Ban for cheating</Button> : null}
+                <Button type="button" variant="secondary" onClick={() => { setScoreAction({ score, status: "valid" }); setScoreReason(t("adminExtra.scoreApprovedReason")); }}>{t("adminExtra.approve")}</Button>
+                <Button type="button" variant="danger" onClick={() => { setScoreAction({ score, status: "rejected" }); setScoreReason(score.reviewReason || t("adminExtra.scoreRejectedReason")); }}>{t("adminExtra.reject")}</Button>
+                <Button type="button" variant="ghost" onClick={() => { setScoreAction({ score, status: "hidden" }); setScoreReason(t("adminExtra.scoreHiddenReason")); }}>{t("adminExtra.hide")}</Button>
+                {users.find((user) => user.id === score.userId) ? <Button type="button" variant="danger" onClick={() => { const target = users.find((user) => user.id === score.userId); if (target) { openAction("ban", target); setActionText(t("adminExtra.cheatingReason", { reason: score.reviewReason || t("adminExtra.invalidScore") })); } }}>{t("adminExtra.banForCheating")}</Button> : null}
               </div>
             </article>
           ))}
-          {!scores.some((score) => score.status !== "valid" || score.reviewReason) ? <div className="text-sm text-slate-400">No scores need review.</div> : null}
-          <details className="rounded-md border border-white/10 bg-white/5 p-3 text-sm text-slate-300"><summary className="cursor-pointer font-black text-white">Valid score history ({scores.filter((score) => score.status === "valid").length})</summary><div className="mt-3 grid gap-2">{scores.filter((score) => score.status === "valid").slice(0, 30).map((score) => <div key={score.id} className="flex justify-between gap-3 border-t border-white/5 pt-2"><span>{score.displayName}</span><strong className="text-cyanGlow">{score.score}</strong></div>)}</div></details>
+          {!scores.some((score) => score.status !== "valid" || score.reviewReason) ? <div className="text-sm text-slate-400">{t("adminExtra.noScoresToReview")}</div> : null}
+          <details className="rounded-md border border-white/10 bg-white/5 p-3 text-sm text-slate-300"><summary className="cursor-pointer font-black text-white">{t("adminExtra.validScoreHistory", { count: scores.filter((score) => score.status === "valid").length })}</summary><div className="mt-3 grid gap-2">{scores.filter((score) => score.status === "valid").slice(0, 30).map((score) => <div key={score.id} className="flex justify-between gap-3 border-t border-white/5 pt-2"><span>{score.displayName}</span><strong className="text-cyanGlow">{score.score}</strong></div>)}</div></details>
         </div>
       </div>
 
       <div className="grid gap-5 xl:grid-cols-2">
         <div className="arcade-border rounded-lg p-5">
-          <h2 className="flex items-center gap-2 text-xl font-black text-white"><History size={20} className="text-cyanGlow" /> Admin audit log</h2>
+          <h2 className="flex items-center gap-2 text-xl font-black text-white"><History size={20} className="text-cyanGlow" /> {t("adminExtra.auditLog")}</h2>
           <div className="mt-4 grid max-h-[32rem] gap-2 overflow-y-auto pr-2">
-            {auditLogs.map((log) => <div key={log.id} className="rounded-md border border-white/10 bg-white/5 p-3 text-xs leading-5 text-slate-300"><strong className="text-white">{log.actionType}</strong><div>{log.reason || "No reason"}</div><div className="text-slate-500">{new Date(log.createdAt).toLocaleString()} | {log.adminEmail || "system"}</div></div>)}
+            {auditLogs.map((log) => <div key={log.id} className="rounded-md border border-white/10 bg-white/5 p-3 text-xs leading-5 text-slate-300"><strong className="text-white">{t(`adminExtra.auditActions.${log.actionType}`, log.actionType)}</strong><div>{log.reason || t("adminExtra.noReason")}</div><div className="text-slate-500">{new Date(log.createdAt).toLocaleString()} | {log.adminEmail || t("adminExtra.system")}</div></div>)}
           </div>
         </div>
         <div className="arcade-border rounded-lg p-5">
-          <h2 className="text-xl font-black text-white">Guest transfer attempts</h2>
+          <h2 className="text-xl font-black text-white">{t("adminExtra.guestTransfers")}</h2>
           <div className="mt-4 grid max-h-[32rem] gap-2 overflow-y-auto pr-2">
-            {guestTransfers.map((transfer) => <div key={transfer.id} className="rounded-md border border-white/10 bg-white/5 p-3 text-xs leading-5 text-slate-300"><strong className="text-white">{transfer.status}</strong> | local {transfer.bestScore} | moved {transfer.transferredScore}<div>{transfer.reason || "Passed validation"}</div><div className="text-slate-500">{new Date(transfer.createdAt).toLocaleString()}</div></div>)}
-            {!guestTransfers.length ? <div className="text-sm text-slate-400">No transfer attempts.</div> : null}
+            {guestTransfers.map((transfer) => <div key={transfer.id} className="rounded-md border border-white/10 bg-white/5 p-3 text-xs leading-5 text-slate-300"><strong className="text-white">{t(`adminExtra.transferStatuses.${transfer.status}`, transfer.status)}</strong> | {t("adminExtra.localScore")} {transfer.bestScore} | {t("adminExtra.transferredScore")} {transfer.transferredScore}<div>{transfer.reason || t("adminExtra.passedValidation")}</div><div className="text-slate-500">{new Date(transfer.createdAt).toLocaleString()}</div></div>)}
+            {!guestTransfers.length ? <div className="text-sm text-slate-400">{t("adminExtra.noTransfers")}</div> : null}
           </div>
         </div>
       </div>
@@ -481,7 +503,7 @@ export function AdminPage() {
                   : "border-white/10 bg-white/5 text-slate-300 hover:border-cyanGlow"
               }`}
             >
-              {status}
+              {t(`adminExtra.ticketStatuses.${status}`, status)}
             </button>
           ))}
         </div>
@@ -518,12 +540,12 @@ export function AdminPage() {
                   <span className="rounded-md bg-goldGlow/15 px-2 py-1 text-xs font-black text-goldGlow">
                     {t(`admin.ticketSources.${ticket.source}`)}
                   </span>
-                  <span className="rounded-md bg-cyanGlow/15 px-2 py-1 text-xs font-black text-cyanGlow">{ticket.status}</span>
+                  <span className="rounded-md bg-cyanGlow/15 px-2 py-1 text-xs font-black text-cyanGlow">{t(`adminExtra.ticketStatuses.${ticket.status}`, ticket.status)}</span>
                 </div>
               </div>
               <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-300">{ticket.message}</p>
-              {ticket.relatedEntityId ? <div className="mt-2 text-xs font-bold text-goldGlow">Related: {ticket.relatedEntityId}</div> : null}
-              {ticket.appealStatus ? <div className="mt-2 text-xs font-black text-cyanGlow">Appeal: {ticket.appealStatus}</div> : null}
+              {ticket.relatedEntityId ? <div className="mt-2 text-xs font-bold text-goldGlow">{t("adminExtra.related")}: {ticket.relatedEntityId}</div> : null}
+              {ticket.appealStatus ? <div className="mt-2 text-xs font-black text-cyanGlow">{t("adminExtra.appeal")}: {t(`adminExtra.appealStatuses.${ticket.appealStatus}`, ticket.appealStatus)}</div> : null}
               {ticket.adminResponse ? (
                 <div className="mt-3 rounded-md border border-cyanGlow/30 bg-cyanGlow/10 p-3 text-sm text-slate-100">{ticket.adminResponse}</div>
               ) : null}
@@ -600,9 +622,9 @@ export function AdminPage() {
               />
             </label>
             {(supportAction.ticket.category === "APPEAL" || supportAction.ticket.category === "BAN_APPEAL") ? (
-              <label className="grid gap-2 text-sm text-slate-300">Appeal decision<select value={supportAppealStatus} onChange={(event) => setSupportAppealStatus(event.target.value)} className="min-h-11 rounded-md border border-slate-700 bg-ink px-3 text-white"><option value="UNDER_REVIEW">Under review</option><option value="UPHELD">Keep restriction</option><option value="REMOVED">Remove restriction</option><option value="RESTORED">Restore score</option><option value="REJECTED">Reject appeal</option></select></label>
+              <label className="grid gap-2 text-sm text-slate-300">{t("adminExtra.appealDecision")}<select value={supportAppealStatus} onChange={(event) => setSupportAppealStatus(event.target.value)} className="min-h-11 rounded-md border border-slate-700 bg-ink px-3 text-white"><option value="UNDER_REVIEW">{t("adminExtra.appealStatuses.UNDER_REVIEW")}</option><option value="UPHELD">{t("adminExtra.appealStatuses.UPHELD")}</option><option value="REMOVED">{t("adminExtra.appealStatuses.REMOVED")}</option><option value="RESTORED">{t("adminExtra.appealStatuses.RESTORED")}</option><option value="REJECTED">{t("adminExtra.appealStatuses.REJECTED")}</option></select></label>
             ) : null}
-            <label className="grid gap-2 text-sm text-slate-300">Internal note (not shown to player)<textarea value={supportInternalNote} onChange={(event) => setSupportInternalNote(event.target.value)} rows={3} className="rounded-md border border-slate-700 bg-ink/70 px-3 py-2 text-slate-50" /></label>
+            <label className="grid gap-2 text-sm text-slate-300">{t("adminExtra.internalNote")}<textarea value={supportInternalNote} onChange={(event) => setSupportInternalNote(event.target.value)} rows={3} className="rounded-md border border-slate-700 bg-ink/70 px-3 py-2 text-slate-50" /></label>
             <Button type="button" disabled={busy} onClick={() => void submitSupportAction()}>
               {supportAction.status === "CLOSED" ? t("admin.closeTicket") : t("admin.reply")}
             </Button>
@@ -626,35 +648,35 @@ export function AdminPage() {
       ) : null}
 
       {temporaryPassword ? (
-        <Modal title="Temporary password" closeLabel="Close permanently" onClose={() => setTemporaryPassword(null)}>
+        <Modal title={t("adminExtra.temporaryPassword")} closeLabel={t("adminExtra.closePermanently")} onClose={() => setTemporaryPassword(null)}>
           <div className="grid gap-4">
             <div className="rounded-md border border-goldGlow/30 bg-goldGlow/10 p-3 text-sm leading-6 text-slate-200">
-              This password is shown only once. It is never stored or logged as plain text. The user must change it after login.
+              {t("adminExtra.temporaryPasswordHelp")}
             </div>
             <div className="rounded-md border border-white/10 bg-ink p-4 font-mono text-lg font-black text-white">{temporaryPassword.value}</div>
-            <Button type="button" onClick={() => void navigator.clipboard.writeText(temporaryPassword.value)} icon={<Copy size={18} />}>Copy temporary password</Button>
-            <Button type="button" variant="danger" onClick={() => setTemporaryPassword(null)}>Close and hide forever</Button>
+            <Button type="button" onClick={() => void navigator.clipboard.writeText(temporaryPassword.value)} icon={<Copy size={18} />}>{t("adminExtra.copyTemporaryPassword")}</Button>
+            <Button type="button" variant="danger" onClick={() => setTemporaryPassword(null)}>{t("adminExtra.closeAndHide")}</Button>
           </div>
         </Modal>
       ) : null}
 
       {scoreAction ? (
-        <Modal title={`${scoreAction.status} score`} closeLabel={t("common.close")} onClose={() => setScoreAction(null)}>
+        <Modal title={t("adminExtra.scoreDecisionTitle", { status: t(`adminExtra.scoreStatuses.${scoreAction.status}`) })} closeLabel={t("common.close")} onClose={() => setScoreAction(null)}>
           <div className="grid gap-4">
             <div className="rounded-md border border-white/10 bg-white/5 p-3 text-sm text-slate-300">{scoreAction.score.displayName} | {scoreAction.score.score}</div>
-            <label className="grid gap-2 text-sm text-slate-300">Reason<textarea value={scoreReason} onChange={(event) => setScoreReason(event.target.value)} rows={5} className="rounded-md border border-slate-700 bg-ink p-3 text-white" /></label>
-            <Button type="button" disabled={busy || scoreReason.trim().length < 3} onClick={() => void submitScoreAction()}>Confirm score decision</Button>
+            <label className="grid gap-2 text-sm text-slate-300">{t("admin.reason")}<textarea value={scoreReason} onChange={(event) => setScoreReason(event.target.value)} rows={5} className="rounded-md border border-slate-700 bg-ink p-3 text-white" /></label>
+            <Button type="button" disabled={busy || scoreReason.trim().length < 3} onClick={() => void submitScoreAction()}>{t("adminExtra.confirmScoreDecision")}</Button>
           </div>
         </Modal>
       ) : null}
 
       {restrictionUser ? (
-        <Modal title="Add restriction" closeLabel={t("common.close")} onClose={() => setRestrictionUser(null)}>
+        <Modal title={t("adminExtra.addRestriction")} closeLabel={t("common.close")} onClose={() => setRestrictionUser(null)}>
           <div className="grid gap-4">
             <div className="font-black text-white">{restrictionUser.displayName}</div>
-            <label className="grid gap-2 text-sm text-slate-300">Restriction type<select value={restrictionType} onChange={(event) => setRestrictionType(event.target.value as RestrictionType)} className="min-h-11 rounded-md border border-slate-700 bg-ink px-3 text-white"><option value="warning">Warning</option><option value="temporary_restriction">Temporary restriction</option><option value="support_restriction">Support restriction</option><option value="shop_restriction">Shop restriction</option><option value="leaderboard_restriction">Leaderboard restriction</option><option value="score_hidden">Score hidden</option><option value="rewards_removed">Rewards removed</option><option value="temporary_ban">Temporary ban</option><option value="permanent_ban">Permanent ban</option></select></label>
-            <label className="grid gap-2 text-sm text-slate-300">Reason<textarea value={restrictionReason} onChange={(event) => setRestrictionReason(event.target.value)} rows={5} className="rounded-md border border-slate-700 bg-ink p-3 text-white" /></label>
-            <Button type="button" disabled={busy || restrictionReason.trim().length < 3} onClick={() => void submitRestriction()}>Apply restriction</Button>
+            <label className="grid gap-2 text-sm text-slate-300">{t("adminExtra.restrictionType")}<select value={restrictionType} onChange={(event) => setRestrictionType(event.target.value as RestrictionType)} className="min-h-11 rounded-md border border-slate-700 bg-ink px-3 text-white"><option value="warning">{t("restrictions.types.warning")}</option><option value="temporary_restriction">{t("restrictions.types.temporary_restriction")}</option><option value="support_restriction">{t("restrictions.types.support_restriction")}</option><option value="shop_restriction">{t("restrictions.types.shop_restriction")}</option><option value="leaderboard_restriction">{t("restrictions.types.leaderboard_restriction")}</option><option value="score_hidden">{t("restrictions.types.score_hidden")}</option><option value="rewards_removed">{t("restrictions.types.rewards_removed")}</option><option value="temporary_ban">{t("restrictions.types.temporary_ban")}</option><option value="permanent_ban">{t("restrictions.types.permanent_ban")}</option></select></label>
+            <label className="grid gap-2 text-sm text-slate-300">{t("admin.reason")}<textarea value={restrictionReason} onChange={(event) => setRestrictionReason(event.target.value)} rows={5} className="rounded-md border border-slate-700 bg-ink p-3 text-white" /></label>
+            <Button type="button" disabled={busy || restrictionReason.trim().length < 3} onClick={() => void submitRestriction()}>{t("adminExtra.applyRestriction")}</Button>
           </div>
         </Modal>
       ) : null}

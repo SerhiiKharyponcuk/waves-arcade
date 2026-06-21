@@ -22,6 +22,7 @@ body,
 
 body {
   overflow-x: hidden;
+  overscroll-behavior-x: none;
   color: #f8fafc;
   background:
     radial-gradient(circle at 10% 15%, rgba(33, 212, 253, 0.2), transparent 28rem),

@@ -4,15 +4,17 @@ import { useTranslation } from "react-i18next";
 import { StatCard } from "../components/ui/StatCard";
 import { gameApi } from "../services/gameApi";
 import { useAuthStore } from "../store/authStore";
-import type { LeaderboardResponse } from "../types/api";
+import type { LeaderboardResponse, ProgressionDto } from "../types/api";
 
 export function ProfilePage() {
   const { t } = useTranslation();
   const { user } = useAuthStore();
   const [leaderboard, setLeaderboard] = useState<LeaderboardResponse | null>(null);
+  const [progression, setProgression] = useState<ProgressionDto | null>(null);
 
   useEffect(() => {
     void gameApi.leaderboard().then(setLeaderboard).catch(() => setLeaderboard(null));
+    void import("../services/authApi").then(({ authApi }) => authApi.progression()).then(setProgression).catch(() => setProgression(null));
   }, []);
 
   return (
@@ -68,15 +70,13 @@ export function ProfilePage() {
       </div>
 
       <div className="arcade-border rounded-lg p-5">
-        <h2 className="flex items-center gap-2 text-xl font-black text-white"><Star size={20} className="text-goldGlow" /> Achievements</h2>
+        <h2 className="flex items-center gap-2 text-xl font-black text-white"><Star size={20} className="text-goldGlow" /> {t("progression.achievements")}</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          {[
-            { name: "First Flight", unlocked: (user?.profile.highScore ?? 0) > 0, requirement: "Finish one valid run" },
-            { name: "Neon Sprinter", unlocked: (user?.profile.highScore ?? 0) >= 10_000, requirement: "Reach 10,000 score" },
-            { name: "Arena Master", unlocked: (user?.profile.highScore ?? 0) >= 50_000, requirement: "Reach 50,000 score" }
-          ].map((achievement) => <div key={achievement.name} className={`rounded-md border p-4 ${achievement.unlocked ? "border-goldGlow/40 bg-goldGlow/10" : "border-white/10 bg-white/5 opacity-60"}`}><div className="font-black text-white">{achievement.name}</div><div className="mt-1 text-xs text-slate-400">{achievement.requirement}</div><div className={`mt-3 text-xs font-black ${achievement.unlocked ? "text-goldGlow" : "text-slate-500"}`}>{achievement.unlocked ? "Unlocked" : "Locked"}</div></div>)}
+          {(progression?.achievements ?? []).map((achievement) => <div key={achievement.id} className={`rounded-md border p-4 ${achievement.unlocked ? "border-goldGlow/40 bg-goldGlow/10" : "border-white/10 bg-white/5 opacity-60"}`}><div className="font-black text-white">{t(`progression.items.${achievement.id}.title`, achievement.title)}</div><div className="mt-1 text-xs text-slate-400">{t(`progression.items.${achievement.id}.description`, achievement.description)}</div><div className="mt-3 text-xs font-black text-goldGlow">{achievement.progress}/{achievement.target}</div></div>)}
         </div>
       </div>
+
+      {progression ? <div className="grid gap-4 lg:grid-cols-2"><section className="arcade-border rounded-lg p-5"><h2 className="text-xl font-black text-white">{t("progression.dailyMissions")}</h2><div className="mt-4 grid gap-3">{progression.dailyMissions.map((mission) => <div key={mission.id} className="rounded-md border border-white/10 bg-white/5 p-3"><div className="flex justify-between gap-3"><strong className="text-white">{t(`progression.items.${mission.id}.title`, mission.title)}</strong><span className="text-goldGlow">+{mission.rewardCoins}</span></div><div className="mt-2 text-xs text-slate-400">{mission.progress}/{mission.target}{mission.completed ? ` - ${t("progression.completed")}` : ""}</div></div>)}</div></section><section className="arcade-border rounded-lg p-5"><h2 className="text-xl font-black text-white">{t("progression.season", { name: t(`progression.seasons.${progression.season.seasonId}`, progression.season.name) })}</h2><div className="mt-4 text-3xl font-black text-cyanGlow">{t("progression.level", { level: progression.season.level })}</div><div className="mt-2 text-sm text-slate-300">{progression.season.xp}/{progression.season.xpForNextLevel} {t("progression.xp")}</div><div className="mt-3 h-2 overflow-hidden rounded bg-white/10"><div className="h-full bg-cyanGlow" style={{ width: `${Math.min(100, progression.season.xp / progression.season.xpForNextLevel * 100)}%` }} /></div></section></div> : null}
     </section>
   );
 }

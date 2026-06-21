@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  adminAnalytics,
   adminBanUser,
   adminAuditLogs,
   adminGuestTransfers,
@@ -26,6 +27,7 @@ export const adminRoutes = Router();
 
 adminRoutes.use(requireAuth, requireAdmin);
 adminRoutes.get("/users", asyncHandler(adminUsers));
+adminRoutes.get("/analytics", asyncHandler(adminAnalytics));
 adminRoutes.post("/users/:userId/ban", validateBody(adminBanSchema), asyncHandler(adminBanUser));
 adminRoutes.post("/users/:userId/unban", validateBody(adminBanSchema.partial()), asyncHandler(adminUnbanUser));
 adminRoutes.post("/users/:userId/thank", validateBody(adminThankSchema), asyncHandler(adminThankUser));

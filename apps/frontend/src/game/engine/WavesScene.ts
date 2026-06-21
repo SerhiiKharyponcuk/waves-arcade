@@ -11,6 +11,7 @@ export interface GameStats {
   distance: number;
   durationMs: number;
   obstacleHits: number;
+  inputTransitions: number;
 }
 
 export interface WavesSceneOptions {
@@ -34,6 +35,8 @@ export class WavesScene extends Phaser.Scene {
   private pointerPressed = false;
   private virtualPressed = false;
   private pausedByUi = false;
+  private previousPressed = false;
+  private inputTransitions = 0;
 
   constructor(options: WavesSceneOptions) {
     super("waves-scene");
@@ -91,6 +94,11 @@ export class WavesScene extends Phaser.Scene {
       }
       this.firstInputAt = performance.now();
       this.startedAt = this.firstInputAt;
+    }
+
+    if (pressed !== this.previousPressed) {
+      this.inputTransitions += 1;
+      this.previousPressed = pressed;
     }
 
     this.player.update(delta, { pressed });
@@ -175,7 +183,8 @@ export class WavesScene extends Phaser.Scene {
       coins: this.coins,
       distance,
       durationMs: Math.floor(performance.now() - this.startedAt),
-      obstacleHits
+      obstacleHits,
+      inputTransitions: this.inputTransitions
     };
   }
 

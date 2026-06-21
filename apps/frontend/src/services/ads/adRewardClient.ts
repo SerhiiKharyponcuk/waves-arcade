@@ -1,6 +1,7 @@
 import type { AdPlacement, AdRewardCompleteDto } from "../../types/api";
 import { walletApi } from "../walletApi";
 import { getRewardedAdProvider } from "./adProvider";
+import { trackEvent } from "../analytics";
 
 export async function earnRewardedAdReward(placement: AdPlacement): Promise<AdRewardCompleteDto> {
   const provider = getRewardedAdProvider();
@@ -13,6 +14,8 @@ export async function earnRewardedAdReward(placement: AdPlacement): Promise<AdRe
   if (!adResult.completed) {
     throw new Error("Rewarded ad was not completed.");
   }
+
+  trackEvent("ad_reward_complete", { placement, provider: adResult.provider });
 
   return walletApi.completeAdReward({
     adSessionId: session.adSessionId,

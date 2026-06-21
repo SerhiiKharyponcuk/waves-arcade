@@ -1,5 +1,6 @@
 import type { AdPlacement, AdProvider } from "../../types/api";
 import { requestGoogleAdManagerRewardedAd } from "./googlePublisherTag";
+import { useConsentStore } from "../../store/consentStore";
 
 export interface RewardedAdResult {
   completed: boolean;
@@ -133,6 +134,9 @@ class GoogleAdManagerRewardedAdProvider implements RewardedAdProvider {
   readonly name = "google_ad_manager" as const;
 
   showRewardedAd(input: { placement: AdPlacement; adSessionId: string }): Promise<RewardedAdResult> {
+    if (!useConsentStore.getState().advertising) {
+      throw new Error("Advertising consent is required before loading this ad.");
+    }
     return requestGoogleAdManagerRewardedAd(input);
   }
 }

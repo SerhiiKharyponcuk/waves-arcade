@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Coins, Gift, Pause, Play, RotateCcw, Zap } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { GoogleAdSlot } from "../components/ads/GoogleAdSlot";
@@ -19,6 +19,7 @@ import { useAuthStore } from "../store/authStore";
 import { useGuestStore } from "../store/guestStore";
 import type { AdPlacement, DailyRewardDto, GameSessionEndResponseDto, RouletteConfigDto, RouletteSpinDto, ShopSkin } from "../types/api";
 import { gameThemes } from "@waves/shared";
+import { trackEvent } from "../services/analytics";
 
 type RunState = "idle" | "running" | "paused" | "over";
 
@@ -27,7 +28,8 @@ const emptyStats: GameStats = {
   coins: 0,
   distance: 0,
   durationMs: 0,
-  obstacleHits: 0
+  obstacleHits: 0,
+  inputTransitions: 0
 };
 
 export function GamePage() {
@@ -50,6 +52,14 @@ export function GamePage() {
   const [devtoolsBlocked, setDevtoolsBlocked] = useState(false);
   const [accountRequiredMessage, setAccountRequiredMessage] = useState("");
   const [showGuestAd, setShowGuestAd] = useState(false);
+  const latestStatsRef = useRef<GameStats>(emptyStats);
+  const checkpointSequenceRef = useRef(0);
+  const checkpointPendingRef = useRef(false);
+
+  const handleStats = useCallback((nextStats: GameStats) => {
+    latestStatsRef.current = nextStats;
+    setStats(nextStats);
+  }, []);
 
   useEffect(() => {
     if (isGuest) {
@@ -103,6 +113,9 @@ export function GamePage() {
         setShowGuestAd(false);
         setDevtoolsBlocked(false);
         setRunState("running");
+        trackEvent("game_start", { mode: "guest" });
+        latestStatsRef.current = emptyStats;
+        checkpointSequenceRef.current = 0;
         return;
       }
       const session = await gameApi.startSession();
@@ -111,6 +124,9 @@ export function GamePage() {
       setResult(null);
       setDevtoolsBlocked(false);
       setRunState("running");
+      trackEvent("game_start", { mode: "account" });
+      latestStatsRef.current = emptyStats;
+      checkpointSequenceRef.current = 0;
     } catch {
       setError(t("common.error"));
     } finally {
@@ -118,9 +134,43 @@ export function GamePage() {
     }
   }
 
+  const sendCheckpoint = useCallback(async () => {
+    const currentStats = latestStatsRef.current;
+    if (isGuest || !sessionId || checkpointPendingRef.current || currentStats.durationMs < 1_000) {
+      return;
+    }
+
+    checkpointPendingRef.current = true;
+    const sequence = checkpointSequenceRef.current + 1;
+    try {
+      await gameApi.checkpoint({
+        sessionId,
+        sequence,
+        elapsedMs: currentStats.durationMs,
+        distance: currentStats.distance,
+        coinsCollected: currentStats.coins,
+        inputTransitions: currentStats.inputTransitions
+      });
+      checkpointSequenceRef.current = sequence;
+    } catch {
+      // The final server validation decides whether the run is accepted.
+    } finally {
+      checkpointPendingRef.current = false;
+    }
+  }, [isGuest, sessionId]);
+
+  useEffect(() => {
+    if (runState !== "running" || isGuest || !sessionId) {
+      return;
+    }
+
+    const interval = window.setInterval(() => void sendCheckpoint(), 5_000);
+    return () => window.clearInterval(interval);
+  }, [isGuest, runState, sendCheckpoint, sessionId]);
+
   async function claimReward() {
     if (isGuest) {
-      setAccountRequiredMessage("You need an account to claim rewards.");
+      setAccountRequiredMessage(t("gameExtra.accountForRewards"));
       return;
     }
     setBusy(true);
@@ -137,7 +187,7 @@ export function GamePage() {
 
   async function spinRoulette(): Promise<RouletteSpinDto | null> {
     if (isGuest) {
-      setAccountRequiredMessage("You need an account to use rewards.");
+      setAccountRequiredMessage(t("gameExtra.accountForRewards"));
       return null;
     }
     if (!rouletteConfig) {
@@ -167,7 +217,7 @@ export function GamePage() {
 
   async function watchAd(placement: AdPlacement = "coins") {
     if (isGuest) {
-      setAccountRequiredMessage("You need an account to receive rewarded items.");
+      setAccountRequiredMessage(t("gameExtra.accountForRewardedItems"));
       return;
     }
     setAdBusy(true);
@@ -190,6 +240,7 @@ export function GamePage() {
     async (finalStats: GameStats) => {
       setRunState("over");
       setStats(finalStats);
+      trackEvent("game_complete", { mode: isGuest ? "guest" : "account", score: finalStats.score, durationMs: finalStats.durationMs });
 
       if (isGuest) {
         recordGame(finalStats.score);
@@ -206,6 +257,7 @@ export function GamePage() {
       }
 
       try {
+        await sendCheckpoint();
         const submitted = await gameApi.endSession({
           sessionId,
           score: finalStats.score,
@@ -221,11 +273,11 @@ export function GamePage() {
         setError(t("common.error"));
       }
     },
-    [isGuest, patchWallet, recordGame, sessionId, t, updateSession]
+    [isGuest, patchWallet, recordGame, sendCheckpoint, sessionId, t, updateSession]
   );
 
   function openGuestSavePrompt() {
-    setAccountRequiredMessage("Log in or create an account to save your score.");
+    setAccountRequiredMessage(t("gameExtra.loginToSave"));
     if (guestSession && shouldShowGuestAd("save_score", guestSession)) {
       updateSession(recordAdShown);
       setShowGuestAd(true);
@@ -266,7 +318,7 @@ export function GamePage() {
           skins={gameSkins}
           theme={selectedTheme}
           paused={runState === "paused" || runState === "over"}
-          onStats={setStats}
+          onStats={handleStats}
           onGameOver={handleGameOver}
         />
 
@@ -275,7 +327,7 @@ export function GamePage() {
             <div className="grid gap-4">
               <div className="grid grid-cols-2 gap-3">
                 <StatCard icon={<Zap size={20} />} label={t("game.score")} value={result?.score ?? stats.score} />
-                <StatCard icon={<Coins size={20} />} label={isGuest ? "Local best" : t("game.coinsEarned")} value={isGuest ? guestSession?.bestGuestScore ?? stats.score : result?.coinsAwarded ?? 0} />
+                <StatCard icon={<Coins size={20} />} label={isGuest ? t("guest.localBest") : t("game.coinsEarned")} value={isGuest ? guestSession?.bestGuestScore ?? stats.score : result?.coinsAwarded ?? 0} />
               </div>
               {result?.newHighScore ? (
                 <div className="rounded-md border border-cyanGlow/40 bg-cyanGlow/10 p-3 text-sm font-bold text-cyanGlow">
@@ -284,23 +336,23 @@ export function GamePage() {
               ) : null}
               {result?.status === "pending_review" || result?.status === "suspicious" ? (
                 <div className="rounded-md border border-goldGlow/40 bg-goldGlow/10 p-3 text-sm font-bold text-goldGlow">
-                  Your score is under review.
+                  {t("gameExtra.scoreUnderReview")}
                 </div>
               ) : null}
               {result?.status === "rejected" ? (
                 <div className="rounded-md border border-magentaGlow/40 bg-magentaGlow/10 p-3 text-sm font-bold text-pink-200">
-                  This score was rejected by server validation.
+                  {t("gameExtra.scoreRejected")}
                 </div>
               ) : null}
               {isGuest ? (
                 <div className="rounded-md border border-cyanGlow/30 bg-cyanGlow/10 p-3 text-sm leading-6 text-slate-200">
-                  Create an account to save your score, unlock skins and keep your progress.
+                  {t("gameExtra.guestGameOver")}
                 </div>
               ) : null}
               {isGuest && showGuestAd ? <GoogleAdSlot /> : null}
               {isGuest ? (
                 <Button type="button" onClick={openGuestSavePrompt} icon={<Zap size={18} />}>
-                  Save score
+                  {t("gameExtra.saveScore")}
                 </Button>
               ) : null}
               <Button type="button" onClick={() => void startRun()} icon={<RotateCcw size={18} />}>
@@ -308,11 +360,11 @@ export function GamePage() {
               </Button>
               {isGuest ? (
                 <div className="grid grid-cols-2 gap-2">
-                  <Button type="button" variant="secondary" onClick={() => requestAuthentication("register")}>Create account</Button>
-                  <Button type="button" variant="secondary" onClick={() => requestAuthentication("login")}>Log in</Button>
+                  <Button type="button" variant="secondary" onClick={() => requestAuthentication("register")}>{t("guest.createAccount")}</Button>
+                  <Button type="button" variant="secondary" onClick={() => requestAuthentication("login")}>{t("auth.login")}</Button>
                 </div>
               ) : null}
-              {isGuest ? <Button type="button" variant="ghost" onClick={() => setRunState("idle")}>Continue as guest</Button> : null}
+              {isGuest ? <Button type="button" variant="ghost" onClick={() => setRunState("idle")}>{t("guest.continue")}</Button> : null}
             </div>
           </Modal>
         ) : null}
@@ -398,7 +450,7 @@ export function GamePage() {
             onClick={() => void claimReward()}
             icon={<Gift size={18} />}
           >
-            {isGuest ? "Account required" : dailyReward?.canClaim ? t("menu.claim") : t("menu.claimed")}
+            {isGuest ? t("guest.accountRequired") : dailyReward?.canClaim ? t("menu.claim") : t("menu.claimed")}
           </Button>
         </div>
 
@@ -425,7 +477,7 @@ export function GamePage() {
 
         <div className="grid grid-cols-2 gap-4">
           <StatCard icon={<Zap size={20} />} label={t("profile.highScore")} value={user?.profile.highScore ?? 0} />
-          <StatCard icon={<Coins size={20} />} label={isGuest ? "Games" : t("profile.coins")} value={isGuest ? guestSession?.gamesPlayed ?? 0 : user?.wallet.coins ?? 0} />
+          <StatCard icon={<Coins size={20} />} label={isGuest ? t("guest.games") : t("profile.coins")} value={isGuest ? guestSession?.gamesPlayed ?? 0 : user?.wallet.coins ?? 0} />
         </div>
 
         <GoogleAdSlot />

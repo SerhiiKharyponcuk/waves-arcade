@@ -1,4 +1,5 @@
 export interface GameRuleSection {
+  key: string;
   title: string;
   start: number;
   rules: string[];
@@ -6,6 +7,7 @@ export interface GameRuleSection {
 
 const sections: Array<Omit<GameRuleSection, "start">> = [
   {
+    key: "general",
     title: "General game rules",
     rules: [
       "Use Waves Arcade only for lawful personal entertainment.",
@@ -20,6 +22,7 @@ const sections: Array<Omit<GameRuleSection, "start">> = [
     ]
   },
   {
+    key: "guest",
     title: "Guest player rules",
     rules: [
       "Guests may play without creating an account.",
@@ -34,6 +37,7 @@ const sections: Array<Omit<GameRuleSection, "start">> = [
     ]
   },
   {
+    key: "account",
     title: "Account rules",
     rules: [
       "Provide accurate account information and a valid email address.",
@@ -48,6 +52,7 @@ const sections: Array<Omit<GameRuleSection, "start">> = [
     ]
   },
   {
+    key: "password",
     title: "Password and security rules",
     rules: [
       "Use a strong password that you do not reuse on another service.",
@@ -62,6 +67,7 @@ const sections: Array<Omit<GameRuleSection, "start">> = [
     ]
   },
   {
+    key: "score",
     title: "Score and leaderboard rules",
     rules: [
       "Only scores produced by a valid authenticated game session may enter the leaderboard.",
@@ -76,6 +82,7 @@ const sections: Array<Omit<GameRuleSection, "start">> = [
     ]
   },
   {
+    key: "antiCheat",
     title: "Anti-cheat rules",
     rules: [
       "Do not modify localStorage, sessionStorage, IndexedDB, or cookies to gain an advantage.",
@@ -90,6 +97,7 @@ const sections: Array<Omit<GameRuleSection, "start">> = [
     ]
   },
   {
+    key: "shop",
     title: "Skins, shop and rewards rules",
     rules: [
       "Skins and themes are licenses for in-game use and are not cash or property.",
@@ -104,6 +112,7 @@ const sections: Array<Omit<GameRuleSection, "start">> = [
     ]
   },
   {
+    key: "ads",
     title: "Ads and rewarded ads rules",
     rules: [
       "Rewarded-ad benefits require a confirmed completed ad event.",
@@ -118,6 +127,7 @@ const sections: Array<Omit<GameRuleSection, "start">> = [
     ]
   },
   {
+    key: "support",
     title: "Support and appeal rules",
     rules: [
       "Never include a password, token, secret key, or full payment credential in a ticket.",
@@ -132,6 +142,7 @@ const sections: Array<Omit<GameRuleSection, "start">> = [
     ]
   },
   {
+    key: "bans",
     title: "Ban and restriction rules",
     rules: [
       "Possible actions include warnings, feature restrictions, score resets, temporary bans, and permanent bans.",
@@ -146,6 +157,7 @@ const sections: Array<Omit<GameRuleSection, "start">> = [
     ]
   },
   {
+    key: "privacy",
     title: "Privacy and data rules",
     rules: [
       "Do not publish another player's private information.",
@@ -160,6 +172,7 @@ const sections: Array<Omit<GameRuleSection, "start">> = [
     ]
   },
   {
+    key: "admin",
     title: "Administrator and enforcement rules",
     rules: [
       "Administrators may review suspicious scores, session history, restrictions, and related audit records.",

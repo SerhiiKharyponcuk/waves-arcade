@@ -51,6 +51,10 @@ model User {
   targetedAuditLogs      AdminAuditLog[]         @relation("AuditTargetUser")
   guestTransferAttempts  GuestTransferAttempt[]
   ownedThemes            OwnedTheme[]
+  analyticsEvents        AnalyticsEvent[]
+  achievements           AchievementProgress[]
+  dailyMissions          DailyMissionProgress[]
+  seasonProgress         SeasonProgress?
 }
 
 model UserProfile {
@@ -280,6 +284,12 @@ model GameSession {
   valid          Boolean   @default(false)
   antiCheatNotes String?
   status         String    @default("started")
+  checkpointCount        Int       @default(0)
+  lastCheckpointAt       DateTime?
+  lastCheckpointElapsedMs Int      @default(0)
+  checkpointDistance     Int       @default(0)
+  checkpointCoins        Int       @default(0)
+  checkpointTransitions  Int       @default(0)
   user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
@@ -431,4 +441,60 @@ model GuestTransferAttempt {
   @@index([userId])
   @@index([guestIdHash])
   @@index([status])
+}
+
+model AnalyticsEvent {
+  id          String   @id @default(uuid())
+  userId      String?
+  guestIdHash String?
+  eventType   String
+  sessionKey  String?
+  metadata    String?
+  createdAt   DateTime @default(now())
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([eventType, createdAt])
+  @@index([userId, createdAt])
+  @@index([guestIdHash, createdAt])
+}
+
+model AchievementProgress {
+  id            String    @id @default(uuid())
+  userId        String
+  achievementId String
+  progress      Int       @default(0)
+  unlockedAt    DateTime?
+  claimedAt     DateTime?
+  updatedAt     DateTime  @updatedAt
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@index([userId])
+}
+
+model DailyMissionProgress {
+  id          String    @id @default(uuid())
+  userId      String
+  missionId   String
+  dayKey      String
+  progress    Int       @default(0)
+  target      Int
+  completedAt DateTime?
+  claimedAt   DateTime?
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, missionId, dayKey])
+  @@index([userId, dayKey])
+}
+
+model SeasonProgress {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  seasonId  String
+  xp        Int      @default(0)
+  level     Int      @default(1)
+  premium   Boolean  @default(false)
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

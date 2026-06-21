@@ -54,7 +54,7 @@ export function SupportPage() {
         ? await supportApi.createPublicTicket({ ...payload, email: contactEmail.trim(), displayName: contactName.trim() || undefined })
         : await supportApi.createTicket(payload);
       if (!isGuest) setTickets((current) => [ticket, ...current]);
-      setSuccess(`Ticket created: ${ticket.id}`);
+      setSuccess(t("support.ticketCreated", { id: ticket.id }));
       setSubject("");
       setMessage("");
     } catch (error) {
@@ -84,9 +84,9 @@ export function SupportPage() {
             onChange={(event) => setBotWebsite(event.target.value)}
             name="website"
           />
-          <div className="rounded-md border border-goldGlow/30 bg-goldGlow/10 p-3 text-sm leading-6 text-slate-200">Never send your password. Support will never ask for your password.</div>
-          <button type="button" onClick={() => setView("rules")} className="justify-self-start text-sm font-bold text-cyanGlow hover:text-white">Read Support Rules and Terms</button>
-          {isGuest ? <><Input label="Email for reply" type="email" value={contactEmail} onChange={(event) => setContactEmail(event.target.value)} required maxLength={160} /><Input label="Display name (optional)" value={contactName} onChange={(event) => setContactName(event.target.value)} maxLength={60} /></> : null}
+          <div className="rounded-md border border-goldGlow/30 bg-goldGlow/10 p-3 text-sm leading-6 text-slate-200">{t("support.passwordWarning")}</div>
+          <button type="button" onClick={() => setView("rules")} className="justify-self-start text-sm font-bold text-cyanGlow hover:text-white">{t("support.readRules")}</button>
+          {isGuest ? <><Input label={t("support.replyEmail")} type="email" value={contactEmail} onChange={(event) => setContactEmail(event.target.value)} required maxLength={160} /><Input label={t("support.optionalName")} value={contactName} onChange={(event) => setContactName(event.target.value)} maxLength={60} /></> : null}
           <label className="grid gap-2 text-sm text-slate-300">
             <span>{t("support.category")}</span>
             <select
@@ -102,7 +102,7 @@ export function SupportPage() {
             </select>
           </label>
           <Input label={t("support.subject")} value={subject} onChange={(event) => setSubject(event.target.value)} required maxLength={120} />
-          {(category === "APPEAL" || category === "SCORE") ? <Input label="Related restriction or score ID (optional)" value={relatedEntityId} onChange={(event) => setRelatedEntityId(event.target.value)} maxLength={100} /> : null}
+          {(category === "APPEAL" || category === "SCORE") ? <Input label={t("support.relatedId")} value={relatedEntityId} onChange={(event) => setRelatedEntityId(event.target.value)} maxLength={100} /> : null}
           <label className="grid gap-2 text-sm text-slate-300">
             <span>{t("support.message")}</span>
             <textarea
@@ -144,7 +144,7 @@ export function SupportPage() {
           ))}
           {!tickets.length ? <div className="text-sm text-slate-400">{t("support.empty")}</div> : null}
         </div>
-      </div> : <div className="arcade-border rounded-lg p-5 text-sm leading-7 text-slate-300"><h2 className="text-xl font-black text-white">Guest support rules</h2><p className="mt-3">Use a valid email for replies. Spam, offensive messages, false reports, and repeated abuse can lead to restrictions. Support cannot guarantee restoration of a suspicious score.</p></div>}
+      </div> : <div className="arcade-border rounded-lg p-5 text-sm leading-7 text-slate-300"><h2 className="text-xl font-black text-white">{t("support.guestRulesTitle")}</h2><p className="mt-3">{t("support.guestRulesBody")}</p></div>}
     </section>
   );
 }

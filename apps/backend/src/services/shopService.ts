@@ -144,6 +144,18 @@ export async function buySkin(userId: string, skinId: string): Promise<{ skin: S
       }
     });
 
+    await tx.walletTransaction.create({
+      data: {
+        userId,
+        walletId: wallet.id,
+        type: "SHOP_PURCHASE",
+        provider: "wallet",
+        amountCoins: -skin.priceCoins,
+        amountGems: -skin.priceGems,
+        metadata: JSON.stringify({ skinId })
+      }
+    });
+
     return updatedWallet;
   });
 

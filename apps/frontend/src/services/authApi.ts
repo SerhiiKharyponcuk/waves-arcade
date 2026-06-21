@@ -59,6 +59,9 @@ export const authApi = {
   me() {
     return apiRequest<CurrentUser>("/auth/me");
   },
+  progression() {
+    return apiRequest<import("../types/api").ProgressionDto>("/user/progression");
+  },
   transferGuestProgress(payload: GuestTransferPayloadDto) {
     return apiRequest<GuestTransferResultDto>("/auth/guest-transfer", {
       method: "POST",
@@ -70,6 +73,9 @@ export const authApi = {
       method: "POST",
       body: JSON.stringify(payload)
     });
+  },
+  deleteAccount(payload: { password: string; confirmation: "DELETE" }) {
+    return apiRequest<{ success: boolean }>("/user/account", { method: "DELETE", body: JSON.stringify(payload) });
   },
   updateProfile(payload: Partial<Pick<UserProfileDto, "displayName" | "locale" | "avatarUrl" | "selectedThemeId" | "customization" | "gameSettings" | "showUsernameInLeaderboard" | "hideProfile">>) {
     return apiRequest<UserProfileDto>("/user/profile", {

@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type { AuthResponse, CurrentUser, LoginPayload, RegisterPayload, RegisterResponse, UserProfileDto, VerifyEmailPayload, WalletDto } from "../types/api";
 import { authApi } from "../services/authApi";
 import { setAccessToken } from "../services/apiClient";
+import { trackEvent } from "../services/analytics";
 
 interface AuthState {
   token: string;
@@ -48,6 +49,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const result = await authApi.login(payload);
       set({ ...applyAuthResponse(result), loading: false });
+      trackEvent("login_success");
     } catch (error) {
       set({ loading: false, error: error instanceof Error ? error.message : "Login failed" });
     }
@@ -58,6 +60,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const result = await authApi.register(payload);
       if ("accessToken" in result) {
         set({ ...applyAuthResponse(result), loading: false });
+        trackEvent("registration_success");
       } else {
         set({ loading: false, error: "" });
       }

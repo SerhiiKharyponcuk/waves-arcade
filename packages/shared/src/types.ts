@@ -29,7 +29,7 @@ export type AdProvider = "mock" | "crazygames" | "admob" | "unity" | "google_ad_
 
 export type UserRole = "PLAYER" | "ADMIN";
 
-export type UserStatus = "ACTIVE" | "BANNED";
+export type UserStatus = "ACTIVE" | "BANNED" | "DELETED";
 
 export type ScoreStatus = "valid" | "suspicious" | "pending_review" | "rejected" | "hidden";
 
@@ -261,6 +261,21 @@ export interface GameSessionEndRequestDto {
   clientChecksum: string;
 }
 
+export interface GameSessionCheckpointRequestDto {
+  sessionId: string;
+  sequence: number;
+  elapsedMs: number;
+  distance: number;
+  coinsCollected: number;
+  inputTransitions: number;
+}
+
+export interface GameSessionCheckpointResponseDto {
+  accepted: boolean;
+  sequence: number;
+  serverReceivedAt: string;
+}
+
 export interface GameSessionEndResponseDto {
   accepted: boolean;
   status: ScoreStatus;
@@ -341,6 +356,52 @@ export interface GuestTransferResultDto {
   selectedThemeId: string;
   reason?: string;
   user: AuthUserDto;
+}
+
+export interface AchievementProgressDto {
+  id: string;
+  title: string;
+  description: string;
+  progress: number;
+  target: number;
+  unlocked: boolean;
+  unlockedAt?: string | null;
+}
+
+export interface DailyMissionDto {
+  id: string;
+  title: string;
+  progress: number;
+  target: number;
+  completed: boolean;
+  rewardCoins: number;
+}
+
+export interface SeasonProgressDto {
+  seasonId: string;
+  name: string;
+  xp: number;
+  level: number;
+  xpForNextLevel: number;
+  premium: boolean;
+}
+
+export interface ProgressionDto {
+  achievements: AchievementProgressDto[];
+  dailyMissions: DailyMissionDto[];
+  season: SeasonProgressDto;
+}
+
+export interface AdminAnalyticsDto {
+  registeredUsers: number;
+  registeredLast7Days: number;
+  activePlayers7Days: number;
+  gameSessions30Days: number;
+  validScores30Days: number;
+  completedAdViews30Days: number;
+  guestUsers30Days: number;
+  returningPlayers7Days: number;
+  generatedAt: string;
 }
 
 export interface ModerationActionDto {

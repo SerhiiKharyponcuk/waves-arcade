@@ -64,6 +64,10 @@ EMAIL_PROVIDER=resend
 EMAIL_FROM=Waves Arcade <noreply@your-domain.com>
 RESEND_API_KEY=your-resend-api-key
 EMAIL_VERIFICATION_REQUIRED=false
+CAPTCHA_PROVIDER=turnstile
+TURNSTILE_SECRET_KEY=your-cloudflare-turnstile-secret
+SENTRY_DSN=
+SENTRY_ENVIRONMENT=production
 AD_PROVIDER=google_ad_manager
 AD_SESSION_TTL_SECONDS=600
 ```
@@ -125,6 +129,9 @@ VITE_GAME_BUILD=production
 VITE_AD_PROVIDER=google_ad_manager
 VITE_GOOGLE_AD_MANAGER_REWARDED_AD_UNIT_PATH=/123456789/waves_rewarded
 VITE_GOOGLE_AD_MANAGER_BANNER_AD_UNIT_PATH=/123456789/waves_lobby_banner
+VITE_TURNSTILE_SITE_KEY=your-cloudflare-turnstile-site-key
+VITE_SENTRY_DSN=
+VITE_GOOGLE_PRIVACY_MESSAGING_ID=
 ```
 
 At first, before Google ads are approved, you can temporarily use:
@@ -189,6 +196,10 @@ Before inviting players:
 - Render `CORS_ORIGIN` equals the real Vercel URL.
 - Google ad unit paths are real, not placeholders.
 - `mock` ads are disabled for production.
+- Cookie consent is tested and Google ads do not load before advertising consent.
+- Turnstile is configured on both frontend and backend before switching `CAPTCHA_PROVIDER` to `turnstile`.
+- Privacy Policy, Cookie Policy and account deletion are reachable.
+- A database backup and restore drill has been completed.
 
 ## 8. What Not To Do
 
