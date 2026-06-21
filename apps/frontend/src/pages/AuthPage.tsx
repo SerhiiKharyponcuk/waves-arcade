@@ -10,6 +10,8 @@ import { supportApi } from "../services/supportApi";
 import { useAuthStore } from "../store/authStore";
 import { useGuestStore } from "../store/guestStore";
 import { gameRuleSections } from "../data/gameRules";
+import { TurnstileWidget } from "../components/auth/TurnstileWidget";
+import { PolicyPage } from "./PolicyPage";
 
 const supportedLocales: readonly SupportedLocale[] = ["en", "nl", "ru", "uk"];
 const publicSupportCategories: SupportTicketCategory[] = ["APPEAL", "ACCOUNT", "SCORE", "BUG", "PAYMENT", "SHOP", "OTHER"];
@@ -29,7 +31,9 @@ export function AuthPage() {
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState("");
   const [termsOpen, setTermsOpen] = useState(false);
+  const [policyOpen, setPolicyOpen] = useState<"privacy" | "cookies" | null>(null);
   const [botWebsite, setBotWebsite] = useState("");
   const [formStartedAt] = useState(() => Date.now());
   const [forgotOpen, setForgotOpen] = useState(false);
@@ -80,6 +84,7 @@ export function AuthPage() {
       displayName: displayName.trim(),
       locale: resolveAccountLocale(i18n.language),
       termsAccepted,
+      captchaToken: captchaToken || undefined,
       website: botWebsite,
       formStartedAt
     });
@@ -272,6 +277,7 @@ export function AuthPage() {
                     </button>
                   </span>
                 </label>
+                <TurnstileWidget onToken={setCaptchaToken} />
               </>
             ) : null}
 
@@ -284,7 +290,7 @@ export function AuthPage() {
 
             <Button
               type="submit"
-              disabled={loading || (mode === "register" && !termsAccepted)}
+              disabled={loading || (mode === "register" && (!termsAccepted || (Boolean(import.meta.env.VITE_TURNSTILE_SITE_KEY) && !captchaToken)))}
               icon={mode === "login" ? <LogIn size={18} /> : <UserPlus size={18} />}
               className="mt-2"
             >
@@ -302,7 +308,7 @@ export function AuthPage() {
             {mode === "login" ? (
               <>
                 <Button type="button" variant="secondary" onClick={continueAsGuest} icon={<Gamepad2 size={18} />}>
-                  Continue as guest
+                  {t("guest.continue")}
                 </Button>
                 <Button type="button" variant="ghost" onClick={() => setForgotOpen(true)}>
                   {t("auth.forgotPassword")}
@@ -313,19 +319,26 @@ export function AuthPage() {
               </>
             ) : null}
             <Button type="button" variant="ghost" onClick={() => setTermsOpen(true)}>
-              Game Rules and Terms
+              {t("rulesPage.title")}
             </Button>
           </form>
         </section>
       </div>
 
+      <footer className="mt-5 flex flex-wrap justify-center gap-5 text-xs"><button type="button" className="font-bold text-cyanGlow" onClick={() => setTermsOpen(true)}>{t("rulesPage.title")}</button><button type="button" className="font-bold text-cyanGlow" onClick={() => setPolicyOpen("privacy")}>{t("policies.privacy.title")}</button><button type="button" className="font-bold text-cyanGlow" onClick={() => setPolicyOpen("cookies")}>{t("policies.cookies.title")}</button></footer>
+
       {termsOpen ? (
-        <Modal title="Game Rules and Terms" closeLabel={t("common.close")} onClose={() => setTermsOpen(false)}>
-          <div className="grid max-h-[65vh] gap-5 overflow-y-auto pr-2 text-sm leading-6 text-slate-300">
-            {gameRuleSections.map((section) => <section key={section.title}><h3 className="font-black text-white">{section.title}</h3><ol start={section.start} className="mt-2 grid gap-2">{section.rules.map((rule) => <li key={rule} className="ml-6 pl-1">{rule}</li>)}</ol></section>)}
+        <Modal title={t("rulesPage.title")} closeLabel={t("common.close")} onClose={() => setTermsOpen(false)}>
+          <div className="grid max-h-[58vh] gap-5 overflow-y-auto pr-2 text-sm leading-6 text-slate-300">
+            {gameRuleSections.map((section) => <section key={section.title}><h3 className="font-black text-white">{t(`rulesPage.categories.${section.key}`, section.title)}</h3><ol start={section.start} className="mt-2 grid gap-2">{section.rules.map((rule, index) => <li key={rule} className="ml-6 pl-1">{t(`ruleTexts.${section.key}.${index}`, rule)}</li>)}</ol></section>)}
           </div>
+          <Button type="button" className="mt-4 w-full" onClick={() => setTermsOpen(false)}>
+            {t("common.close")}
+          </Button>
         </Modal>
       ) : null}
+
+      {policyOpen ? <Modal title={t(`policies.${policyOpen}.title`)} closeLabel={t("common.close")} onClose={() => setPolicyOpen(null)}><div className="max-h-[70vh] overflow-y-auto"><PolicyPage type={policyOpen} onClose={() => setPolicyOpen(null)} /></div></Modal> : null}
 
       {forgotOpen ? (
         <Modal title={t("auth.forgotPassword")} closeLabel={t("common.close")} onClose={() => setForgotOpen(false)}>

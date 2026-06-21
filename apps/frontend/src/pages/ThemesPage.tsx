@@ -7,11 +7,13 @@ import { authApi } from "../services/authApi";
 import { shopApi } from "../services/shopApi";
 import { useAuthStore } from "../store/authStore";
 import { useGuestStore } from "../store/guestStore";
+import { useTranslation } from "react-i18next";
 
 type ThemeItem = GameThemeDto & { owned: boolean; equipped: boolean; canUnlockByScore: boolean };
 const guestThemeIds = new Set(["classic-neon", "dark-space", "cyber-grid"]);
 
 export function ThemesPage() {
+  const { t } = useTranslation();
   const { user, replaceUser } = useAuthStore();
   const { active: guestActive, session, updateSession, requestAuthentication } = useGuestStore();
   const isGuest = guestActive && !user;
@@ -21,8 +23,8 @@ export function ThemesPage() {
   const [accountRequired, setAccountRequired] = useState(false);
 
   useEffect(() => {
-    void shopApi.themes().then(setThemes).catch((error) => setError(error instanceof Error ? error.message : "Themes could not be loaded."));
-  }, []);
+    void shopApi.themes().then(setThemes).catch((error) => setError(error instanceof Error ? error.message : t("themesPage.loadError")));
+  }, [t]);
 
   async function selectTheme(theme: ThemeItem) {
     if (isGuest) {
@@ -42,7 +44,7 @@ export function ThemesPage() {
       if (!theme.owned) setThemes(await shopApi.equipTheme(theme.id));
       replaceUser(await authApi.me());
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Theme could not be selected.");
+      setError(error instanceof Error ? error.message : t("themesPage.selectError"));
     } finally {
       setBusyId("");
     }
@@ -51,12 +53,12 @@ export function ThemesPage() {
   return (
     <section className="grid gap-6">
       <header>
-        <div className="mb-3 inline-flex items-center gap-2 rounded-md bg-cyanGlow px-3 py-2 text-sm font-black text-ink"><Palette size={17} /> Themes</div>
-        <h1 className="text-4xl font-black text-white neon-text">Build your arena atmosphere</h1>
-        <p className="mt-2 max-w-2xl text-slate-300">Themes change the background, trail palette, obstacles, interface accent, and particles.</p>
+        <div className="mb-3 inline-flex items-center gap-2 rounded-md bg-cyanGlow px-3 py-2 text-sm font-black text-ink"><Palette size={17} /> {t("themesPage.title")}</div>
+        <h1 className="text-4xl font-black text-white neon-text">{t("themesPage.heading")}</h1>
+        <p className="mt-2 max-w-2xl text-slate-300">{t("themesPage.subtitle")}</p>
       </header>
 
-      {isGuest ? <div className="rounded-md border border-cyanGlow/30 bg-cyanGlow/10 p-4 text-sm text-slate-200">Create an account to unlock more themes. Guests can use the first three basic themes.</div> : null}
+      {isGuest ? <div className="rounded-md border border-cyanGlow/30 bg-cyanGlow/10 p-4 text-sm text-slate-200">{t("themesPage.guestNotice")}</div> : null}
       {error ? <div className="rounded-md border border-magentaGlow/40 bg-magentaGlow/10 p-3 text-sm text-pink-200">{error}</div> : null}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -74,10 +76,10 @@ export function ThemesPage() {
               </div>
               <div className="grid gap-3 p-4">
                 <div className="flex items-start justify-between gap-3">
-                  <div><h2 className="font-black text-white">{theme.name}</h2><p className="mt-1 text-xs text-slate-400">{theme.unlockCondition}</p></div>
-                  <span className="rounded-md px-2 py-1 text-xs font-black uppercase" style={{ color: theme.uiAccentColor, backgroundColor: `${theme.uiAccentColor}20` }}>{theme.type}</span>
+                  <div><h2 className="font-black text-white">{t(`themesPage.items.${theme.id}.name`, theme.name)}</h2><p className="mt-1 text-xs text-slate-400">{theme.type === "free" ? t("themesPage.availableEveryone") : theme.type === "premium" ? t("themesPage.premiumEntitlement") : t("themesPage.unlockCondition", { score: theme.priceCoins * 10, coins: theme.priceCoins })}</p></div>
+                  <span className="rounded-md px-2 py-1 text-xs font-black uppercase" style={{ color: theme.uiAccentColor, backgroundColor: `${theme.uiAccentColor}20` }}>{t(`themesPage.types.${theme.type}`)}</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-slate-400"><Sparkles size={14} /> {theme.particleStyle}</div>
+                <div className="flex items-center gap-2 text-xs text-slate-400"><Sparkles size={14} /> {t(`themesPage.items.${theme.id}.particles`, theme.particleStyle)}</div>
                 <Button
                   type="button"
                   variant={selected ? "secondary" : "primary"}
@@ -85,7 +87,7 @@ export function ThemesPage() {
                   onClick={() => void selectTheme(theme)}
                   icon={selected ? <Check size={17} /> : available ? <Palette size={17} /> : theme.type === "unlockable" ? <Coins size={17} /> : <Lock size={17} />}
                 >
-                  {selected ? "Equipped" : available ? "Equip" : theme.type === "unlockable" ? `${theme.priceCoins} coins / score` : "Unlock"}
+                  {selected ? t("themesPage.equipped") : available ? t("themesPage.equip") : theme.type === "unlockable" ? t("themesPage.coinsOrScore", { coins: theme.priceCoins }) : t("themesPage.unlock")}
                 </Button>
               </div>
             </article>
@@ -93,7 +95,7 @@ export function ThemesPage() {
         })}
       </div>
 
-      {accountRequired ? <AccountRequiredModal message="Create an account to unlock more themes." onLogin={() => requestAuthentication("login")} onRegister={() => requestAuthentication("register")} onContinue={() => setAccountRequired(false)} /> : null}
+      {accountRequired ? <AccountRequiredModal message={t("themesPage.accountRequired")} onLogin={() => requestAuthentication("login")} onRegister={() => requestAuthentication("register")} onContinue={() => setAccountRequired(false)} /> : null}
     </section>
   );
 }

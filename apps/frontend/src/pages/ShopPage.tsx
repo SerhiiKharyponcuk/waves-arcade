@@ -118,7 +118,7 @@ export function ShopPage() {
 
       {isGuest ? (
         <div className="rounded-md border border-cyanGlow/30 bg-cyanGlow/10 p-4 text-sm leading-6 text-slate-200">
-          You can preview every skin as a Guest. Create an account to buy, unlock, or equip items.
+          {t("shop.guestPreview")}
         </div>
       ) : null}
       {isGuest && showGuestAd ? <GoogleAdSlot /> : null}
@@ -158,7 +158,7 @@ export function ShopPage() {
 
       {accountRequired ? (
         <AccountRequiredModal
-          message="You need an account to buy or equip skins."
+          message={t("shop.guestAccountRequired")}
           onLogin={() => requestAuthentication("login")}
           onRegister={() => requestAuthentication("register")}
           onContinue={() => setAccountRequired(false)}

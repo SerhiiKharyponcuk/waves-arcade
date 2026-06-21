@@ -17,6 +17,7 @@ import {
   unbanUser
 } from "../services/adminService.js";
 import { AppError } from "../utils/appError.js";
+import { getAdminAnalytics } from "../services/analyticsService.js";
 
 export async function adminUsers(request: Request, response: Response) {
   response.json(await listAdminUsers(String(request.query.q ?? "")));
@@ -85,4 +86,8 @@ export async function adminAuditLogs(_request: Request, response: Response) {
 
 export async function adminGuestTransfers(_request: Request, response: Response) {
   response.json(await listGuestTransferAttempts());
+}
+
+export async function adminAnalytics(_request: Request, response: Response) {
+  response.json(await getAdminAnalytics());
 }

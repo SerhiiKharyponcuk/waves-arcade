@@ -24,6 +24,7 @@ export const registerSchema = z.object({
   termsAccepted: z.literal(true, {
     errorMap: () => ({ message: "Terms of use must be accepted." })
   }),
+  captchaToken: z.string().trim().min(10).max(4_096).optional(),
   ...botGuardSchema
 }).superRefine(rejectFastBots);
 
@@ -60,6 +61,15 @@ export const gameSessionEndSchema = z.object({
   durationMs: z.number().int().min(0).max(900_000),
   obstacleHits: z.number().int().min(0).max(100),
   clientChecksum: z.string().max(128).default("")
+});
+
+export const gameSessionCheckpointSchema = z.object({
+  sessionId: z.string().uuid(),
+  sequence: z.number().int().min(1).max(500),
+  elapsedMs: z.number().int().min(0).max(900_000),
+  distance: z.number().int().min(0).max(10_000_000),
+  coinsCollected: z.number().int().min(0).max(5_000),
+  inputTransitions: z.number().int().min(0).max(20_000)
 });
 
 export const skinMutationSchema = z.object({
@@ -171,3 +181,15 @@ export const resendVerificationSchema = z.object({
   email: z.string().trim().email("Enter a valid email address.").max(160, "Email is too long."),
   ...botGuardSchema
 }).superRefine(rejectFastBots);
+
+export const analyticsEventSchema = z.object({
+  guestId: z.string().trim().min(8).max(100).optional(),
+  eventType: z.enum(["app_open", "guest_session_start", "login_success", "registration_success", "game_start", "game_complete", "shop_view", "ad_view", "ad_reward_complete", "account_deleted", "client_error"]),
+  sessionKey: z.string().trim().max(100).optional(),
+  metadata: z.record(z.union([z.string().max(120), z.number(), z.boolean(), z.null()])).optional()
+});
+
+export const deleteAccountSchema = z.object({
+  password: z.string().min(1).max(128),
+  confirmation: z.literal("DELETE")
+});

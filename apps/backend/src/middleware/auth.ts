@@ -23,8 +23,8 @@ export async function requireAuth(request: Request, _response: Response, next: N
       next(new AppError(401, "Account not found.", "ACCOUNT_NOT_FOUND"));
       return;
     }
-    if (user.status === "BANNED") {
-      next(new AppError(403, user.banReason ? `Account banned: ${user.banReason}` : "Account banned.", "ACCOUNT_BANNED"));
+    if (user.status !== "ACTIVE") {
+      next(new AppError(403, user.status === "BANNED" && user.banReason ? `Account banned: ${user.banReason}` : "Account is not active.", "ACCOUNT_INACTIVE"));
       return;
     }
 

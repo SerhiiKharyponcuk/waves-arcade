@@ -1,0 +1,13 @@
+{
+  "name": "Waves Arcade",
+  "short_name": "Waves",
+  "description": "A neon arcade wave runner.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070914",
+  "theme_color": "#22d3ee",
+  "orientation": "any",
+  "icons": [
+    { "src": "/waves-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

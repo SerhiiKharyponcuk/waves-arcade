@@ -124,6 +124,9 @@ Backend:
 - `NODE_ENV`
 - `AD_PROVIDER`
 - `AD_SESSION_TTL_SECONDS`
+- `CAPTCHA_PROVIDER` and `TURNSTILE_SECRET_KEY`
+- `EMAIL_PROVIDER`, `EMAIL_FROM`, and `RESEND_API_KEY`
+- `SENTRY_DSN` and `SENTRY_ENVIRONMENT`
 
 Frontend:
 
@@ -132,6 +135,8 @@ Frontend:
 - `VITE_AD_PROVIDER`
 - `VITE_GOOGLE_AD_MANAGER_REWARDED_AD_UNIT_PATH`
 - `VITE_GOOGLE_AD_MANAGER_BANNER_AD_UNIT_PATH`
+- `VITE_TURNSTILE_SITE_KEY`
+- `VITE_SENTRY_DSN`
 
 Use long random JWT secrets before any public deployment.
 
@@ -164,6 +169,7 @@ Game:
 
 - `POST /api/game/session/start`
 - `POST /api/game/session/end`
+- `POST /api/game/session/checkpoint`
 - `POST /api/game/score`
 - `GET /api/game/leaderboard`
 
@@ -190,7 +196,10 @@ Currency:
 - Input validation uses Zod.
 - Helmet, CORS, and rate limiting are enabled.
 - Skin purchases and coin spending are validated server-side.
-- Score submission goes through game sessions and anti-cheat validation placeholders.
+- Score submission goes through server-owned sessions, periodic checkpoints, and review states.
+- Rejected checkpoints cannot later produce a valid leaderboard score.
+- Optional Turnstile and strict registration limits reduce automated account creation.
+- Privacy choices gate analytics and Google advertising scripts.
 - Client-only coin changes are not trusted.
 
 ## Monetization Plan
@@ -222,6 +231,7 @@ Ready to connect later:
 
 See [docs/MONETIZATION.md](docs/MONETIZATION.md) for real ad provider setup.
 See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for Vercel + Render + Neon production deployment.
+See [docs/PRODUCTION_READINESS.md](docs/PRODUCTION_READINESS.md) for security findings, backups, and launch risks.
 
 ## Database Models
 
@@ -243,7 +253,7 @@ Next production milestones:
 
 1. Add refresh-token rotation and token revocation.
 2. Add admin dashboard for skins, offers, rewards, and moderation.
-3. Add deterministic server score replay checks for stronger anti-cheat.
+3. Upgrade checkpoint validation to deterministic authoritative server replay for prize tournaments.
 4. Add audio mixer, haptics, and mobile safe-area polish.
 5. Add seasonal missions, battle pass progress, and daily quests.
 6. Add CDN-backed asset pipeline for premium cosmetics.

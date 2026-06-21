@@ -9,8 +9,10 @@ import {
   verifyEmailCode
 } from "../services/authService.js";
 import { transferGuestProgress } from "../services/guestTransferService.js";
+import { verifyRegistrationCaptcha } from "../services/captchaService.js";
 
 export async function register(request: Request, response: Response) {
+  await verifyRegistrationCaptcha(request.body.captchaToken, request.ip);
   const result = await registerAccount(request.body);
   response.status(201).json(result);
 }

@@ -6,6 +6,7 @@ import { shopRoutes } from "./shopRoutes.js";
 import { supportRoutes } from "./supportRoutes.js";
 import { userRoutes } from "./userRoutes.js";
 import { walletRoutes } from "./walletRoutes.js";
+import { analyticsRoutes } from "./analyticsRoutes.js";
 
 export const apiRoutes = Router();
 
@@ -20,3 +21,4 @@ apiRoutes.use("/game", gameRoutes);
 apiRoutes.use("/shop", shopRoutes);
 apiRoutes.use("/support", supportRoutes);
 apiRoutes.use("/wallet", walletRoutes);
+apiRoutes.use("/analytics", analyticsRoutes);

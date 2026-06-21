@@ -8,6 +8,8 @@
     "profile": "Profiel",
     "support": "Support",
     "settings": "Instellingen",
+    "themes": "Thema's",
+    "rules": "Regels",
     "admin": "Admin"
   },
   "auth": {
@@ -17,20 +19,20 @@
     "register": "Registreren",
     "email": "E-mail",
     "password": "Wachtwoord",
-    "forgotPassword": "Forgot password?",
+    "forgotPassword": "Wachtwoord vergeten?",
     "verifyEmail": "E-mail bevestigen",
     "verificationCode": "Verificatiecode",
     "verificationSent": "We hebben een 6-cijferige code naar je e-mail gestuurd.",
     "verificationCreated": "Verificatiecode gemaakt. E-mailbezorging is nog niet geconfigureerd.",
     "devCode": "Dev-code:",
     "resendCode": "Code opnieuw sturen",
-    "forgotHelp": "Enter your account email. If the account exists, a secure reset link will be sent.",
-    "sendReset": "Send reset link",
-    "resetSent": "If that email exists, reset instructions have been sent.",
-    "resetReady": "Development reset link:",
-    "newPassword": "New password",
-    "savePassword": "Save password",
-    "passwordResetDone": "Password changed. You can log in now.",
+    "forgotHelp": "Vul het e-mailadres van je account in. Als het account bestaat, sturen we een veilige resetlink.",
+    "sendReset": "Resetlink versturen",
+    "resetSent": "Als dit e-mailadres bestaat, zijn resetinstructies verstuurd.",
+    "resetReady": "Ontwikkel-resetlink:",
+    "newPassword": "Nieuw wachtwoord",
+    "savePassword": "Wachtwoord opslaan",
+    "passwordResetDone": "Wachtwoord gewijzigd. Je kunt nu inloggen.",
     "displayName": "Spelersnaam",
     "createAccount": "Account maken",
     "haveAccount": "Ik heb al een account",
@@ -107,7 +109,9 @@
     "premium": "Premium",
     "limited": "Tijdelijk",
     "coins": "{{count}} munten",
-    "gems": "{{count}} edelstenen"
+    "gems": "{{count}} edelstenen",
+    "guestPreview": "Als gast kun je elke skin bekijken. Maak een account om items te kopen, vrij te spelen of te gebruiken.",
+    "guestAccountRequired": "Je hebt een account nodig om skins te kopen of te gebruiken."
   },
   "inventory": {
     "title": "Skininventaris",
@@ -129,12 +133,16 @@
     }
   },
   "skinCategory": {
+    "player": "Spelerskin",
     "arrow": "Pijlskin",
     "trail": "Spoorlijn",
     "line": "Lijneffect",
     "effect": "Speciaal effect",
+    "hitEffect": "Raakeffect",
+    "coinEffect": "Munteffect",
     "background": "Achtergrond",
     "deathEffect": "Doodseffect",
+    "profileAvatar": "Profielavatar",
     "profileFrame": "Profielframe",
     "badge": "Badge"
   },
@@ -149,10 +157,23 @@
     "score": "Score",
     "emptyLeaderboard": "Nog geen scores."
   },
+  "premium": {
+    "title": "Premium", "heading": "Meer beloningen, minder onderbrekingen", "subtitle": "Een productklare plek voor toekomstige abonnementen en premiumrechten.", "noAds": "Geen advertenties", "premiumBadge": "Premiumbadge", "premiumSkins": "Premiumskins", "extraDailySpins": "{{count}} extra dagelijkse draai(en)", "extraDailyGems": "{{count}} extra dagelijkse edelsteen/edelstenen", "extraLivesPerRun": "{{count}} extra leven(s) per ronde", "betterDailyRewards": "Verbeterde dagelijkse beloningen", "calloutTitle": "Betalingen zijn nog niet actief", "calloutText": "Deze voordelen komen van de backend. Een betalingsprovider kan later worden aangesloten zonder de spel- of winkelinterface opnieuw te bouwen.", "enabled": "Actief", "disabled": "Uit", "loading": "Laden"
+  },
   "settings": {
     "title": "Instellingen",
+    "guestTitle": "Beperkte gastinstellingen",
+    "accountTitle": "Account- en spelinstellingen",
+    "guestIntro": "Deze voorkeuren blijven op dit apparaat.",
+    "accountIntro": "Ondersteunde voorkeuren worden in je account opgeslagen.",
     "language": "Taal",
     "account": "Account",
+    "gameplay": "Gameplay",
+    "controls": "Besturing",
+    "audio": "Audio",
+    "visuals": "Beeld",
+    "privacy": "Privacy",
+    "support": "Support",
     "save": "Opslaan",
     "saved": "Opgeslagen",
     "payments": "Betalingen",
@@ -161,37 +182,37 @@
     "adsNote": "Beloningsadvertenties kunnen aansluiten op de wallet-beloningen."
   },
   "terms": {
-    "title": "Terms of use",
-    "acceptPrefix": "I accept the",
+    "title": "Gebruiksvoorwaarden",
+    "acceptPrefix": "Ik accepteer de",
     "items": [
-      "You agree to play fairly and not manipulate score, coins, skins, ads, requests, or game sessions.",
-      "Developer tools, request editing, automation, scripts, modified clients, and score tampering are not allowed during gameplay.",
-      "The game may pause or block a run when developer tools or suspicious behavior are detected.",
-      "Admins may review suspicious activity, remove unfair leaderboard results, ban accounts, unban accounts, and send moderation notices.",
-      "Bans include a reason written by an admin. Players who report real security issues can receive public or private thanks.",
-      "Purchases, ad rewards, roulette rewards, and coins are validated server-side. Client-only changes are not trusted.",
-      "Bots, mass account creation, spam, harassment, insults, threats, offensive support messages, payment abuse, and attempts to bypass restrictions are forbidden.",
-      "Support requests must be respectful and honest. Abusive messages can be rejected and may lead to account moderation."
+      "Je speelt eerlijk en manipuleert geen scores, munten, skins, advertenties, verzoeken of spelsessies.",
+      "Ontwikkelaarstools, verzoekbewerking, automatisering, scripts, aangepaste clients en scoremanipulatie zijn tijdens het spelen verboden.",
+      "Het spel kan een ronde pauzeren of blokkeren bij ontwikkelaarstools of verdacht gedrag.",
+      "Beheerders mogen verdachte activiteit beoordelen, oneerlijke scores verwijderen, accounts blokkeren of deblokkeren en meldingen sturen.",
+      "Een ban bevat een reden van een beheerder. Spelers die echte beveiligingsproblemen melden kunnen een bedankje krijgen.",
+      "Aankopen, advertentie- en roulettebeloningen en munten worden op de server gecontroleerd.",
+      "Bots, massaregistratie, spam, intimidatie, beledigingen, bedreigingen, betalingsmisbruik en het omzeilen van beperkingen zijn verboden.",
+      "Supportverzoeken moeten respectvol en eerlijk zijn. Misbruik kan worden afgewezen en tot moderatie leiden."
     ]
   },
   "security": {
-    "devtoolsTitle": "Developer tools detected",
-    "devtoolsBody": "This run was paused for fair play. Close developer tools and start a new run."
+    "devtoolsTitle": "Ontwikkelaarstools gedetecteerd",
+    "devtoolsBody": "Deze ronde is voor eerlijk spel gepauzeerd. Sluit de ontwikkelaarstools en start een nieuwe ronde."
   },
   "admin": {
-    "title": "Admin control",
-    "subtitle": "Review players, protect the leaderboard, ban rule breakers, unban accounts, and thank people who help improve the game.",
-    "search": "Search player or email",
-    "searchButton": "Search",
-    "player": "Player",
+    "title": "Beheerderspaneel",
+    "subtitle": "Beoordeel spelers, bescherm de ranglijst, blokkeer overtreders, herstel accounts en bedank mensen die het spel helpen verbeteren.",
+    "search": "Zoek speler of e-mail",
+    "searchButton": "Zoeken",
+    "player": "Speler",
     "status": "Status",
     "score": "Score",
-    "coins": "Coins",
-    "lastAction": "Last action",
-    "actions": "Actions",
-    "ban": "Ban",
-    "unban": "Unban",
-    "thank": "Thank",
+    "coins": "Munten",
+    "lastAction": "Laatste actie",
+    "actions": "Acties",
+    "ban": "Blokkeren",
+    "unban": "Deblokkeren",
+    "thank": "Bedanken",
     "emailVerified": "E-mail bevestigd",
     "emailUnverified": "E-mail niet bevestigd",
     "resendVerification": "Code opnieuw sturen",
@@ -200,16 +221,16 @@
     "verificationEmailFailed": "De e-mailprovider heeft de code niet verzonden. Bevestig handmatig of configureer een geverifieerd verzenddomein.",
     "emailVerifiedManually": "E-mailadres handmatig bevestigd.",
     "manualVerifyWarning": "Bevestig dit adres alleen als je hebt gecontroleerd dat het van de speler is. Hiermee wordt de e-mailcode overgeslagen.",
-    "reason": "Reason",
-    "message": "Message",
-    "confirm": "Confirm",
-    "empty": "No players found.",
-    "noticeTitle": "Admin notice",
-    "supportInbox": "Support inbox",
-    "refresh": "Refresh",
-    "reply": "Reply",
-    "closeTicket": "Close ticket",
-    "noTickets": "No support tickets.",
+    "reason": "Reden",
+    "message": "Bericht",
+    "confirm": "Bevestigen",
+    "empty": "Geen spelers gevonden.",
+    "noticeTitle": "Beheerdersmelding",
+    "supportInbox": "Supportinbox",
+    "refresh": "Vernieuwen",
+    "reply": "Antwoorden",
+    "closeTicket": "Ticket sluiten",
+    "noTickets": "Geen supporttickets.",
     "copyEmail": "E-mail kopiëren",
     "emailCopied": "E-mail gekopieerd.",
     "ticketSources": {
@@ -217,19 +238,19 @@
       "GUEST": "Gast",
       "ACCOUNT": "Account"
     },
-    "defaultBanReason": "Score manipulation or Terms of use violation.",
-    "defaultUnbanReason": "Reviewed by admin.",
-    "defaultThanks": "Thank you for helping us find and fix a security issue in Waves Arcade.",
+    "defaultBanReason": "Scoremanipulatie of overtreding van de voorwaarden.",
+    "defaultUnbanReason": "Beoordeeld door beheerder.",
+    "defaultThanks": "Bedankt dat je ons hielp een beveiligingsprobleem in Waves Arcade te vinden en op te lossen.",
     "banReasons": {
-      "scoreManipulation": "Score manipulation or leaderboard cheating.",
-      "botAccount": "Bot account or automated registration.",
-      "abusiveSupport": "Abusive or disrespectful support message.",
-      "harassment": "Harassment, threats, hate speech, or insults.",
-      "spam": "Spam, repeated fake reports, or flooding support.",
-      "multiAccount": "Multiple accounts used to bypass limits or bans.",
-      "paymentFraud": "Payment, ad reward, or shop abuse.",
-      "devtools": "Developer tools or modified client used during gameplay.",
-      "termsViolation": "Terms of use violation."
+      "scoreManipulation": "Scoremanipulatie of valsspelen in de ranglijst.",
+      "botAccount": "Botaccount of geautomatiseerde registratie.",
+      "abusiveSupport": "Beledigend of respectloos supportbericht.",
+      "harassment": "Intimidatie, bedreigingen, haatspraak of beledigingen.",
+      "spam": "Spam, herhaalde valse meldingen of support overspoelen.",
+      "multiAccount": "Meerdere accounts om limieten of bans te omzeilen.",
+      "paymentFraud": "Misbruik van betaling, advertentiebeloning of winkel.",
+      "devtools": "Ontwikkelaarstools of aangepaste client tijdens het spelen.",
+      "termsViolation": "Overtreding van de gebruiksvoorwaarden."
     }
   },
   "support": {
@@ -240,28 +261,251 @@
     "contactName": "Naam (optioneel)",
     "passwordWarning": "Stuur nooit je wachtwoord. Support en admins hebben het niet nodig en mogen er niet om vragen.",
     "guestSent": "Aanvraag verzonden. Referentie:",
-    "subtitle": "Send a message to the admin team about bugs, accounts, shop issues, payments, bans, or anything that needs review.",
-    "category": "Category",
-    "subject": "Subject",
-    "message": "Message",
-    "send": "Send request",
-    "myTickets": "My requests",
-    "adminResponse": "Admin response",
-    "empty": "No support requests yet.",
+    "subtitle": "Stuur het beheerteam een bericht over bugs, accounts, winkelproblemen, betalingen, bans of iets anders dat moet worden bekeken.",
+    "category": "Categorie",
+    "subject": "Onderwerp",
+    "message": "Bericht",
+    "send": "Aanvraag versturen",
+    "myTickets": "Mijn aanvragen",
+    "adminResponse": "Antwoord van beheerder",
+    "empty": "Nog geen supportaanvragen.",
+    "ticketCreated": "Ticket aangemaakt: {{id}}",
+    "readRules": "Lees de supportregels en voorwaarden",
+    "replyEmail": "E-mail voor antwoord",
+    "optionalName": "Weergavenaam (optioneel)",
+    "relatedId": "Bijbehorende beperking- of score-ID (optioneel)",
+    "guestRulesTitle": "Supportregels voor gasten",
+    "guestRulesBody": "Gebruik een geldig e-mailadres voor antwoorden. Spam, beledigende berichten, valse meldingen en herhaald misbruik kunnen tot beperkingen leiden. Support kan herstel van een verdachte score niet garanderen.",
     "categories": {
       "BUG": "Bug report",
-      "BAN_APPEAL": "Ban appeal",
-      "ACCOUNT": "Account",
-      "PAYMENT": "Payment",
-      "SHOP": "Shop",
-      "OTHER": "Other"
+      "BAN_APPEAL": "Bezwaar tegen ban",
+      "APPEAL": "Bezwaar",
+      "ACCOUNT": "Accountprobleem",
+      "SCORE": "Scoreprobleem",
+      "PAYMENT": "Betaling",
+      "SHOP": "Winkel",
+      "OTHER": "Overig"
     }
+  },
+  "rulesPage": {
+    "title": "Spelregels en voorwaarden",
+    "heading": "Speel eerlijk. Houd de arena veilig.",
+    "intro": "Deze regels gelden voor gasten, accounts, scores, aankopen, advertenties, support en beheerdersbesluiten.",
+    "securityTitle": "Beveiligingsherinnering",
+    "securityBody": "Deel nooit je wachtwoord. Support en beheerders zullen er nooit om vragen.",
+    "categories": { "general": "Algemene spelregels", "guest": "Regels voor gasten", "account": "Accountregels", "password": "Wachtwoord- en beveiligingsregels", "score": "Score- en ranglijstregels", "antiCheat": "Anti-cheatregels", "shop": "Regels voor skins, winkel en beloningen", "ads": "Regels voor advertenties en beloonde advertenties", "support": "Support- en bezwaarregels", "bans": "Ban- en beperkingsregels", "privacy": "Privacy- en gegevensregels", "admin": "Beheerders- en handhavingsregels" }
+  },
+  "ruleTexts": {
+    "general": [
+      "Gebruik Waves Arcade alleen voor legaal persoonlijk vermaak.",
+      "Behandel andere spelers, supportmedewerkers en beheerders met respect.",
+      "Verstoor de dienst of het spel van een andere speler niet.",
+      "Volg deze regels op elk apparaat, in elke browser en op elk netwerk dat je gebruikt.",
+      "Doe je niet voor als medewerker of beheerder van Waves Arcade.",
+      "Publiceer geen misleidende beweringen over officiële evenementen of beloningen.",
+      "Meld beveiligingsproblemen privé via Support.",
+      "Moedig andere spelers niet aan om deze regels te overtreden.",
+      "Regels kunnen worden bijgewerkt om eerlijkheid, veiligheid en naleving van de wet te beschermen."
+    ],
+    "guest": [
+      "Gasten mogen spelen zonder een account te maken.",
+      "Gastscores zijn lokaal en worden niet naar de wereldwijde ranglijst gestuurd.",
+      "Gastvoortgang kan verloren gaan wanneer browsergegevens worden gewist.",
+      "Gastvoortgang wordt niet automatisch tussen apparaten overgezet.",
+      "Gasten mogen alleen beschikbare basisthema's, besturing en gratis aanpassingen gebruiken.",
+      "Gasten mogen vergrendelde items bekijken, maar niet gebruiken of kopen.",
+      "Lokale gastgegevens zijn geen bewijs van eigendom, betaling of ranglijstpositie.",
+      "Gemodificeerde gastgegevens worden niet naar een account overgezet.",
+      "Gasten moeten een geldig e-mailadres opgeven wanneer zij Support benaderen."
+    ],
+    "account": [
+      "Geef juiste accountgegevens en een geldig e-mailadres op.",
+      "Eén persoon mag niet veel accounts maken om beloningen of ranglijsten te misbruiken.",
+      "Het verkopen, verhuren, ruilen of weggeven van een account is verboden.",
+      "Het gebruiken van andermans account zonder duidelijke toestemming is verboden.",
+      "Accountnamen mogen geen medewerkers nadoen of beledigende inhoud bevatten.",
+      "Je bent verantwoordelijk voor activiteiten via je account.",
+      "Gebruik geen account dat met gestolen of geautomatiseerde identiteitsgegevens is gemaakt.",
+      "Ontwijk geen accountbeperking met een ander account.",
+      "Accountvoordelen kunnen worden verwijderd wanneer ze door misbruik of een fout zijn verkregen."
+    ],
+    "password": [
+      "Gebruik een sterk wachtwoord dat je niet bij een andere dienst hergebruikt.",
+      "Deel je wachtwoord nooit met spelers, Support of beheerders.",
+      "Medewerkers van Waves Arcade zullen nooit vragen je wachtwoord te sturen.",
+      "Vraag, verzamel of bewaar het wachtwoord van een andere speler niet.",
+      "Tijdelijke wachtwoorden moeten direct na het inloggen worden gewijzigd.",
+      "Meld vermoedelijke accounttoegang zo snel mogelijk via Support.",
+      "Deel geen toegangstokens, resetlinks, verificatiecodes of sessiecookies.",
+      "Het gebruik van gestolen tokens of inloggegevens is verboden.",
+      "Pogingen om zonder toestemming het beheerpaneel te openen zijn verboden."
+    ],
+    "score": [
+      "Alleen scores uit een geldige ingelogde spelsessie mogen in de ranglijst komen.",
+      "Gasten kunnen geen scores naar de wereldwijde ranglijst sturen.",
+      "Het verhogen, verzinnen of boosten van scores is verboden.",
+      "Een score kan worden vastgehouden wanneer deze redelijke spellimieten overschrijdt.",
+      "Herstel van een verdachte score is niet gegarandeerd.",
+      "Herhaalde onmogelijke scores kunnen leiden tot verwijdering of accountbeperkingen.",
+      "Zichtbaarheid in de ranglijst kan worden beperkt zonder normaal spelen te blokkeren.",
+      "Verborgen of afgewezen scores mogen niet via technische omwegen opnieuw worden ingestuurd.",
+      "Goedkeuring van één score valideert geen andere scores."
+    ],
+    "antiCheat": [
+      "Wijzig localStorage, sessionStorage, IndexedDB of cookies niet om voordeel te krijgen.",
+      "Wijzig, herhaal, vervals of vervang geen API-verzoeken.",
+      "Bots, scripts, macro's en geautomatiseerd spelen zijn verboden.",
+      "Auto-clickers en geautomatiseerde invoertools zijn verboden.",
+      "Aangepaste clients, geïnjecteerde scripts en ongeoorloofde browserextensies zijn verboden.",
+      "Wijzig geen spelgeheugen, timers, netwerkberichten of scoreberekeningen.",
+      "Het gebruiken van bugs of exploits voor scores, valuta, unlocks of beloningen is verboden.",
+      "Het bewust verbergen van een ernstig lek kan tot beperkingen leiden.",
+      "Omzeil geen integriteits-, sessie-, snelheids- of anti-cheatcontroles."
+    ],
+    "shop": [
+      "Skins en thema's zijn licenties voor gebruik in het spel en geen geld of eigendom.",
+      "Premiumskins mogen alleen na een geldige aankoop, toekenning of unlock worden gebruikt.",
+      "Het maken van valse beloningen of unlockgebeurtenissen is verboden.",
+      "Gebruik geen premiumitems via een aangepaste client of API-aanroep.",
+      "Valuta in een aangepaste client is geen geldig serversaldo.",
+      "Beloningen moeten de getoonde wachttijden en voorwaarden volgen.",
+      "Geschillen over terugboekingen, betalingen en de winkel moeten via Support worden gemeld.",
+      "Items uit een bevestigd lek kunnen worden verwijderd.",
+      "Beheerders mogen items alleen via gelogde beheeracties geven of verwijderen."
+    ],
+    "ads": [
+      "Beloningen voor advertenties vereisen een bevestigde voltooide advertentie.",
+      "Sluiten of overslaan van een advertentie garandeert geen beloning.",
+      "Vervals, herhaal of automatiseer geen voltooide advertentiegebeurtenissen.",
+      "Gebruik geen bots of scripts om advertentiebeloningen te verzamelen.",
+      "Advertenties worden bewust niet over actieve gameplay getoond.",
+      "Gasten kunnen meer gewone advertenties zien dan ingelogde spelers.",
+      "Beschikbaarheid hangt af van provider, land, leeftijd, toestemming en voorraad.",
+      "Herhaalde beloningsverzoeken zonder voltooide advertentie kunnen worden afgewezen.",
+      "Advertentieblokkers kunnen optionele beloonde functies verhinderen."
+    ],
+    "support": [
+      "Plaats nooit een wachtwoord, token, geheime sleutel of volledige betaalgegevens in een ticket.",
+      "Support zal nooit om je huidige of oude wachtwoord vragen.",
+      "Support kan helpen met een veilige reset, maar kan geen oud wachtwoord tonen.",
+      "Spamtickets, herhaalde duplicaten en automatische tickets zijn verboden.",
+      "Beledigende, bedreigende, discriminerende of intimiderende berichten zijn verboden.",
+      "Valse meldingen en verzonnen bewijs zijn verboden.",
+      "Support mag spam, misbruikte, irrelevante of opgeloste tickets sluiten.",
+      "Een bezwaar moet de bestreden beslissing uitleggen en beschikbare ID's bevatten.",
+      "Een bezwaar pauzeert een beperking niet automatisch."
+    ],
+    "bans": [
+      "Mogelijke maatregelen zijn waarschuwingen, functiebeperkingen, scoreresets en tijdelijke of permanente bans.",
+      "Beperkingen kunnen alleen voor Support, Winkel, beloningen, scores of de ranglijst gelden.",
+      "Tijdelijke maatregelen eindigen op het getoonde tijdstip, tenzij gedocumenteerd verlengd.",
+      "Permanente bans verlopen niet automatisch.",
+      "Banontwijking via een ander account, apparaat, token of netwerk is verboden.",
+      "Een score kan verborgen zijn terwijl het account speelbaar blijft.",
+      "Misbruikte beloningen kunnen los van een ban worden verwijderd.",
+      "Beheerders moeten een reden geven en de maatregel vastleggen.",
+      "Misbruik van bezwaar kan leiden tot een supportbeperking."
+    ],
+    "privacy": [
+      "Publiceer geen privégegevens van een andere speler.",
+      "Verzamel via het spel geen e-mails, ID's of profielgegevens van spelers.",
+      "Deel alleen noodzakelijke account- en beveiligingsgegevens met Support.",
+      "Gastgegevens in de browser worden door die browser en dat apparaat beheerd.",
+      "Servergegevens kunnen worden gebruikt voor onderzoek naar fraude, cheats, veiligheid en support.",
+      "Beheertools mogen zonder geldige noodzaak geen privégegevens tonen.",
+      "Auditlogs mogen geen wachtwoorden, hashes, tokens of geheime sleutels bevatten.",
+      "Privacyinstellingen kunnen een profiel verbergen terwijl de score betrouwbaar blijft.",
+      "Verzoeken over persoonsgegevens moeten via het officiële supportkanaal worden gestuurd."
+    ],
+    "admin": [
+      "Beheerders mogen verdachte scores, sessiegeschiedenis, beperkingen en auditgegevens bekijken.",
+      "Beheerders mogen het wachtwoord van een speler niet zien, vragen of delen.",
+      "Een tijdelijk beheerderswachtwoord wordt één keer getoond en alleen als veilige hash opgeslagen.",
+      "Elke gevoelige beheeractie moet in een auditlog worden vastgelegd.",
+      "Beheerbesluiten moeten op beschikbaar bewijs en een duidelijke reden berusten.",
+      "Een vertrouwde status stelt een speler niet vrij van toekomstige anti-cheatcontroles.",
+      "Een goedgekeurd bezwaar kan een beperking verwijderen of een geldige score herstellen.",
+      "Een afgewezen bezwaar mag geen reden zijn voor intimidatie of vergelding.",
+      "Veiligheid, wetgeving, providereisen of dringend misbruik kunnen directe actie vereisen."
+    ]
+  },
+  "consent": {
+    "title": "Privacykeuzes",
+    "summary": "Noodzakelijke opslag laat accounts en spelinstellingen werken. Met toestemming verbeteren analyses het spel en helpt reclame het te financieren.",
+    "acceptAll": "Alles accepteren",
+    "reject": "Optionele weigeren",
+    "customize": "Aanpassen",
+    "preferences": "Cookievoorkeuren",
+    "necessary": "Noodzakelijk",
+    "necessaryHelp": "Vereist voor login, beveiliging en opgeslagen voorkeuren.",
+    "analytics": "Analyse",
+    "analyticsHelp": "Anonieme product- en gameplaymetingen.",
+    "advertising": "Reclame",
+    "advertisingHelp": "Google Ad Manager-banners en beloonde advertenties.",
+    "save": "Keuzes opslaan"
+  },
+  "guest": {
+    "access": "Gasttoegang", "deviceOnly": "Scores en voortgang blijven op dit apparaat.", "limitedAccess": "Gast - beperkte toegang", "accountRequired": "Account vereist", "accountRequiredMessage": "Je hebt een account nodig voor deze functie.", "createAccount": "Account maken", "continue": "Doorgaan als gast", "footerLocal": "Gastvoortgang wordt alleen op dit apparaat opgeslagen.", "footerCloud": "Accountvoortgang wordt veilig opgeslagen.", "transferTitle": "Gastvoortgang opslaan", "transferQuestion": "Wil je je gastvoortgang in dit account opslaan?", "transferHelp": "Alleen aannemelijke scores en basisinstellingen worden overgezet. Lokale munten, premiumitems en niet-geverifieerde beloningen worden genegeerd.", "transferError": "Gastvoortgang kon niet worden overgezet.", "localBest": "Lokaal record", "games": "Spellen", "saveProgress": "Voortgang opslaan", "notNow": "Niet nu"
+  },
+  "userMenu": { "title": "Gebruikersmenu", "mySkins": "Mijn skins", "myThemes": "Mijn thema's", "myScores": "Mijn scores", "limitedSettings": "Beperkte instellingen" },
+  "gameExtra": { "accountForRewards": "Je hebt een account nodig om beloningen te claimen.", "accountForRewardedItems": "Je hebt een account nodig om beloonde items te ontvangen.", "loginToSave": "Log in of maak een account om je score op te slaan.", "scoreUnderReview": "Je score wordt beoordeeld.", "scoreRejected": "Deze score is door de servervalidatie afgewezen.", "guestGameOver": "Maak een account om je score op te slaan, skins vrij te spelen en je voortgang te behouden.", "saveScore": "Score opslaan" },
+  "restrictions": {
+    "temporaryUntil": "Tijdelijk tot {{date}}", "noEnd": "Geen automatische einddatum", "appealAvailable": "Je kunt contact opnemen met Support om bezwaar te maken.", "noAppeal": "Bezwaar is niet mogelijk.",
+    "types": { "warning": "Waarschuwing", "temporary_restriction": "Tijdelijke beperking", "support_restriction": "Supportbeperking", "shop_restriction": "Winkelbeperking", "leaderboard_restriction": "Ranglijstbeperking", "score_reset": "Score gereset", "score_hidden": "Score verborgen", "rewards_removed": "Beloningen verwijderd", "temporary_ban": "Tijdelijke ban", "permanent_ban": "Permanente ban" }
+  },
+  "settingsDetails": {
+    "saved": "Instellingen opgeslagen.", "saveError": "Instellingen konden niet worden opgeslagen.", "passwordChanged": "Wachtwoord succesvol gewijzigd.", "passwordError": "Wachtwoord kon niet worden gewijzigd.", "deleteError": "Account kon niet worden verwijderd.", "temporaryPasswordWarning": "Je tijdelijke wachtwoord is geaccepteerd. Kies een nieuw wachtwoord voordat je andere accountfuncties gebruikt.",
+    "username": "Gebruikersnaam", "email": "E-mail", "status": "Status", "created": "Aangemaakt", "guestAccountLimit": "Een gast heeft geen cloudprofiel, ranglijstidentiteit, aankopen, prestaties of voortgang tussen apparaten.", "unlockAccountSettings": "Accountinstellingen ontgrendelen",
+    "difficulty": "Moeilijkheid", "controlSensitivity": "Besturingsgevoeligheid", "movementType": "Bewegingstype", "vibration": "Trillen", "autoPause": "Automatisch pauzeren", "showScore": "Score tijdens het spel tonen", "showTutorial": "Tutorial tonen", "reduceMotion": "Minder beweging", "keyboardControls": "Toetsenbordbesturing", "touchControls": "Touchbesturing", "mouseControls": "Muisbesturing", "virtualJoystick": "Virtuele joystick", "controlSize": "Grootte besturing", "resetControls": "Besturing herstellen",
+    "masterVolume": "Hoofdvolume", "musicVolume": "Muziekvolume", "effectsVolume": "Volume geluidseffecten", "muteAll": "Alles dempen", "particles": "Deeltjes", "screenShake": "Schermschudden", "trailEffects": "Spooreffecten", "animationQuality": "Animatiekwaliteit", "lowPerformance": "Energiezuinige modus", "highContrast": "Hoog contrast",
+    "showLeaderboardName": "Gebruikersnaam in ranglijst tonen", "hideProfile": "Profiel verbergen", "allowRewardedAds": "Beloonde advertenties toestaan", "rewardedAdsHelp": "Beloonde advertenties zijn optioneel. Gasten kunnen meer advertenties zien omdat accountfuncties en aankoopgeschiedenis niet beschikbaar zijn.", "openSupport": "Supportticket openen", "supportRules": "Supportregels", "securityPassword": "Beveiliging / Wachtwoord", "lastPasswordChange": "Laatste wachtwoordwijziging: {{date}}. Deel je wachtwoord nooit.", "currentPassword": "Huidig wachtwoord", "newPassword": "Nieuw wachtwoord", "confirmPassword": "Nieuw wachtwoord bevestigen", "passwordHelp": "Gebruik minimaal 10 tekens met hoofdletters, kleine letters en een cijfer. Hergebruik je huidige wachtwoord niet.", "changePassword": "Wachtwoord wijzigen",
+    "deleteAccount": "Account verwijderen", "deleteAccountHelp": "Dit anonimiseert je identiteit, verbergt scores, verwijdert toegang en wist besteedbare saldi. Financiële gegevens kunnen waar wettelijk vereist gepseudonimiseerd worden bewaard.", "deleteMyAccount": "Mijn account verwijderen", "deletePermanently": "Account permanent verwijderen", "deleteConfirmationHelp": "Voer je wachtwoord in en typ DELETE. Dit kan niet ongedaan worden gemaakt.", "typeDelete": "Typ DELETE", "deleteForever": "Account permanent verwijderen",
+    "accountStatuses": { "ACTIVE": "Actief", "BANNED": "Geblokkeerd", "DELETED": "Verwijderd" }, "options": { "adaptive": "Adaptief", "normal": "Normaal", "hard": "Moeilijk", "click": "Muis / klik", "keyboard": "Toetsenbord", "touch": "Touch", "low": "Laag", "medium": "Gemiddeld", "high": "Hoog" }
+  },
+  "progression": {
+    "achievements": "Prestaties", "dailyMissions": "Dagelijkse missies", "completed": "Voltooid", "season": "Seizoen: {{name}}", "level": "Niveau {{level}}", "xp": "XP", "seasons": { "season-1": "Neon Origins" },
+    "items": { "first-flight": { "title": "Eerste vlucht", "description": "Voltooi één geldige ronde" }, "neon-sprinter": { "title": "Neonsprinter", "description": "Behaal 10.000 punten" }, "arena-master": { "title": "Arenameester", "description": "Behaal 50.000 punten" }, "daily-runs": { "title": "Voltooi 3 geldige rondes" }, "daily-score": { "title": "Behaal 10.000 punten" }, "daily-coins": { "title": "Verzamel 10 energiemunten" } }
+  },
+  "themesPage": {
+    "title": "Thema's", "heading": "Bouw de sfeer van je arena", "subtitle": "Thema's veranderen de achtergrond, het spoorpalet, obstakels, interfaceaccent en deeltjes.", "guestNotice": "Maak een account om meer thema's vrij te spelen. Gasten kunnen de eerste drie basisthema's gebruiken.", "loadError": "Thema's konden niet worden geladen.", "selectError": "Thema kon niet worden geselecteerd.", "accountRequired": "Maak een account om meer thema's vrij te spelen.", "equipped": "Actief", "equip": "Gebruiken", "unlock": "Ontgrendelen", "coinsOrScore": "{{coins}} munten / score", "availableEveryone": "Voor iedereen beschikbaar", "premiumEntitlement": "Premiumrecht", "unlockCondition": "Behaal {{score}} punten of besteed {{coins}} munten", "types": { "free": "Gratis", "unlockable": "Vrijspeelbaar", "premium": "Premium" },
+    "items": { "classic-neon": { "name": "Klassiek neon", "particles": "Cyaan vonken" }, "dark-space": { "name": "Donkere ruimte", "particles": "Sterrenstof" }, "cyber-grid": { "name": "Cyberraster", "particles": "Digitale vierkanten" }, "ocean-blue": { "name": "Oceaanblauw", "particles": "Bellen" }, "sunset-run": { "name": "Zonsondergangrun", "particles": "Zonnevlammen" }, "lava-zone": { "name": "Lavazone", "particles": "Sintels" }, "ice-world": { "name": "IJswereld", "particles": "Sneeuwkristallen" }, "forest-glow": { "name": "Bosgloed", "particles": "Vuurvliegjes" }, "purple-night": { "name": "Paarse nacht", "particles": "Violette vonken" }, "retro-arcade": { "name": "Retro-arcade", "particles": "Pixeluitbarsting" }, "minimal-white": { "name": "Minimalistisch wit", "particles": "Inktstippen" }, "toxic-green": { "name": "Giftig groen", "particles": "Giftige mist" }, "gold-premium": { "name": "Goud premium", "particles": "Goudscherven" }, "rainbow-energy": { "name": "Regenboogenergie", "particles": "Regenboogvonken" }, "winter-frost": { "name": "Wintervorst", "particles": "Rijp" }, "desert-storm": { "name": "Woestijnstorm", "particles": "Zandkorrels" }, "candy-mode": { "name": "Snoepmodus", "particles": "Suikersterren" }, "galaxy-trail": { "name": "Melkwegspoor", "particles": "Nevelstof" }, "matrix-code": { "name": "Matrixcode", "particles": "Coderegen" }, "fire-line": { "name": "Vuurlijn", "particles": "Vlammen" } }
+  },
+  "policies": {
+    "effective": "Geldig vanaf: 20 juni 2026",
+    "privacy": { "title": "Privacybeleid", "sections": {
+      "data": { "title": "Gegevens die we verzamelen", "body": "Accountgegevens, spelsessies, geldige scores, aankopen, supportberichten, beveiligingsgebeurtenissen en toestemmingskeuzes. Gast-ID's voor analyses worden gehasht." },
+      "purpose": { "title": "Waarom we gegevens gebruiken", "body": "Om accounts en cloudvoortgang te leveren, het spel en de winkel te laten werken, eerlijk spel te beschermen, supportvragen te beantwoorden, betrouwbaarheid te meten en alleen na de vereiste keuze advertenties te tonen." },
+      "legal": { "title": "Rechtsgrond", "body": "Dienstgegevens worden verwerkt om het spel te leveren en de regels te handhaven. Optionele analyses en advertenties zijn gebaseerd op toestemming, die in Instellingen kan worden gewijzigd." },
+      "sharing": { "title": "Delen", "body": "Hosting-, database-, e-mail-, foutmonitoring-, betalings- en advertentieproviders ontvangen alleen gegevens die zij nodig hebben. We verkopen geen wachtwoorden of authenticatietokens." },
+      "retention": { "title": "Bewaren en verwijderen", "body": "Beveiligings- en financiële gegevens kunnen waar nodig worden bewaard. Verwijdering van een account anonimiseert de identiteit, verwijdert toegang, verbergt scores en wist besteedbare saldi." },
+      "choices": { "title": "Jouw keuzes", "body": "Je kunt privacyinstellingen aanpassen, optionele toestemming intrekken, Support benaderen, bezwaar maken tegen moderatie en vanuit Instellingen om accountverwijdering vragen." },
+      "security": { "title": "Beveiliging", "body": "Wachtwoorden worden als veilige hashes opgeslagen. Beheerders kunnen oude wachtwoorden niet zien. Stuur nooit een wachtwoord naar Support." },
+      "contact": { "title": "Contact", "body": "Gebruik de supportpagina in het spel voor privacyverzoeken. Vermeld het e-mailadres van het account, maar nooit een wachtwoord." }
+    } },
+    "cookies": { "title": "Cookiebeleid", "sections": {
+      "necessary": { "title": "Noodzakelijke opslag", "body": "Authenticatiestatus, gastsessie, taal, besturing, beveiliging en toestemmingskeuzes. Deze zijn nodig voor de kernfuncties." },
+      "analytics": { "title": "Analyse", "body": "Met toestemming meten anonieme gebeurtenissen sessies, retentie, geldige scores, advertentieweergaven en fouten. Gevoelige velden worden op de server gefilterd." },
+      "advertising": { "title": "Advertenties", "body": "Met toestemming kan Google Ad Manager cookies of soortgelijke opslag gebruiken voor banners en beloonde advertenties volgens het Google-beleid en je regio." },
+      "choices": { "title": "Keuzes beheren", "body": "Open Cookievoorkeuren op elk moment in Instellingen. Het weigeren van optionele opslag blokkeert gameplay niet, maar advertenties en analyses blijven uitgeschakeld." },
+      "thirdParties": { "title": "Derde partijen", "body": "Google en providers voor hosting, e-mail en monitoring kunnen hun eigen opslag toepassen wanneer hun geconfigureerde functie wordt gebruikt. Hun beleid is ook van toepassing." },
+      "changes": { "title": "Wijzigingen", "body": "Het beleid kan vóór de commerciële lancering of bij wijzigingen van providers worden aangepast. De ingangsdatum staat hierboven." }
+    } }
+  },
+  "adminExtra": {
+    "resetUserScores": "Gebruikersscores resetten", "defaultScoreResetReason": "Bevestigde scoremanipulatie of correctie door beheerder.", "trustedReason": "De beheerder heeft het account als betrouwbaar beoordeeld.", "suspiciousReason": "Het account vereist extra anti-cheatcontrole.", "restrictionRemovedReason": "Beperking verwijderd door beheerder.",
+    "analytics": { "title": "Productanalyse", "registered": "Geregistreerd", "new7d": "Nieuw 7d", "active7d": "Actief 7d", "returning7d": "Terugkerend 7d", "sessions30d": "Sessies 30d", "validScores30d": "Geldige scores 30d", "adViews30d": "Advertenties 30d", "guests30d": "Gasten 30d" },
+    "userStatuses": { "ACTIVE": "Actief", "BANNED": "Geblokkeerd", "DELETED": "Verwijderd" }, "trustStatuses": { "NORMAL": "Normaal", "TRUSTED": "Betrouwbaar", "SUSPICIOUS": "Verdacht" }, "activeRestrictions": "{{count}} actieve beperking(en)", "removeRestriction": "{{type}} verwijderen", "resetPassword": "Wachtwoord resetten", "resetScores": "Scores resetten", "markSuspicious": "Als verdacht markeren", "markTrusted": "Als betrouwbaar markeren", "restrict": "Beperken",
+    "scoreModeration": "Scoremoderatie", "ms": "ms", "hits": "botsingen", "noReasonRecorded": "Geen reden vastgelegd", "noSessionFlags": "geen sessiemeldingen", "approve": "Goedkeuren", "reject": "Afwijzen", "hide": "Verbergen", "banForCheating": "Bannen wegens valsspelen", "noScoresToReview": "Geen scores om te beoordelen.", "validScoreHistory": "Geschiedenis geldige scores ({{count}})", "scoreApprovedReason": "Score door beheerder beoordeeld en goedgekeurd.", "scoreRejectedReason": "Score na beoordeling afgewezen.", "scoreHiddenReason": "Score door beheerder verborgen.", "cheatingReason": "Valsspelen: {{reason}}", "invalidScore": "ongeldige score-inzending",
+    "scoreStatuses": { "valid": "Geldig", "suspicious": "Verdacht", "pending_review": "Wacht op beoordeling", "rejected": "Afgewezen", "hidden": "Verborgen" }, "auditLog": "Beheerderslogboek", "noReason": "Geen reden", "system": "Systeem", "guestTransfers": "Pogingen tot overdracht van gastvoortgang", "localScore": "lokaal", "transferredScore": "overgezet", "passedValidation": "Validatie geslaagd", "noTransfers": "Geen overdrachtspogingen.",
+    "ticketStatuses": { "ALL": "Alle", "OPEN": "Open", "ANSWERED": "Beantwoord", "CLOSED": "Gesloten" }, "related": "Gerelateerd", "appeal": "Bezwaar", "appealDecision": "Beslissing over bezwaar", "internalNote": "Interne notitie (niet zichtbaar voor speler)", "appealStatuses": { "UNDER_REVIEW": "In beoordeling", "UPHELD": "Beperking behouden", "REMOVED": "Beperking verwijderen", "RESTORED": "Score herstellen", "REJECTED": "Bezwaar afwijzen" },
+    "temporaryPassword": "Tijdelijk wachtwoord", "closePermanently": "Definitief sluiten", "temporaryPasswordHelp": "Dit wachtwoord wordt slechts één keer getoond. Het wordt nooit als platte tekst opgeslagen of gelogd. De gebruiker moet het na het inloggen wijzigen.", "copyTemporaryPassword": "Tijdelijk wachtwoord kopiëren", "closeAndHide": "Sluiten en voorgoed verbergen", "scoreDecisionTitle": "Score: {{status}}", "confirmScoreDecision": "Scorebeslissing bevestigen", "addRestriction": "Beperking toevoegen", "restrictionType": "Type beperking", "applyRestriction": "Beperking toepassen"
   },
   "common": {
     "loading": "Laden",
     "error": "Er is iets misgegaan",
     "close": "Sluiten",
-    "back": "Terug"
+    "back": "Terug",
+    "cancel": "Annuleren"
   },
   "skins": {
     "neonBlueTrail": {
@@ -371,6 +615,15 @@
     "candyPulseTrail": {
       "name": "Candy Pulse Trail",
       "description": "Een tijdelijk roze-cyaan eventspoor met speelse pulsen."
+    },
+    "neonDeathBurst": { "name": "Neon Death Burst", "description": "Een heldere cyaan-roze uitschakelanimatie." },
+    "plasmaHit": { "name": "Plasma Hit", "description": "Een violet inslageffect voor botsingen." },
+    "goldCoinPop": { "name": "Gold Coin Pop", "description": "Een verzorgd gouden munteffect." },
+    "voidBackground": { "name": "Void Background", "description": "Een diepe ruimteachtergrond." },
+    "pilotAvatar": { "name": "Pilot Avatar", "description": "Een gratis profielavatar voor elke piloot." },
+    "championBadge": { "name": "Champion Badge", "description": "Een legendarische badge voor de ranglijst." },
+    "diamondFrame": { "name": "Diamond Frame", "description": "Een premium profiel- en ranglijstframe." },
+    "prismPlayer": { "name": "Prism Player", "description": "Een premium regenboogspelersvorm." }
     }
   },
   "rarity": {

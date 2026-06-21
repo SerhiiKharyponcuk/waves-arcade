@@ -2,6 +2,8 @@ import { nanoid } from "nanoid";
 import type {
   GameSessionEndRequestDto,
   GameSessionEndResponseDto,
+  GameSessionCheckpointRequestDto,
+  GameSessionCheckpointResponseDto,
   GameSessionStartResponseDto,
   LeaderboardEntryDto
 } from "@waves/shared";
@@ -9,7 +11,8 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "../config/prisma.js";
 import { flagSuspiciousRun } from "./adminService.js";
 import { AppError } from "../utils/appError.js";
-import { validateScoreSubmission } from "./antiCheatService.js";
+import { validateCheckpointProgress, validateScoreSubmission } from "./antiCheatService.js";
+import { recordProgressForValidRun } from "./progressionService.js";
 
 type LeaderboardScoreRow = {
   id: string;
@@ -39,6 +42,41 @@ export async function startGameSession(userId: string): Promise<GameSessionStart
   };
 }
 
+export async function recordGameCheckpoint(
+  userId: string,
+  input: GameSessionCheckpointRequestDto
+): Promise<GameSessionCheckpointResponseDto> {
+  const session = await prisma.gameSession.findFirst({ where: { id: input.sessionId, userId } });
+  if (!session) throw new AppError(404, "Game session not found.", "SESSION_NOT_FOUND");
+  if (session.endedAt || session.status !== "started") {
+    throw new AppError(409, "Game session is not active.", "SESSION_NOT_ACTIVE");
+  }
+
+  const reasons = validateCheckpointProgress(session, input, Date.now() - session.startedAt.getTime());
+  if (reasons.length) {
+    await prisma.gameSession.update({
+      where: { id: session.id },
+      data: { antiCheatNotes: [session.antiCheatNotes, ...reasons].filter(Boolean).join(",") }
+    });
+    throw new AppError(422, "Game checkpoint was rejected.", "CHECKPOINT_REJECTED");
+  }
+
+  const receivedAt = new Date();
+  await prisma.gameSession.update({
+    where: { id: session.id },
+    data: {
+      checkpointCount: input.sequence,
+      lastCheckpointAt: receivedAt,
+      lastCheckpointElapsedMs: input.elapsedMs,
+      checkpointDistance: input.distance,
+      checkpointCoins: input.coinsCollected,
+      checkpointTransitions: input.inputTransitions
+    }
+  });
+
+  return { accepted: true, sequence: input.sequence, serverReceivedAt: receivedAt.toISOString() };
+}
+
 export async function endGameSession(
   userId: string,
   input: GameSessionEndRequestDto
@@ -54,7 +92,7 @@ export async function endGameSession(
     throw new AppError(409, "Game session already ended.", "SESSION_ALREADY_ENDED");
   }
 
-  const validation = await validateScoreSubmission({ userId, sessionStartedAt: session.startedAt, payload: input });
+  const validation = await validateScoreSubmission({ userId, session, payload: input });
   const accepted = validation.status === "valid";
   const acceptedScore = accepted ? validation.expectedScore : 0;
   const safeCoins = accepted ? Math.min(input.coinsCollected + Math.floor(acceptedScore / 250), 250) : 0;
@@ -112,11 +150,26 @@ export async function endGameSession(
         })
       : await tx.wallet.findUniqueOrThrow({ where: { userId } });
 
+    if (safeCoins) {
+      await tx.walletTransaction.create({
+        data: {
+          userId,
+          walletId: wallet.id,
+          type: "GAME_REWARD",
+          provider: "server_game_session",
+          amountCoins: safeCoins,
+          metadata: JSON.stringify({ sessionId: input.sessionId, score: acceptedScore })
+        }
+      });
+    }
+
     return { wallet, newHighScore };
   });
 
   if (!accepted) {
     await flagSuspiciousRun(userId, validation.reasons.join(","));
+  } else {
+    await recordProgressForValidRun(userId, acceptedScore, input.coinsCollected);
   }
 
   return {

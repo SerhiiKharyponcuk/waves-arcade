@@ -4,6 +4,7 @@ import {
   getGoogleAdManagerBannerUnitPath,
   isGoogleAdManagerEnabled
 } from "../../services/ads/googlePublisherTag";
+import { useConsentStore } from "../../store/consentStore";
 
 const BANNER_SIZES: Array<[number, number]> = [
   [320, 50],
@@ -12,10 +13,11 @@ const BANNER_SIZES: Array<[number, number]> = [
 ];
 
 export function GoogleAdSlot() {
+  const advertisingConsent = useConsentStore((state) => state.advertising);
   const [slotId] = useState(() => `waves-gam-slot-${Math.random().toString(36).slice(2)}`);
   const [failed, setFailed] = useState(false);
   const adUnitPath = useMemo(() => getGoogleAdManagerBannerUnitPath(), []);
-  const enabled = isGoogleAdManagerEnabled() && Boolean(adUnitPath);
+  const enabled = advertisingConsent && isGoogleAdManagerEnabled() && Boolean(adUnitPath);
 
   useEffect(() => {
     if (!enabled) {

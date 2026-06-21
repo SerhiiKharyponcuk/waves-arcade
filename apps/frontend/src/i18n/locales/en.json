@@ -109,7 +109,9 @@
     "premium": "Premium",
     "limited": "Limited",
     "coins": "{{count}} coins",
-    "gems": "{{count}} gems"
+    "gems": "{{count}} gems",
+    "guestPreview": "You can preview every skin as a Guest. Create an account to buy, unlock, or equip items.",
+    "guestAccountRequired": "You need an account to buy or equip skins."
   },
   "inventory": {
     "title": "Skin inventory",
@@ -174,8 +176,18 @@
   },
   "settings": {
     "title": "Settings",
+    "guestTitle": "Limited guest settings",
+    "accountTitle": "Account and game settings",
+    "guestIntro": "These preferences stay on this device.",
+    "accountIntro": "Your supported preferences are saved to your account.",
     "language": "Language",
     "account": "Account",
+    "gameplay": "Gameplay",
+    "controls": "Controls",
+    "audio": "Audio",
+    "visuals": "Visuals",
+    "privacy": "Privacy",
+    "support": "Support",
     "save": "Save",
     "saved": "Saved",
     "payments": "Payments",
@@ -271,6 +283,14 @@
     "myTickets": "My requests",
     "adminResponse": "Admin response",
     "empty": "No support requests yet.",
+    "ticketCreated": "Ticket created: {{id}}",
+    "passwordWarning": "Never send your password. Support will never ask for your password.",
+    "readRules": "Read Support Rules and Terms",
+    "replyEmail": "Email for reply",
+    "optionalName": "Display name (optional)",
+    "relatedId": "Related restriction or score ID (optional)",
+    "guestRulesTitle": "Guest support rules",
+    "guestRulesBody": "Use a valid email for replies. Spam, offensive messages, false reports, and repeated abuse can lead to restrictions. Support cannot guarantee restoration of a suspicious score.",
     "categories": {
       "BUG": "Bug report",
       "BAN_APPEAL": "Ban appeal",
@@ -282,11 +302,158 @@
       "OTHER": "Other"
     }
   },
+  "rulesPage": {
+    "title": "Game Rules and Terms",
+    "heading": "Play fair. Keep the arena safe.",
+    "intro": "These rules apply to guests, account holders, scores, purchases, ads, support, and administrator decisions.",
+    "securityTitle": "Security reminder",
+    "securityBody": "Never share your password. Support and administrators will never ask for it.",
+    "categories": { "general": "General game rules", "guest": "Guest player rules", "account": "Account rules", "password": "Password and security rules", "score": "Score and leaderboard rules", "antiCheat": "Anti-cheat rules", "shop": "Skins, shop and rewards rules", "ads": "Ads and rewarded ads rules", "support": "Support and appeal rules", "bans": "Ban and restriction rules", "privacy": "Privacy and data rules", "admin": "Administrator and enforcement rules" }
+  },
+  "consent": {
+    "title": "Privacy choices",
+    "summary": "Necessary storage keeps accounts and game settings working. With your permission, analytics helps us improve the game and advertising helps fund it.",
+    "acceptAll": "Accept all",
+    "reject": "Reject optional",
+    "customize": "Customize",
+    "preferences": "Cookie preferences",
+    "necessary": "Necessary",
+    "necessaryHelp": "Required for login, security and saved preferences.",
+    "analytics": "Analytics",
+    "analyticsHelp": "Anonymous product and gameplay measurements.",
+    "advertising": "Advertising",
+    "advertisingHelp": "Google Ad Manager banners and rewarded ads.",
+    "save": "Save choices"
+  },
+  "guest": {
+    "access": "Guest access",
+    "deviceOnly": "Scores and progress stay on this device.",
+    "limitedAccess": "Guest - limited access",
+    "accountRequired": "Account required",
+    "accountRequiredMessage": "You need an account to use this feature.",
+    "createAccount": "Create account",
+    "continue": "Continue as guest",
+    "footerLocal": "Guest progress is stored only on this device.",
+    "footerCloud": "Account progress is saved securely.",
+    "transferTitle": "Save guest progress",
+    "transferQuestion": "Do you want to save your guest progress to this account?",
+    "transferHelp": "Only plausible scores and basic settings are transferred. Local coins, premium items, and unverified rewards are ignored.",
+    "transferError": "Guest progress could not be transferred.",
+    "localBest": "Local best",
+    "games": "Games",
+    "saveProgress": "Save progress",
+    "notNow": "Not now"
+  },
+  "userMenu": {
+    "title": "User menu",
+    "mySkins": "My skins",
+    "myThemes": "My themes",
+    "myScores": "My scores",
+    "limitedSettings": "Limited settings"
+  },
+  "gameExtra": {
+    "accountForRewards": "You need an account to claim rewards.",
+    "accountForRewardedItems": "You need an account to receive rewarded items.",
+    "loginToSave": "Log in or create an account to save your score.",
+    "scoreUnderReview": "Your score is under review.",
+    "scoreRejected": "This score was rejected by server validation.",
+    "guestGameOver": "Create an account to save your score, unlock skins and keep your progress.",
+    "saveScore": "Save score"
+  },
+  "restrictions": {
+    "temporaryUntil": "Temporary until {{date}}",
+    "noEnd": "No automatic end date",
+    "appealAvailable": "You may contact Support to appeal.",
+    "noAppeal": "Appeal is not available.",
+    "types": {
+      "warning": "Warning",
+      "temporary_restriction": "Temporary restriction",
+      "support_restriction": "Support restriction",
+      "shop_restriction": "Shop restriction",
+      "leaderboard_restriction": "Leaderboard restriction",
+      "score_reset": "Score reset",
+      "score_hidden": "Score hidden",
+      "rewards_removed": "Rewards removed",
+      "temporary_ban": "Temporary ban",
+      "permanent_ban": "Permanent ban"
+    }
+  },
+  "settingsDetails": {
+    "saved": "Settings saved.", "saveError": "Settings could not be saved.", "passwordChanged": "Password changed successfully.", "passwordError": "Password could not be changed.", "deleteError": "Account could not be deleted.",
+    "temporaryPasswordWarning": "Your temporary password was accepted. You must choose a new password before using other account features.",
+    "username": "Username", "email": "Email", "status": "Status", "created": "Created", "guestAccountLimit": "Guest has no cloud profile, leaderboard identity, purchases, achievements, or cross-device progress.", "unlockAccountSettings": "Unlock account settings",
+    "difficulty": "Difficulty", "controlSensitivity": "Control sensitivity", "movementType": "Movement type", "vibration": "Vibration", "autoPause": "Auto pause", "showScore": "Show score during game", "showTutorial": "Show tutorial", "reduceMotion": "Reduce motion",
+    "keyboardControls": "Keyboard controls", "touchControls": "Touch controls", "mouseControls": "Mouse controls", "virtualJoystick": "Virtual joystick", "controlSize": "Control size", "resetControls": "Reset controls",
+    "masterVolume": "Master volume", "musicVolume": "Music volume", "effectsVolume": "Sound effects volume", "muteAll": "Mute all",
+    "particles": "Particles", "screenShake": "Screen shake", "trailEffects": "Trail effects", "animationQuality": "Animation quality", "lowPerformance": "Low performance mode", "highContrast": "High contrast mode",
+    "showLeaderboardName": "Show username in leaderboard", "hideProfile": "Hide profile", "allowRewardedAds": "Allow rewarded ads", "rewardedAdsHelp": "Rewarded ads are optional. Guests may see more ads because account features and purchase history are unavailable.",
+    "openSupport": "Open support ticket", "supportRules": "Support rules", "securityPassword": "Security / Password", "lastPasswordChange": "Last password change: {{date}}. Never share your password.",
+    "currentPassword": "Current password", "newPassword": "New password", "confirmPassword": "Confirm new password", "passwordHelp": "Use at least 10 characters with uppercase, lowercase, and a number. Do not reuse your current password.", "changePassword": "Change password",
+    "deleteAccount": "Delete account", "deleteAccountHelp": "This anonymizes your identity, hides scores, removes access, and clears spendable balances. Financial records may be retained in pseudonymous form where legally required.", "deleteMyAccount": "Delete my account", "deletePermanently": "Permanently delete account", "deleteConfirmationHelp": "Enter your password and type DELETE. This action cannot be undone.", "typeDelete": "Type DELETE", "deleteForever": "Delete account permanently",
+    "accountStatuses": { "ACTIVE": "Active", "BANNED": "Banned", "DELETED": "Deleted" },
+    "options": { "adaptive": "Adaptive", "normal": "Normal", "hard": "Hard", "click": "Mouse / click", "keyboard": "Keyboard", "touch": "Touch", "low": "Low", "medium": "Medium", "high": "High" }
+  },
+  "progression": {
+    "achievements": "Achievements", "dailyMissions": "Daily missions", "completed": "Completed", "season": "Season: {{name}}", "level": "Level {{level}}", "xp": "XP",
+    "seasons": { "season-1": "Neon Origins" },
+    "items": {
+      "first-flight": { "title": "First Flight", "description": "Finish one valid run" },
+      "neon-sprinter": { "title": "Neon Sprinter", "description": "Reach 10,000 score" },
+      "arena-master": { "title": "Arena Master", "description": "Reach 50,000 score" },
+      "daily-runs": { "title": "Finish 3 valid runs" },
+      "daily-score": { "title": "Score 10,000 points" },
+      "daily-coins": { "title": "Collect 10 energy coins" }
+    }
+  },
+  "themesPage": {
+    "title": "Themes", "heading": "Build your arena atmosphere", "subtitle": "Themes change the background, trail palette, obstacles, interface accent, and particles.", "guestNotice": "Create an account to unlock more themes. Guests can use the first three basic themes.", "loadError": "Themes could not be loaded.", "selectError": "Theme could not be selected.", "accountRequired": "Create an account to unlock more themes.",
+    "equipped": "Equipped", "equip": "Equip", "unlock": "Unlock", "coinsOrScore": "{{coins}} coins / score", "availableEveryone": "Available to everyone", "premiumEntitlement": "Premium entitlement", "unlockCondition": "Reach {{score}} score or spend {{coins}} coins",
+    "types": { "free": "Free", "unlockable": "Unlockable", "premium": "Premium" },
+    "items": {
+      "classic-neon": { "name": "Classic Neon", "particles": "Cyan sparks" }, "dark-space": { "name": "Dark Space", "particles": "Star dust" }, "cyber-grid": { "name": "Cyber Grid", "particles": "Digital squares" }, "ocean-blue": { "name": "Ocean Blue", "particles": "Bubbles" }, "sunset-run": { "name": "Sunset Run", "particles": "Sun flares" }, "lava-zone": { "name": "Lava Zone", "particles": "Embers" }, "ice-world": { "name": "Ice World", "particles": "Snow crystals" }, "forest-glow": { "name": "Forest Glow", "particles": "Fireflies" }, "purple-night": { "name": "Purple Night", "particles": "Violet sparks" }, "retro-arcade": { "name": "Retro Arcade", "particles": "Pixel burst" }, "minimal-white": { "name": "Minimal White", "particles": "Ink dots" }, "toxic-green": { "name": "Toxic Green", "particles": "Toxic mist" }, "gold-premium": { "name": "Gold Premium", "particles": "Gold shards" }, "rainbow-energy": { "name": "Rainbow Energy", "particles": "Rainbow sparks" }, "winter-frost": { "name": "Winter Frost", "particles": "Frost" }, "desert-storm": { "name": "Desert Storm", "particles": "Sand grains" }, "candy-mode": { "name": "Candy Mode", "particles": "Sugar stars" }, "galaxy-trail": { "name": "Galaxy Trail", "particles": "Nebula dust" }, "matrix-code": { "name": "Matrix Code", "particles": "Code rain" }, "fire-line": { "name": "Fire Line", "particles": "Flames" }
+    }
+  },
+  "policies": {
+    "effective": "Effective: 20 June 2026",
+    "privacy": { "title": "Privacy Policy", "sections": {
+      "data": { "title": "Data we collect", "body": "Account details, game sessions, valid scores, purchases, support messages, security events and consent choices. Guest identifiers used for analytics are hashed." },
+      "purpose": { "title": "Why we use data", "body": "To provide accounts and cloud progress, run the game and shop, protect fair play, answer support requests, measure reliability and show advertising only after the required choice." },
+      "legal": { "title": "Legal basis", "body": "Service data is processed to provide the game and enforce its rules. Optional analytics and advertising are based on consent, which can be changed in Settings." },
+      "sharing": { "title": "Sharing", "body": "Hosting, database, email, error monitoring, payment and advertising providers receive only the data needed for their role. We do not sell account passwords or authentication tokens." },
+      "retention": { "title": "Retention and deletion", "body": "Security and financial records may be retained where required. Account deletion anonymizes identity, removes access, hides scores and clears spendable balances." },
+      "choices": { "title": "Your choices", "body": "You can change privacy settings, withdraw optional consent, contact Support, appeal moderation and request account deletion from Settings." },
+      "security": { "title": "Security", "body": "Passwords are stored as secure hashes. Administrators cannot view old passwords. Never send a password to Support." },
+      "contact": { "title": "Contact", "body": "Use the in-game Support page for privacy requests. Include the account email but never include a password." }
+    } },
+    "cookies": { "title": "Cookie Policy", "sections": {
+      "necessary": { "title": "Necessary storage", "body": "Authentication state, guest session, language, controls, security and consent choices. These are required for core functionality." },
+      "analytics": { "title": "Analytics", "body": "With consent, anonymous events measure sessions, retention, valid scores, ad views and errors. Sensitive fields are filtered server-side." },
+      "advertising": { "title": "Advertising", "body": "With consent, Google Ad Manager may use cookies or similar storage for banners and rewarded ads according to Google policies and your region." },
+      "choices": { "title": "Managing choices", "body": "Open Cookie preferences in Settings at any time. Rejecting optional storage does not block gameplay, but advertising and analytics integrations remain disabled." },
+      "thirdParties": { "title": "Third parties", "body": "Google, hosting, email and monitoring providers may apply their own storage when their configured feature is used. Their policies also apply." },
+      "changes": { "title": "Changes", "body": "The policy may be updated before commercial launch or when providers change. The effective date is shown above." }
+    } }
+  },
+  "adminExtra": {
+    "resetUserScores": "Reset user scores", "defaultScoreResetReason": "Confirmed score manipulation or administrator correction.", "trustedReason": "Administrator reviewed the account as trusted.", "suspiciousReason": "Account requires additional anti-cheat review.", "restrictionRemovedReason": "Restriction removed by administrator.",
+    "analytics": { "title": "Product analytics", "registered": "Registered", "new7d": "New 7d", "active7d": "Active 7d", "returning7d": "Returning 7d", "sessions30d": "Sessions 30d", "validScores30d": "Valid scores 30d", "adViews30d": "Ad views 30d", "guests30d": "Guests 30d" },
+    "userStatuses": { "ACTIVE": "Active", "BANNED": "Banned", "DELETED": "Deleted" }, "trustStatuses": { "NORMAL": "Normal", "TRUSTED": "Trusted", "SUSPICIOUS": "Suspicious" },
+    "activeRestrictions": "{{count}} active restriction(s)", "removeRestriction": "Remove {{type}}", "resetPassword": "Reset password", "resetScores": "Reset scores", "markSuspicious": "Mark suspicious", "markTrusted": "Mark trusted", "restrict": "Restrict",
+    "scoreModeration": "Score moderation", "ms": "ms", "hits": "hits", "noReasonRecorded": "No reason recorded", "noSessionFlags": "no session flags", "approve": "Approve", "reject": "Reject", "hide": "Hide", "banForCheating": "Ban for cheating", "noScoresToReview": "No scores need review.", "validScoreHistory": "Valid score history ({{count}})",
+    "scoreApprovedReason": "Score reviewed and approved by administrator.", "scoreRejectedReason": "Score rejected after review.", "scoreHiddenReason": "Score hidden by administrator.", "cheatingReason": "Cheating: {{reason}}", "invalidScore": "invalid score submission",
+    "scoreStatuses": { "valid": "Valid", "suspicious": "Suspicious", "pending_review": "Pending review", "rejected": "Rejected", "hidden": "Hidden" },
+    "auditLog": "Admin audit log", "noReason": "No reason", "system": "System", "guestTransfers": "Guest transfer attempts", "localScore": "local", "transferredScore": "moved", "passedValidation": "Passed validation", "noTransfers": "No transfer attempts.",
+    "ticketStatuses": { "ALL": "All", "OPEN": "Open", "ANSWERED": "Answered", "CLOSED": "Closed" }, "related": "Related", "appeal": "Appeal", "appealDecision": "Appeal decision", "internalNote": "Internal note (not shown to player)",
+    "appealStatuses": { "UNDER_REVIEW": "Under review", "UPHELD": "Keep restriction", "REMOVED": "Remove restriction", "RESTORED": "Restore score", "REJECTED": "Reject appeal" },
+    "temporaryPassword": "Temporary password", "closePermanently": "Close permanently", "temporaryPasswordHelp": "This password is shown only once. It is never stored or logged as plain text. The user must change it after login.", "copyTemporaryPassword": "Copy temporary password", "closeAndHide": "Close and hide forever",
+    "scoreDecisionTitle": "{{status}} score", "confirmScoreDecision": "Confirm score decision", "addRestriction": "Add restriction", "restrictionType": "Restriction type", "applyRestriction": "Apply restriction"
+  },
   "common": {
     "loading": "Loading",
     "error": "Something went wrong",
     "close": "Close",
-    "back": "Back"
+    "back": "Back",
+    "cancel": "Cancel"
   },
   "skins": {
     "neonBlueTrail": {

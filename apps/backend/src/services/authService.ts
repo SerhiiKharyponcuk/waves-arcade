@@ -278,7 +278,7 @@ export async function loginAccount(input: { email: string; password: string }): 
     throw new AppError(401, "Invalid email or password.", "INVALID_CREDENTIALS");
   }
 
-  if (user.status === "BANNED") {
+  if (user.status !== "ACTIVE") {
     throw new AppError(403, user.banReason ? `Account banned: ${user.banReason}` : "Account banned.", "ACCOUNT_BANNED");
   }
   if (env.EMAIL_VERIFICATION_REQUIRED && !user.emailVerifiedAt) {
@@ -360,7 +360,7 @@ export async function verifyEmailCode(input: { email: string; code: string }): P
   if (!user) {
     throw new AppError(400, "Verification code is invalid or expired.", "EMAIL_CODE_INVALID");
   }
-  if (user.status === "BANNED") {
+  if (user.status !== "ACTIVE") {
     throw new AppError(403, user.banReason ? `Account banned: ${user.banReason}` : "Account banned.", "ACCOUNT_BANNED");
   }
   if (user.emailVerifiedAt) {
@@ -401,7 +401,7 @@ export async function verifyEmailCode(input: { email: string; code: string }): P
 
 export async function requestPasswordReset(input: { email: string }) {
   const user = await prisma.user.findUnique({ where: { email: input.email.toLowerCase() } });
-  if (!user || user.status === "BANNED") {
+  if (!user || user.status !== "ACTIVE") {
     return { success: true };
   }
 

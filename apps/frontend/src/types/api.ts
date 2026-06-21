@@ -9,6 +9,8 @@ import type {
   DailyRewardDto,
   GameSessionEndRequestDto,
   GameSessionEndResponseDto,
+  GameSessionCheckpointRequestDto,
+  GameSessionCheckpointResponseDto,
   GameSessionStartResponseDto,
   LeaderboardEntryDto,
   RouletteConfigDto,
@@ -35,7 +37,9 @@ import type {
   RestrictionType,
   ScoreReviewDto,
   ScoreStatus,
-  UserTrustStatus
+  UserTrustStatus,
+  AdminAnalyticsDto,
+  ProgressionDto
 } from "@waves/shared";
 
 export interface RegisterPayload {
@@ -44,6 +48,7 @@ export interface RegisterPayload {
   displayName: string;
   locale: SupportedLocale;
   termsAccepted: boolean;
+  captchaToken?: string;
   website?: string;
   formStartedAt?: number;
 }
@@ -99,6 +104,8 @@ export type {
   DailyRewardDto,
   GameSessionEndRequestDto,
   GameSessionEndResponseDto,
+  GameSessionCheckpointRequestDto,
+  GameSessionCheckpointResponseDto,
   GameSessionStartResponseDto,
   RouletteConfigDto,
   RouletteSpinDto,
@@ -123,5 +130,7 @@ export type {
   RestrictionType,
   ScoreReviewDto,
   ScoreStatus,
-  UserTrustStatus
+  UserTrustStatus,
+  AdminAnalyticsDto,
+  ProgressionDto
 };

@@ -10,6 +10,7 @@ build/
 Thumbs.db
 coverage/
 tmp/
+backups/
 *.log
 .vercel/
 apps/backend/generated/
