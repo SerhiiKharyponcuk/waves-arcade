@@ -22,6 +22,7 @@
     "forgotPassword": "Wachtwoord vergeten?",
     "verifyEmail": "E-mail bevestigen",
     "verificationCode": "Verificatiecode",
+    "securityVerification": "Beveiligingscontrole",
     "verificationSent": "We hebben een 6-cijferige code naar je e-mail gestuurd.",
     "verificationCreated": "Verificatiecode gemaakt. E-mailbezorging is nog niet geconfigureerd.",
     "devCode": "Dev-code:",
@@ -43,11 +44,11 @@
     "logout": "Uitloggen"
   },
   "menu": {
-    "title": "Neon wave runner",
+    "title": "Neon-golvenrenner",
     "subtitle": "Ontwijk de arena, verzamel energie en duw je spoor verder in elke run.",
     "playNow": "Nu spelen",
     "dailyReward": "Dagelijkse beloning",
-    "claim": "Claim",
+    "claim": "Ophalen",
     "claimed": "Geclaimd",
     "streak": "Reeks",
     "reward": "{{coins}} munten"
@@ -60,16 +61,16 @@
     "resume": "Doorgaan",
     "restart": "Herstart",
     "exit": "Afsluiten",
-    "gameOver": "Game over",
+    "gameOver": "Spel afgelopen",
     "newBest": "Nieuwe beste",
     "coinsEarned": "Munten verdiend",
-    "start": "Start run",
+    "start": "Ronde starten",
     "tapToControl": "Klik vasthouden of Space"
   },
   "roulette": {
     "eyebrow": "Beloningswiel",
     "title": "Prijzenroulette",
-    "tickets": "Tickets",
+    "tickets": "Loten",
     "nextSpin": "Volgende spin",
     "adsNeeded": "{{count}} advertentie(s) nodig",
     "freeReady": "Klaar om te draaien",
@@ -87,10 +88,10 @@
       "gems": "Edelstenen",
       "rouletteTicket": "Rouletteticket",
       "extraLife": "Extra leven",
-      "skin": "Skin",
+      "skin": "Uiterlijk",
       "premiumTrial": "VIP-proef",
-      "booster": "Booster",
-      "antiAds": "Ad skip"
+      "booster": "Versterker",
+      "antiAds": "Reclame overslaan"
     }
   },
   "ads": {
@@ -105,7 +106,7 @@
     "equipped": "Actief",
     "buy": "Kopen",
     "equip": "Uitrusten",
-    "preview": "Preview",
+    "preview": "Voorbeeld",
     "premium": "Premium",
     "limited": "Tijdelijk",
     "coins": "{{count}} munten",
@@ -144,7 +145,7 @@
     "deathEffect": "Doodseffect",
     "profileAvatar": "Profielavatar",
     "profileFrame": "Profielframe",
-    "badge": "Badge"
+    "badge": "Embleem"
   },
   "profile": {
     "title": "Pilootprofiel",
@@ -168,7 +169,7 @@
     "accountIntro": "Ondersteunde voorkeuren worden in je account opgeslagen.",
     "language": "Taal",
     "account": "Account",
-    "gameplay": "Gameplay",
+    "gameplay": "Spelervaring",
     "controls": "Besturing",
     "audio": "Audio",
     "visuals": "Beeld",
@@ -277,7 +278,7 @@
     "guestRulesTitle": "Supportregels voor gasten",
     "guestRulesBody": "Gebruik een geldig e-mailadres voor antwoorden. Spam, beledigende berichten, valse meldingen en herhaald misbruik kunnen tot beperkingen leiden. Support kan herstel van een verdachte score niet garanderen.",
     "categories": {
-      "BUG": "Bug report",
+      "BUG": "Foutmelding",
       "BAN_APPEAL": "Bezwaar tegen ban",
       "APPEAL": "Bezwaar",
       "ACCOUNT": "Accountprobleem",
@@ -460,10 +461,10 @@
     "masterVolume": "Hoofdvolume", "musicVolume": "Muziekvolume", "effectsVolume": "Volume geluidseffecten", "muteAll": "Alles dempen", "particles": "Deeltjes", "screenShake": "Schermschudden", "trailEffects": "Spooreffecten", "animationQuality": "Animatiekwaliteit", "lowPerformance": "Energiezuinige modus", "highContrast": "Hoog contrast",
     "showLeaderboardName": "Gebruikersnaam in ranglijst tonen", "hideProfile": "Profiel verbergen", "allowRewardedAds": "Beloonde advertenties toestaan", "rewardedAdsHelp": "Beloonde advertenties zijn optioneel. Gasten kunnen meer advertenties zien omdat accountfuncties en aankoopgeschiedenis niet beschikbaar zijn.", "openSupport": "Supportticket openen", "supportRules": "Supportregels", "securityPassword": "Beveiliging / Wachtwoord", "lastPasswordChange": "Laatste wachtwoordwijziging: {{date}}. Deel je wachtwoord nooit.", "currentPassword": "Huidig wachtwoord", "newPassword": "Nieuw wachtwoord", "confirmPassword": "Nieuw wachtwoord bevestigen", "passwordHelp": "Gebruik minimaal 10 tekens met hoofdletters, kleine letters en een cijfer. Hergebruik je huidige wachtwoord niet.", "changePassword": "Wachtwoord wijzigen",
     "deleteAccount": "Account verwijderen", "deleteAccountHelp": "Dit anonimiseert je identiteit, verbergt scores, verwijdert toegang en wist besteedbare saldi. Financiële gegevens kunnen waar wettelijk vereist gepseudonimiseerd worden bewaard.", "deleteMyAccount": "Mijn account verwijderen", "deletePermanently": "Account permanent verwijderen", "deleteConfirmationHelp": "Voer je wachtwoord in en typ DELETE. Dit kan niet ongedaan worden gemaakt.", "typeDelete": "Typ DELETE", "deleteForever": "Account permanent verwijderen",
-    "accountStatuses": { "ACTIVE": "Actief", "BANNED": "Geblokkeerd", "DELETED": "Verwijderd" }, "options": { "adaptive": "Adaptief", "normal": "Normaal", "hard": "Moeilijk", "click": "Muis / klik", "keyboard": "Toetsenbord", "touch": "Touch", "low": "Laag", "medium": "Gemiddeld", "high": "Hoog" }
+    "accountStatuses": { "ACTIVE": "Actief", "BANNED": "Geblokkeerd", "DELETED": "Verwijderd" }, "options": { "adaptive": "Adaptief", "normal": "Normaal", "hard": "Moeilijk", "click": "Muis / klik", "keyboard": "Toetsenbord", "touch": "Aanraken", "low": "Laag", "medium": "Gemiddeld", "high": "Hoog" }
   },
   "progression": {
-    "achievements": "Prestaties", "dailyMissions": "Dagelijkse missies", "completed": "Voltooid", "season": "Seizoen: {{name}}", "level": "Niveau {{level}}", "xp": "XP", "seasons": { "season-1": "Neon Origins" },
+    "achievements": "Prestaties", "dailyMissions": "Dagelijkse missies", "completed": "Voltooid", "season": "Seizoen: {{name}}", "level": "Niveau {{level}}", "xp": "XP", "seasons": { "season-1": "Neonbegin" },
     "items": { "first-flight": { "title": "Eerste vlucht", "description": "Voltooi één geldige ronde" }, "neon-sprinter": { "title": "Neonsprinter", "description": "Behaal 10.000 punten" }, "arena-master": { "title": "Arenameester", "description": "Behaal 50.000 punten" }, "daily-runs": { "title": "Voltooi 3 geldige rondes" }, "daily-score": { "title": "Behaal 10.000 punten" }, "daily-coins": { "title": "Verzamel 10 energiemunten" } }
   },
   "themesPage": {
@@ -509,122 +510,121 @@
   },
   "skins": {
     "neonBlueTrail": {
-      "name": "Neon Blue Trail",
+      "name": "Neonblauw spoor",
       "description": "Een helder elektrisch blauw spoor voor eerste runs."
     },
     "fireLine": {
-      "name": "Fire Line",
+      "name": "Vuurlijn",
       "description": "Een vurige lijn met vonkdeeltjes."
     },
     "iceArrow": {
-      "name": "Ice Arrow",
+      "name": "IJspijl",
       "description": "Scherpe ijsranden met lichte gloed."
     },
     "goldPremiumTrail": {
-      "name": "Gold Premium Trail",
+      "name": "Gouden premiumspoor",
       "description": "Een premium gouden spoor voor VIP-piloten."
     },
     "galaxyLine": {
-      "name": "Galaxy Line",
+      "name": "Melkweglijn",
       "description": "Kosmische kleuren met sterachtige deeltjes."
     },
     "cyberGreen": {
-      "name": "Cyber Green",
+      "name": "Cybergroen",
       "description": "Een frisse starterpijl met arcade-energie."
     },
     "rainbowTrail": {
-      "name": "Rainbow Trail",
+      "name": "Regenboogspoor",
       "description": "Een tijdelijk spoor met volledige regenboogbeweging."
     },
     "shadowArrow": {
-      "name": "Shadow Arrow",
+      "name": "Schaduwpijl",
       "description": "Een sluippijl met donkere gloed."
     },
     "diamondSkin": {
-      "name": "Diamond Skin",
+      "name": "Diamanten uiterlijk",
       "description": "Een legendarisch kristaleffect."
     },
     "plasmaArrow": {
-      "name": "Plasma Arrow",
+      "name": "Plasmapijl",
       "description": "Een scherpe roze-paarse pijl met onstabiele plasmagloed."
     },
     "solarFlareTrail": {
-      "name": "Solar Flare Trail",
+      "name": "Zonnevlamspoor",
       "description": "Een fel oranje spoor met hete arcade-energie."
     },
     "toxicWaveLine": {
-      "name": "Toxic Wave Line",
+      "name": "Giftige golflijn",
       "description": "Een groene chemische lijn die snel en gevaarlijk voelt."
     },
     "rubyArrow": {
-      "name": "Ruby Arrow",
+      "name": "Robijnen pijl",
       "description": "Een zware rode pijl met robijnachtige randen."
     },
     "voidTrail": {
-      "name": "Void Trail",
+      "name": "Leegtespoor",
       "description": "Een donker paars spoor vanaf de rand van de ruimte."
     },
     "thunderLine": {
-      "name": "Thunder Line",
+      "name": "Donderlijn",
       "description": "Een geel-blauwe elektrische lijn met stormvonken."
     },
     "auroraTrail": {
-      "name": "Aurora Trail",
+      "name": "Noorderlichtspoor",
       "description": "Een tijdelijk teal-paars spoor met poollichtbeweging."
     },
     "pearlArrow": {
-      "name": "Pearl Arrow",
+      "name": "Parelmoeren pijl",
       "description": "Een premium parelmoeren pijl met zachte luxe gloed."
     },
     "obsidianLine": {
-      "name": "Obsidian Line",
+      "name": "Obsidiaanlijn",
       "description": "Een donkere metalen lijn met koude zilveren randen."
     },
     "emeraldTrail": {
-      "name": "Emerald Trail",
+      "name": "Smaragdspoor",
       "description": "Een schoon groen spoor met smaragdglans."
     },
     "sapphireArrow": {
-      "name": "Sapphire Arrow",
+      "name": "Saffieren pijl",
       "description": "Een blauwe pijl met ijzige saffierreflecties."
     },
     "lavaTrail": {
-      "name": "Lava Trail",
+      "name": "Lavaspoor",
       "description": "Een gesmolten rood-oranje spoor."
     },
     "glitchArrow": {
-      "name": "Glitch Arrow",
+      "name": "Glitchpijl",
       "description": "Een premium cyaan-roze pijl met kapot-signaaleffecten."
     },
     "cometTrail": {
-      "name": "Comet Trail",
+      "name": "Komeetspoor",
       "description": "Een legendarisch wit-blauw spoor dat als een komeet strekt."
     },
     "prismLine": {
-      "name": "Prism Line",
+      "name": "Prismalijn",
       "description": "Een premium regenbooglijn met glasachtige breking."
     },
     "royalGoldArrow": {
-      "name": "Royal Gold Arrow",
+      "name": "Koninklijke gouden pijl",
       "description": "Een premium gouden pijl voor VIP-piloten."
     },
     "nebulaTrail": {
-      "name": "Nebula Trail",
+      "name": "Nevelspoor",
       "description": "Een premium kosmisch spoor met diep violet-blauwe gloed."
     },
     "candyPulseTrail": {
-      "name": "Candy Pulse Trail",
+      "name": "Snoeppulsspoor",
       "description": "Een tijdelijk roze-cyaan eventspoor met speelse pulsen."
     },
-    "neonDeathBurst": { "name": "Neon Death Burst", "description": "Een heldere cyaan-roze uitschakelanimatie." },
-    "plasmaHit": { "name": "Plasma Hit", "description": "Een violet inslageffect voor botsingen." },
-    "goldCoinPop": { "name": "Gold Coin Pop", "description": "Een verzorgd gouden munteffect." },
-    "voidBackground": { "name": "Void Background", "description": "Een diepe ruimteachtergrond." },
-    "pilotAvatar": { "name": "Pilot Avatar", "description": "Een gratis profielavatar voor elke piloot." },
-    "championBadge": { "name": "Champion Badge", "description": "Een legendarische badge voor de ranglijst." },
-    "diamondFrame": { "name": "Diamond Frame", "description": "Een premium profiel- en ranglijstframe." },
-    "prismPlayer": { "name": "Prism Player", "description": "Een premium regenboogspelersvorm." }
-    }
+    "neonDeathBurst": { "name": "Neonexplosie", "description": "Een heldere cyaan-roze uitschakelanimatie." },
+    "plasmaHit": { "name": "Plasmainslag", "description": "Een violet inslageffect voor botsingen." },
+    "goldCoinPop": { "name": "Gouden muntflits", "description": "Een verzorgd gouden munteffect." },
+    "voidBackground": { "name": "Leegteachtergrond", "description": "Een diepe ruimteachtergrond." },
+    "pilotAvatar": { "name": "Pilootavatar", "description": "Een gratis profielavatar voor elke piloot." },
+    "championBadge": { "name": "Kampioensbadge", "description": "Een legendarische badge voor de ranglijst." },
+    "diamondFrame": { "name": "Diamanten kader", "description": "Een premium profiel- en ranglijstframe." },
+    "prismPlayer": { "name": "Prismaspeler", "description": "Een premium regenboogspelersvorm." }
   },
   "rarity": {
     "common": "Gewoon",

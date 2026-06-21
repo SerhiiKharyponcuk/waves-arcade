@@ -22,6 +22,7 @@
     "forgotPassword": "Forgot password?",
     "verifyEmail": "Verify email",
     "verificationCode": "Verification code",
+    "securityVerification": "Security verification",
     "verificationSent": "We sent a 6-digit verification code to your email.",
     "verificationCreated": "Verification code created. Email delivery is not configured yet.",
     "devCode": "Dev code:",
