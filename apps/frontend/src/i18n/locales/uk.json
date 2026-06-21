@@ -17,11 +17,12 @@
     "subtitle": "Створюй неоновий слід, бий рекорди та відкривай преміум-скіни.",
     "login": "Увійти",
     "register": "Реєстрація",
-    "email": "Email",
+    "email": "Електронна пошта",
     "password": "Пароль",
     "forgotPassword": "Забув пароль?",
     "verifyEmail": "Підтвердити email",
     "verificationCode": "Код підтвердження",
+    "securityVerification": "Перевірка безпеки",
     "verificationSent": "Ми надіслали 6-значний код на твій email.",
     "verificationCreated": "Код створено. Доставку email ще не налаштовано.",
     "devCode": "Dev-код:",
@@ -356,7 +357,7 @@
   "restrictions": { "temporaryUntil": "Тимчасово до {{date}}", "noEnd": "Без автоматичної дати завершення", "appealAvailable": "Ви можете звернутися до підтримки з апеляцією.", "noAppeal": "Апеляція недоступна.", "types": { "warning": "Попередження", "temporary_restriction": "Тимчасове обмеження", "support_restriction": "Обмеження підтримки", "shop_restriction": "Обмеження магазину", "leaderboard_restriction": "Обмеження рейтингу", "score_reset": "Результат скинуто", "score_hidden": "Результат приховано", "rewards_removed": "Нагороди вилучено", "temporary_ban": "Тимчасове блокування", "permanent_ban": "Постійне блокування" } },
   "settingsDetails": {
     "saved": "Налаштування збережено.", "saveError": "Не вдалося зберегти налаштування.", "passwordChanged": "Пароль успішно змінено.", "passwordError": "Не вдалося змінити пароль.", "deleteError": "Не вдалося видалити акаунт.", "temporaryPasswordWarning": "Тимчасовий пароль прийнято. Оберіть новий пароль перед використанням інших функцій акаунта.",
-    "username": "Ім'я користувача", "email": "Email", "status": "Статус", "created": "Створено", "guestAccountLimit": "Гість не має хмарного профілю, місця в рейтингу, покупок, досягнень і синхронізації між пристроями.", "unlockAccountSettings": "Відкрити налаштування акаунта",
+    "username": "Ім'я користувача", "email": "Електронна пошта", "status": "Статус", "created": "Створено", "guestAccountLimit": "Гість не має хмарного профілю, місця в рейтингу, покупок, досягнень і синхронізації між пристроями.", "unlockAccountSettings": "Відкрити налаштування акаунта",
     "difficulty": "Складність", "controlSensitivity": "Чутливість керування", "movementType": "Тип руху", "vibration": "Вібрація", "autoPause": "Автопауза", "showScore": "Показувати результат під час гри", "showTutorial": "Показувати навчання", "reduceMotion": "Зменшити рух", "keyboardControls": "Керування клавіатурою", "touchControls": "Сенсорне керування", "mouseControls": "Керування мишею", "virtualJoystick": "Віртуальний джойстик", "controlSize": "Розмір керування", "resetControls": "Скинути керування",
     "masterVolume": "Загальна гучність", "musicVolume": "Гучність музики", "effectsVolume": "Гучність ефектів", "muteAll": "Вимкнути весь звук", "particles": "Частинки", "screenShake": "Тряска екрана", "trailEffects": "Ефекти сліду", "animationQuality": "Якість анімації", "lowPerformance": "Режим слабкого пристрою", "highContrast": "Висока контрастність",
     "showLeaderboardName": "Показувати ім'я в рейтингу", "hideProfile": "Приховати профіль", "allowRewardedAds": "Дозволити рекламу з винагородою", "rewardedAdsHelp": "Реклама з винагородою необов'язкова. Гості можуть бачити більше реклами, бо функції акаунта та історія покупок недоступні.", "openSupport": "Створити звернення", "supportRules": "Правила підтримки", "securityPassword": "Безпека / Пароль", "lastPasswordChange": "Остання зміна пароля: {{date}}. Нікому не повідомляйте пароль.", "currentPassword": "Поточний пароль", "newPassword": "Новий пароль", "confirmPassword": "Підтвердіть новий пароль", "passwordHelp": "Використайте щонайменше 10 символів, велику й малу літери та цифру. Не повторюйте поточний пароль.", "changePassword": "Змінити пароль",
@@ -406,111 +407,111 @@
   },
   "skins": {
     "neonBlueTrail": {
-      "name": "Neon Blue Trail",
+      "name": "Неоновий синій слід",
       "description": "Чистий електрично-синій слід для перших забігів."
     },
     "fireLine": {
-      "name": "Fire Line",
+      "name": "Вогняна лінія",
       "description": "Гаряча лінія з частинками іскор."
     },
     "iceArrow": {
-      "name": "Ice Arrow",
+      "name": "Крижана стріла",
       "description": "Гострі крижані грані та холодне сяйво."
     },
     "goldPremiumTrail": {
-      "name": "Gold Premium Trail",
+      "name": "Золотий преміум-слід",
       "description": "Преміальний золотий слід для VIP-пілотів."
     },
     "galaxyLine": {
-      "name": "Galaxy Line",
+      "name": "Галактична лінія",
       "description": "Космічні кольори з частинками зірок."
     },
     "cyberGreen": {
-      "name": "Cyber Green",
+      "name": "Кіберзелень",
       "description": "Чітка стартова стрілка з аркадною енергією."
     },
     "rainbowTrail": {
-      "name": "Rainbow Trail",
+      "name": "Веселковий слід",
       "description": "Обмежений слід із райдужним рухом."
     },
     "shadowArrow": {
-      "name": "Shadow Arrow",
+      "name": "Тіньова стріла",
       "description": "Прихована стрілка з темним світінням."
     },
     "diamondSkin": {
-      "name": "Diamond Skin",
+      "name": "Діамантовий вигляд",
       "description": "Легендарний кристалічний ефект."
     },
     "plasmaArrow": {
-      "name": "Plasma Arrow",
+      "name": "Плазмова стріла",
       "description": "Гостра рожево-фіолетова стрілка з нестабільним плазмовим сяйвом."
     },
     "solarFlareTrail": {
-      "name": "Solar Flare Trail",
+      "name": "Слід сонячного спалаху",
       "description": "Яскрава помаранчева лінія з гарячою аркадною енергією."
     },
     "toxicWaveLine": {
-      "name": "Toxic Wave Line",
+      "name": "Токсична хвильова лінія",
       "description": "Зелена токсична лінія, яка виглядає швидко й небезпечно."
     },
     "rubyArrow": {
-      "name": "Ruby Arrow",
+      "name": "Рубінова стріла",
       "description": "Важка червона стрілка з рубіновими гранями."
     },
     "voidTrail": {
-      "name": "Void Trail",
+      "name": "Слід порожнечі",
       "description": "Темно-фіолетовий слід із краю космосу."
     },
     "thunderLine": {
-      "name": "Thunder Line",
+      "name": "Громова лінія",
       "description": "Жовто-синя електрична лінія зі штормовими іскрами."
     },
     "auroraTrail": {
-      "name": "Aurora Trail",
+      "name": "Полярний слід",
       "description": "Обмежена бірюзово-фіолетова лінія в стилі північного сяйва."
     },
     "pearlArrow": {
-      "name": "Pearl Arrow",
+      "name": "Перлинна стріла",
       "description": "Преміальна перламутрова стрілка з м'яким люксовим сяйвом."
     },
     "obsidianLine": {
-      "name": "Obsidian Line",
+      "name": "Обсидіанова лінія",
       "description": "Темна металева лінія з холодними срібними краями."
     },
     "emeraldTrail": {
-      "name": "Emerald Trail",
+      "name": "Смарагдовий слід",
       "description": "Чиста зелена лінія з блиском смарагду."
     },
     "sapphireArrow": {
-      "name": "Sapphire Arrow",
+      "name": "Сапфірова стріла",
       "description": "Синя стрілка з крижаними сапфіровими відблисками."
     },
     "lavaTrail": {
-      "name": "Lava Trail",
+      "name": "Лавовий слід",
       "description": "Розпечена червоно-помаранчева лінія."
     },
     "glitchArrow": {
-      "name": "Glitch Arrow",
+      "name": "Глітч-стріла",
       "description": "Преміальна бірюзово-рожева стрілка з ефектом зламаного сигналу."
     },
     "cometTrail": {
-      "name": "Comet Trail",
+      "name": "Кометний слід",
       "description": "Легендарна біло-синя лінія, що летить як комета."
     },
     "prismLine": {
-      "name": "Prism Line",
+      "name": "Призматична лінія",
       "description": "Преміальна райдужна лінія зі скляним переломленням."
     },
     "royalGoldArrow": {
-      "name": "Royal Gold Arrow",
+      "name": "Королівська золота стріла",
       "description": "Преміальна золота стрілка для VIP-пілотів."
     },
     "nebulaTrail": {
-      "name": "Nebula Trail",
+      "name": "Туманний слід",
       "description": "Преміальна космічна лінія з глибоким фіолетово-синім сяйвом."
     },
     "candyPulseTrail": {
-      "name": "Candy Pulse Trail",
+      "name": "Цукерковий імпульсний слід",
       "description": "Обмежена рожево-бірюзова event-лінія з живими імпульсами."
     },
     "neonDeathBurst": {

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 
 interface TurnstileApi {
   render: (container: HTMLElement, options: Record<string, unknown>) => string;
@@ -14,6 +15,7 @@ interface TurnstileWidgetProps {
 }
 
 export function TurnstileWidget({ onToken }: TurnstileWidgetProps) {
+  const { t } = useTranslation();
   const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -56,5 +58,5 @@ export function TurnstileWidget({ onToken }: TurnstileWidgetProps) {
   }, [onToken, siteKey]);
 
   if (!siteKey) return null;
-  return <div ref={containerRef} className="min-h-[65px]" aria-label="Security verification" />;
+  return <div ref={containerRef} className="min-h-[65px]" aria-label={t("auth.securityVerification")} />;
 }
