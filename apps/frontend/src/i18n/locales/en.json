@@ -414,6 +414,18 @@
       "classic-neon": { "name": "Classic Neon", "particles": "Cyan sparks" }, "dark-space": { "name": "Dark Space", "particles": "Star dust" }, "cyber-grid": { "name": "Cyber Grid", "particles": "Digital squares" }, "ocean-blue": { "name": "Ocean Blue", "particles": "Bubbles" }, "sunset-run": { "name": "Sunset Run", "particles": "Sun flares" }, "lava-zone": { "name": "Lava Zone", "particles": "Embers" }, "ice-world": { "name": "Ice World", "particles": "Snow crystals" }, "forest-glow": { "name": "Forest Glow", "particles": "Fireflies" }, "purple-night": { "name": "Purple Night", "particles": "Violet sparks" }, "retro-arcade": { "name": "Retro Arcade", "particles": "Pixel burst" }, "minimal-white": { "name": "Minimal White", "particles": "Ink dots" }, "toxic-green": { "name": "Toxic Green", "particles": "Toxic mist" }, "gold-premium": { "name": "Gold Premium", "particles": "Gold shards" }, "rainbow-energy": { "name": "Rainbow Energy", "particles": "Rainbow sparks" }, "winter-frost": { "name": "Winter Frost", "particles": "Frost" }, "desert-storm": { "name": "Desert Storm", "particles": "Sand grains" }, "candy-mode": { "name": "Candy Mode", "particles": "Sugar stars" }, "galaxy-trail": { "name": "Galaxy Trail", "particles": "Nebula dust" }, "matrix-code": { "name": "Matrix Code", "particles": "Code rain" }, "fire-line": { "name": "Fire Line", "particles": "Flames" }
     }
   },
+  "aboutPage": {
+    "title": "About Waves Arcade",
+    "intro": "Waves Arcade is a free browser arcade game built for quick, responsive runs on desktop and mobile. Players guide a glowing line through a changing arena, collect energy and unlock cosmetic customization.",
+    "gameplayTitle": "Built to play",
+    "gameplayBody": "Guest play starts immediately. An optional account saves valid scores, owned cosmetics, settings and progression across devices.",
+    "fairPlayTitle": "Fair competition",
+    "fairPlayBody": "Server-side sessions and score checks protect the leaderboard. Suspicious results are held for review instead of being published automatically.",
+    "supportTitle": "Human support",
+    "supportBody": "Guests and account players can report bugs, request account help or appeal a restriction. Support never asks for a password.",
+    "availability": "The game, core guest mode and support are available without a purchase. Cosmetic and rewarded features are optional.",
+    "contactSupport": "Contact support"
+  },
   "policies": {
     "effective": "Effective: 20 June 2026",
     "privacy": { "title": "Privacy Policy", "sections": {

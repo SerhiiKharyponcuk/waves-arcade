@@ -10,6 +10,7 @@ import { Modal } from "../ui/Modal";
 import { authApi } from "../../services/authApi";
 import { UserMenu } from "./UserMenu";
 import { PolicyPage } from "../../pages/PolicyPage";
+import { AboutPage } from "../../pages/AboutPage";
 
 const GamePage = lazy(() => import("../../pages/GamePage").then((module) => ({ default: module.GamePage })));
 const ShopPage = lazy(() => import("../../pages/ShopPage").then((module) => ({ default: module.ShopPage })));
@@ -208,6 +209,7 @@ export function MainShell() {
           {view === "support" ? <SupportPage /> : null}
           {view === "settings" ? <SettingsPage /> : null}
           {view === "rules" ? <RulesPage onClose={() => setView(rulesReturnView)} /> : null}
+          {view === "about" ? <AboutPage onSupport={() => setView("support")} /> : null}
           {view === "privacy" ? <PolicyPage type="privacy" onClose={() => setView("settings")} /> : null}
           {view === "cookies" ? <PolicyPage type="cookies" onClose={() => setView("settings")} /> : null}
           {view === "admin" && user?.role === "ADMIN" ? <AdminPage /> : null}
@@ -216,7 +218,7 @@ export function MainShell() {
 
       <footer className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 border-t border-white/10 px-4 py-5 text-xs text-slate-400">
         <span>{isGuest ? t("guest.footerLocal") : t("guest.footerCloud")}</span>
-        <div className="flex flex-wrap gap-4"><button type="button" className="font-bold text-cyanGlow hover:text-white" onClick={() => navigate("rules")}>{t("rulesPage.title")}</button><button type="button" className="font-bold text-cyanGlow hover:text-white" onClick={() => setView("privacy")}>{t("policies.privacy.title")}</button><button type="button" className="font-bold text-cyanGlow hover:text-white" onClick={() => setView("cookies")}>{t("policies.cookies.title")}</button></div>
+        <div className="flex flex-wrap gap-4"><button type="button" className="font-bold text-cyanGlow hover:text-white" onClick={() => setView("about")}>{t("aboutPage.title")}</button><button type="button" className="font-bold text-cyanGlow hover:text-white" onClick={() => navigate("rules")}>{t("rulesPage.title")}</button><button type="button" className="font-bold text-cyanGlow hover:text-white" onClick={() => setView("privacy")}>{t("policies.privacy.title")}</button><button type="button" className="font-bold text-cyanGlow hover:text-white" onClick={() => setView("cookies")}>{t("policies.cookies.title")}</button></div>
       </footer>
 
       <button

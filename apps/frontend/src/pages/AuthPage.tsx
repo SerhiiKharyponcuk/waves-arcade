@@ -12,6 +12,7 @@ import { useGuestStore } from "../store/guestStore";
 import { gameRuleSections } from "../data/gameRules";
 import { TurnstileWidget } from "../components/auth/TurnstileWidget";
 import { PolicyPage } from "./PolicyPage";
+import { AboutPage } from "./AboutPage";
 
 const supportedLocales: readonly SupportedLocale[] = ["en", "nl", "ru", "uk"];
 const publicSupportCategories: SupportTicketCategory[] = ["APPEAL", "ACCOUNT", "SCORE", "BUG", "PAYMENT", "SHOP", "OTHER"];
@@ -34,6 +35,7 @@ export function AuthPage() {
   const [captchaToken, setCaptchaToken] = useState("");
   const [termsOpen, setTermsOpen] = useState(false);
   const [policyOpen, setPolicyOpen] = useState<"privacy" | "cookies" | null>(null);
+  const [aboutOpen, setAboutOpen] = useState(false);
   const [botWebsite, setBotWebsite] = useState("");
   const [formStartedAt] = useState(() => Date.now());
   const [forgotOpen, setForgotOpen] = useState(false);
@@ -325,7 +327,7 @@ export function AuthPage() {
         </section>
       </div>
 
-      <footer className="mt-5 flex flex-wrap justify-center gap-5 text-xs"><button type="button" className="font-bold text-cyanGlow" onClick={() => setTermsOpen(true)}>{t("rulesPage.title")}</button><button type="button" className="font-bold text-cyanGlow" onClick={() => setPolicyOpen("privacy")}>{t("policies.privacy.title")}</button><button type="button" className="font-bold text-cyanGlow" onClick={() => setPolicyOpen("cookies")}>{t("policies.cookies.title")}</button></footer>
+      <footer className="mt-5 flex flex-wrap justify-center gap-5 text-xs"><button type="button" className="font-bold text-cyanGlow" onClick={() => setAboutOpen(true)}>{t("aboutPage.title")}</button><button type="button" className="font-bold text-cyanGlow" onClick={() => setTermsOpen(true)}>{t("rulesPage.title")}</button><button type="button" className="font-bold text-cyanGlow" onClick={() => setPolicyOpen("privacy")}>{t("policies.privacy.title")}</button><button type="button" className="font-bold text-cyanGlow" onClick={() => setPolicyOpen("cookies")}>{t("policies.cookies.title")}</button></footer>
 
       {termsOpen ? (
         <Modal title={t("rulesPage.title")} closeLabel={t("common.close")} onClose={() => setTermsOpen(false)}>
@@ -339,6 +341,8 @@ export function AuthPage() {
       ) : null}
 
       {policyOpen ? <Modal title={t(`policies.${policyOpen}.title`)} closeLabel={t("common.close")} onClose={() => setPolicyOpen(null)}><div className="max-h-[70vh] overflow-y-auto"><PolicyPage type={policyOpen} onClose={() => setPolicyOpen(null)} /></div></Modal> : null}
+
+      {aboutOpen ? <Modal title={t("aboutPage.title")} closeLabel={t("common.close")} onClose={() => setAboutOpen(false)}><div className="max-h-[70vh] overflow-y-auto"><AboutPage onSupport={() => { setAboutOpen(false); openPublicSupport(); }} /></div></Modal> : null}
 
       {forgotOpen ? (
         <Modal title={t("auth.forgotPassword")} closeLabel={t("common.close")} onClose={() => setForgotOpen(false)}>
