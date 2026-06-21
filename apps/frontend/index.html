@@ -4,16 +4,42 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#070914" />
-    <meta name="description" content="Waves Arcade neon wave runner" />
+    <meta name="description" content="Play Waves Arcade, a free neon browser game with responsive controls, fair leaderboards, collectible skins and guest play." />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="application-name" content="Waves Arcade" />
     <meta name="google-adsense-account" content="ca-pub-7742566643207150" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Waves Arcade" />
+    <meta property="og:title" content="Waves Arcade — Free Neon Browser Game" />
+    <meta property="og:description" content="Guide a glowing line through an arcade arena, collect energy, unlock cosmetics and compete fairly." />
+    <meta property="og:url" content="https://waves-arcade.vercel.app/" />
+    <meta property="og:image" content="https://waves-arcade.vercel.app/waves-icon.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Waves Arcade — Free Neon Browser Game" />
+    <meta name="twitter:description" content="A responsive neon arcade game for desktop and mobile." />
+    <link rel="canonical" href="https://waves-arcade.vercel.app/" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="icon" href="/waves-icon.svg" />
     <title>Waves Arcade</title>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": "Waves Arcade",
+        "url": "https://waves-arcade.vercel.app/",
+        "description": "A free neon arcade browser game with guest play, collectible cosmetics and fair leaderboards.",
+        "applicationCategory": "GameApplication",
+        "operatingSystem": "Web browser",
+        "inLanguage": ["en", "nl", "ru", "uk"],
+        "isAccessibleForFree": true
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
+    <noscript>Waves Arcade requires JavaScript to run. It is a free neon arcade browser game for desktop and mobile.</noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

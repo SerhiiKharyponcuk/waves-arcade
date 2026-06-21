@@ -19,6 +19,12 @@ void i18n.use(initReactI18next).init({
   interpolation: {
     escapeValue: false
   }
+}).then(() => {
+  document.documentElement.lang = i18n.resolvedLanguage ?? "en";
+});
+
+i18n.on("languageChanged", (language) => {
+  document.documentElement.lang = language;
 });
 
 export { i18n };

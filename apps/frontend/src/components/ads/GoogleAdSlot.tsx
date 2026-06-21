@@ -17,7 +17,10 @@ export function GoogleAdSlot() {
   const [slotId] = useState(() => `waves-gam-slot-${Math.random().toString(36).slice(2)}`);
   const [failed, setFailed] = useState(false);
   const adUnitPath = useMemo(() => getGoogleAdManagerBannerUnitPath(), []);
-  const enabled = advertisingConsent && isGoogleAdManagerEnabled() && Boolean(adUnitPath);
+  const enabled = import.meta.env.VITE_ADS_ENABLED === "true"
+    && advertisingConsent
+    && isGoogleAdManagerEnabled()
+    && Boolean(adUnitPath);
 
   useEffect(() => {
     if (!enabled) {

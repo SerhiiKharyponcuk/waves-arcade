@@ -471,6 +471,18 @@
     "title": "Thema's", "heading": "Bouw de sfeer van je arena", "subtitle": "Thema's veranderen de achtergrond, het spoorpalet, obstakels, interfaceaccent en deeltjes.", "guestNotice": "Maak een account om meer thema's vrij te spelen. Gasten kunnen de eerste drie basisthema's gebruiken.", "loadError": "Thema's konden niet worden geladen.", "selectError": "Thema kon niet worden geselecteerd.", "accountRequired": "Maak een account om meer thema's vrij te spelen.", "equipped": "Actief", "equip": "Gebruiken", "unlock": "Ontgrendelen", "coinsOrScore": "{{coins}} munten / score", "availableEveryone": "Voor iedereen beschikbaar", "premiumEntitlement": "Premiumrecht", "unlockCondition": "Behaal {{score}} punten of besteed {{coins}} munten", "types": { "free": "Gratis", "unlockable": "Vrijspeelbaar", "premium": "Premium" },
     "items": { "classic-neon": { "name": "Klassiek neon", "particles": "Cyaan vonken" }, "dark-space": { "name": "Donkere ruimte", "particles": "Sterrenstof" }, "cyber-grid": { "name": "Cyberraster", "particles": "Digitale vierkanten" }, "ocean-blue": { "name": "Oceaanblauw", "particles": "Bellen" }, "sunset-run": { "name": "Zonsondergangrun", "particles": "Zonnevlammen" }, "lava-zone": { "name": "Lavazone", "particles": "Sintels" }, "ice-world": { "name": "IJswereld", "particles": "Sneeuwkristallen" }, "forest-glow": { "name": "Bosgloed", "particles": "Vuurvliegjes" }, "purple-night": { "name": "Paarse nacht", "particles": "Violette vonken" }, "retro-arcade": { "name": "Retro-arcade", "particles": "Pixeluitbarsting" }, "minimal-white": { "name": "Minimalistisch wit", "particles": "Inktstippen" }, "toxic-green": { "name": "Giftig groen", "particles": "Giftige mist" }, "gold-premium": { "name": "Goud premium", "particles": "Goudscherven" }, "rainbow-energy": { "name": "Regenboogenergie", "particles": "Regenboogvonken" }, "winter-frost": { "name": "Wintervorst", "particles": "Rijp" }, "desert-storm": { "name": "Woestijnstorm", "particles": "Zandkorrels" }, "candy-mode": { "name": "Snoepmodus", "particles": "Suikersterren" }, "galaxy-trail": { "name": "Melkwegspoor", "particles": "Nevelstof" }, "matrix-code": { "name": "Matrixcode", "particles": "Coderegen" }, "fire-line": { "name": "Vuurlijn", "particles": "Vlammen" } }
   },
+  "aboutPage": {
+    "title": "Over Waves Arcade",
+    "intro": "Waves Arcade is een gratis browserspel voor snelle, responsieve rondes op desktop en mobiel. Spelers leiden een gloeiende lijn door een veranderende arena, verzamelen energie en ontgrendelen cosmetische aanpassingen.",
+    "gameplayTitle": "Gemaakt om te spelen",
+    "gameplayBody": "Als gast kun je direct beginnen. Een optioneel account bewaart geldige scores, cosmetische items, instellingen en voortgang op verschillende apparaten.",
+    "fairPlayTitle": "Eerlijke competitie",
+    "fairPlayBody": "Serversessies en scorecontroles beschermen de ranglijst. Verdachte resultaten worden beoordeeld voordat ze worden gepubliceerd.",
+    "supportTitle": "Persoonlijke ondersteuning",
+    "supportBody": "Gasten en spelers met een account kunnen fouten melden, accounthulp vragen of bezwaar maken. Support vraagt nooit om een wachtwoord.",
+    "availability": "Het spel, de gastmodus en support zijn zonder aankoop beschikbaar. Cosmetische en beloonde functies zijn optioneel.",
+    "contactSupport": "Contact met support"
+  },
   "policies": {
     "effective": "Geldig vanaf: 20 juni 2026",
     "privacy": { "title": "Privacybeleid", "sections": {
