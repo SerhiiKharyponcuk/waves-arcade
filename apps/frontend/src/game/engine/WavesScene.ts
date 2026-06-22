@@ -4,6 +4,7 @@ import { ObstacleManager } from "../obstacles/ObstacleManager";
 import { ParticleBurst } from "../effects/ParticleBurst";
 import { PlayerController } from "../player/PlayerController";
 import type { GameThemeDto } from "@waves/shared";
+import { GameAudioManager, type GameAudioSettings } from "../audio/GameAudioManager";
 
 export interface GameStats {
   score: number;
@@ -17,6 +18,7 @@ export interface GameStats {
 export interface WavesSceneOptions {
   skins: GameSkinBundle;
   theme: GameThemeDto;
+  audio: GameAudioSettings;
   onStats: (stats: GameStats) => void;
   onGameOver: (stats: GameStats) => void | Promise<void>;
 }
@@ -37,6 +39,7 @@ export class WavesScene extends Phaser.Scene {
   private pausedByUi = false;
   private previousPressed = false;
   private inputTransitions = 0;
+  private audio?: GameAudioManager;
 
   constructor(options: WavesSceneOptions) {
     super("waves-scene");
@@ -50,6 +53,7 @@ export class WavesScene extends Phaser.Scene {
 
     this.cursors = this.input.keyboard?.createCursorKeys();
     this.wasd = this.input.keyboard?.addKeys("W,A,S,D,SPACE") as Record<string, Phaser.Input.Keyboard.Key>;
+    this.input.keyboard?.on("keydown", this.handleKeyboardAudio);
     this.player = new PlayerController(this, this.options.skins.arrow, this.options.skins.trail);
     this.obstacles = new ObstacleManager(this, {
       obstacleColor: this.options.theme.obstacleStyle,
@@ -57,6 +61,7 @@ export class WavesScene extends Phaser.Scene {
       backgroundColor: this.options.theme.backgroundStyle
     });
     this.particles = new ParticleBurst(this);
+    this.audio = new GameAudioManager(this.options.audio);
     this.startedAt = performance.now();
 
     this.physics.add.collider(this.player.collider, this.obstacles.obstacleGroup, () => this.finish(1));
@@ -68,6 +73,7 @@ export class WavesScene extends Phaser.Scene {
 
     this.input.on("pointerdown", () => {
       this.pointerPressed = true;
+      void this.audio?.unlock();
     });
     this.input.on("pointerup", () => {
       this.pointerPressed = false;
@@ -99,6 +105,8 @@ export class WavesScene extends Phaser.Scene {
     if (pressed !== this.previousPressed) {
       this.inputTransitions += 1;
       this.previousPressed = pressed;
+      void this.audio?.unlock();
+      if (pressed) this.audio?.playControl();
     }
 
     this.player.update(delta, { pressed });
@@ -116,6 +124,8 @@ export class WavesScene extends Phaser.Scene {
   shutdown() {
     window.removeEventListener("waves:virtual-control", this.handleVirtualControl as EventListener);
     window.removeEventListener("waves:pause", this.handlePause as EventListener);
+    this.input.keyboard?.off("keydown", this.handleKeyboardAudio);
+    this.audio?.destroy();
   }
 
   private drawBackdrop() {
@@ -158,6 +168,11 @@ export class WavesScene extends Phaser.Scene {
 
   private handleVirtualControl = (event: CustomEvent<{ pressed: boolean }>) => {
     this.virtualPressed = event.detail.pressed;
+    if (event.detail.pressed) void this.audio?.unlock();
+  };
+
+  private handleKeyboardAudio = () => {
+    void this.audio?.unlock();
   };
 
   private handlePause = (event: CustomEvent<{ paused: boolean }>) => {
@@ -167,11 +182,13 @@ export class WavesScene extends Phaser.Scene {
     } else {
       this.physics.resume();
     }
+    this.audio?.setPaused(this.pausedByUi);
   };
 
   private collectCoin(coin: Phaser.GameObjects.GameObject) {
     const object = coin as Phaser.GameObjects.Arc;
     this.coins += 1;
+    this.audio?.playCoin();
     this.particles?.emit(object.x, object.y, this.options.skins.trail, 10);
     object.destroy();
   }
@@ -193,6 +210,7 @@ export class WavesScene extends Phaser.Scene {
       return;
     }
     this.ended = true;
+    this.audio?.playCrash();
     const stats = this.currentStats(obstacleHits);
     if (this.player) {
       this.particles?.emit(this.player.x, this.player.y, this.options.skins.arrow, 24);

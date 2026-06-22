@@ -385,7 +385,7 @@
     "username": "Username", "email": "Email", "status": "Status", "created": "Created", "guestAccountLimit": "Guest has no cloud profile, leaderboard identity, purchases, achievements, or cross-device progress.", "unlockAccountSettings": "Unlock account settings",
     "difficulty": "Difficulty", "controlSensitivity": "Control sensitivity", "movementType": "Movement type", "vibration": "Vibration", "autoPause": "Auto pause", "showScore": "Show score during game", "showTutorial": "Show tutorial", "reduceMotion": "Reduce motion",
     "keyboardControls": "Keyboard controls", "touchControls": "Touch controls", "mouseControls": "Mouse controls", "virtualJoystick": "Virtual joystick", "controlSize": "Control size", "resetControls": "Reset controls",
-    "masterVolume": "Master volume", "musicVolume": "Music volume", "effectsVolume": "Sound effects volume", "muteAll": "Mute all",
+    "masterVolume": "Master volume", "musicVolume": "Music volume", "effectsVolume": "Sound effects volume", "testAudio": "Test game audio", "muteAll": "Mute all",
     "particles": "Particles", "screenShake": "Screen shake", "trailEffects": "Trail effects", "animationQuality": "Animation quality", "lowPerformance": "Low performance mode", "highContrast": "High contrast mode",
     "showLeaderboardName": "Show username in leaderboard", "hideProfile": "Hide profile", "allowRewardedAds": "Allow rewarded ads", "rewardedAdsHelp": "Rewarded ads are optional. Guests may see more ads because account features and purchase history are unavailable.",
     "openSupport": "Open support ticket", "supportRules": "Support rules", "securityPassword": "Security / Password", "lastPasswordChange": "Last password change: {{date}}. Never share your password.",
