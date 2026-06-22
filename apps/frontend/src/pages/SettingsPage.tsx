@@ -1,5 +1,5 @@
 import { FormEvent, useMemo, useState } from "react";
-import { BookOpen, Cookie, KeyRound, LifeBuoy, Lock, LogOut, RotateCcw, Save, Settings, ShieldCheck, Trash2 } from "lucide-react";
+import { BookOpen, Cookie, KeyRound, LifeBuoy, Lock, LogOut, RotateCcw, Save, Settings, ShieldCheck, Trash2, Volume2 } from "lucide-react";
 import type { SupportedLocale } from "@waves/shared";
 import { AccountRequiredModal } from "../components/auth/AccountRequiredModal";
 import { LanguageSelector } from "../components/settings/LanguageSelector";
@@ -14,6 +14,7 @@ import { useUiStore } from "../store/uiStore";
 import { defaultGameSettings, type GameSettings } from "../types/settings";
 import { useConsentStore } from "../store/consentStore";
 import { useTranslation } from "react-i18next";
+import { playAudioPreview } from "../game/audio/GameAudioManager";
 
 function mergeSettings(value: Record<string, unknown> | undefined): GameSettings {
   return { ...defaultGameSettings, ...(value ?? {}) } as GameSettings;
@@ -172,6 +173,7 @@ export function SettingsPage() {
           <RangeSetting label={t("settingsDetails.musicVolume")} value={settings.musicVolume} onChange={(value) => patchSetting("musicVolume", value)} />
           <RangeSetting label={t("settingsDetails.effectsVolume")} value={settings.soundEffectsVolume} onChange={(value) => patchSetting("soundEffectsVolume", value)} />
           <ToggleSetting label={t("settingsDetails.muteAll")} checked={settings.muteAll} onChange={(value) => patchSetting("muteAll", value)} />
+          <Button type="button" variant="ghost" disabled={settings.muteAll || settings.masterVolume === 0} onClick={() => void playAudioPreview(settings)} icon={<Volume2 size={18} />}>{t("settingsDetails.testAudio")}</Button>
         </SettingSection>
 
         <SettingSection title={t("settings.visuals")}>

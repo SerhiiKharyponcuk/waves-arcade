@@ -20,6 +20,8 @@ import { useGuestStore } from "../store/guestStore";
 import type { AdPlacement, DailyRewardDto, GameSessionEndResponseDto, RouletteConfigDto, RouletteSpinDto, ShopSkin } from "../types/api";
 import { gameThemes } from "@waves/shared";
 import { trackEvent } from "../services/analytics";
+import type { GameAudioSettings } from "../game/audio/GameAudioManager";
+import { defaultGameSettings, type GameSettings } from "../types/settings";
 
 type RunState = "idle" | "running" | "paused" | "over";
 
@@ -82,6 +84,24 @@ export function GamePage() {
     const themeId = isGuest ? guestSession?.selectedBasicTheme : user?.profile.selectedThemeId;
     return gameThemes.find((theme) => theme.id === themeId) ?? gameThemes[0]!;
   }, [guestSession?.selectedBasicTheme, isGuest, user?.profile.selectedThemeId]);
+  const audioSettings = useMemo<GameAudioSettings>(() => {
+    if (isGuest) {
+      return {
+        masterVolume: guestSession?.temporarySettings.masterVolume ?? defaultGameSettings.masterVolume,
+        musicVolume: defaultGameSettings.musicVolume,
+        soundEffectsVolume: defaultGameSettings.soundEffectsVolume,
+        muteAll: guestSession?.temporarySettings.muted ?? false
+      };
+    }
+
+    const saved = (user?.profile.gameSettings ?? {}) as Partial<GameSettings>;
+    return {
+      masterVolume: saved.masterVolume ?? defaultGameSettings.masterVolume,
+      musicVolume: saved.musicVolume ?? defaultGameSettings.musicVolume,
+      soundEffectsVolume: saved.soundEffectsVolume ?? defaultGameSettings.soundEffectsVolume,
+      muteAll: saved.muteAll ?? defaultGameSettings.muteAll
+    };
+  }, [guestSession?.temporarySettings.masterVolume, guestSession?.temporarySettings.muted, isGuest, user?.profile.gameSettings]);
 
   useEffect(() => {
     if (!import.meta.env.PROD || runState !== "running") {
@@ -317,6 +337,7 @@ export function GamePage() {
         <GameCanvas
           skins={gameSkins}
           theme={selectedTheme}
+          audio={audioSettings}
           paused={runState === "paused" || runState === "over"}
           onStats={handleStats}
           onGameOver={handleGameOver}

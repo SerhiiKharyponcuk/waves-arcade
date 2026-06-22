@@ -458,7 +458,7 @@
     "saved": "Instellingen opgeslagen.", "saveError": "Instellingen konden niet worden opgeslagen.", "passwordChanged": "Wachtwoord succesvol gewijzigd.", "passwordError": "Wachtwoord kon niet worden gewijzigd.", "deleteError": "Account kon niet worden verwijderd.", "temporaryPasswordWarning": "Je tijdelijke wachtwoord is geaccepteerd. Kies een nieuw wachtwoord voordat je andere accountfuncties gebruikt.",
     "username": "Gebruikersnaam", "email": "E-mail", "status": "Status", "created": "Aangemaakt", "guestAccountLimit": "Een gast heeft geen cloudprofiel, ranglijstidentiteit, aankopen, prestaties of voortgang tussen apparaten.", "unlockAccountSettings": "Accountinstellingen ontgrendelen",
     "difficulty": "Moeilijkheid", "controlSensitivity": "Besturingsgevoeligheid", "movementType": "Bewegingstype", "vibration": "Trillen", "autoPause": "Automatisch pauzeren", "showScore": "Score tijdens het spel tonen", "showTutorial": "Tutorial tonen", "reduceMotion": "Minder beweging", "keyboardControls": "Toetsenbordbesturing", "touchControls": "Touchbesturing", "mouseControls": "Muisbesturing", "virtualJoystick": "Virtuele joystick", "controlSize": "Grootte besturing", "resetControls": "Besturing herstellen",
-    "masterVolume": "Hoofdvolume", "musicVolume": "Muziekvolume", "effectsVolume": "Volume geluidseffecten", "muteAll": "Alles dempen", "particles": "Deeltjes", "screenShake": "Schermschudden", "trailEffects": "Spooreffecten", "animationQuality": "Animatiekwaliteit", "lowPerformance": "Energiezuinige modus", "highContrast": "Hoog contrast",
+    "masterVolume": "Hoofdvolume", "musicVolume": "Muziekvolume", "effectsVolume": "Volume geluidseffecten", "testAudio": "Game-audio testen", "muteAll": "Alles dempen", "particles": "Deeltjes", "screenShake": "Schermschudden", "trailEffects": "Spooreffecten", "animationQuality": "Animatiekwaliteit", "lowPerformance": "Energiezuinige modus", "highContrast": "Hoog contrast",
     "showLeaderboardName": "Gebruikersnaam in ranglijst tonen", "hideProfile": "Profiel verbergen", "allowRewardedAds": "Beloonde advertenties toestaan", "rewardedAdsHelp": "Beloonde advertenties zijn optioneel. Gasten kunnen meer advertenties zien omdat accountfuncties en aankoopgeschiedenis niet beschikbaar zijn.", "openSupport": "Supportticket openen", "supportRules": "Supportregels", "securityPassword": "Beveiliging / Wachtwoord", "lastPasswordChange": "Laatste wachtwoordwijziging: {{date}}. Deel je wachtwoord nooit.", "currentPassword": "Huidig wachtwoord", "newPassword": "Nieuw wachtwoord", "confirmPassword": "Nieuw wachtwoord bevestigen", "passwordHelp": "Gebruik minimaal 10 tekens met hoofdletters, kleine letters en een cijfer. Hergebruik je huidige wachtwoord niet.", "changePassword": "Wachtwoord wijzigen",
     "deleteAccount": "Account verwijderen", "deleteAccountHelp": "Dit anonimiseert je identiteit, verbergt scores, verwijdert toegang en wist besteedbare saldi. Financiële gegevens kunnen waar wettelijk vereist gepseudonimiseerd worden bewaard.", "deleteMyAccount": "Mijn account verwijderen", "deletePermanently": "Account permanent verwijderen", "deleteConfirmationHelp": "Voer je wachtwoord in en typ DELETE. Dit kan niet ongedaan worden gemaakt.", "typeDelete": "Typ DELETE", "deleteForever": "Account permanent verwijderen",
     "accountStatuses": { "ACTIVE": "Actief", "BANNED": "Geblokkeerd", "DELETED": "Verwijderd" }, "options": { "adaptive": "Adaptief", "normal": "Normaal", "hard": "Moeilijk", "click": "Muis / klik", "keyboard": "Toetsenbord", "touch": "Aanraken", "low": "Laag", "medium": "Gemiddeld", "high": "Hoog" }
@@ -503,6 +503,81 @@
       "thirdParties": { "title": "Derde partijen", "body": "Google en providers voor hosting, e-mail en monitoring kunnen hun eigen opslag toepassen wanneer hun geconfigureerde functie wordt gebruikt. Hun beleid is ook van toepassing." },
       "changes": { "title": "Wijzigingen", "body": "Het beleid kan vóór de commerciële lancering of bij wijzigingen van providers worden aangepast. De ingangsdatum staat hierboven." }
     } }
+  },
+  "adminWorkspace": {
+    "refreshAll": "Alle gegevens vernieuwen",
+    "moreActions": "Meer acties",
+    "yes": "Ja",
+    "no": "Nee",
+    "analyticsDescription": "Huidige activiteit van spelers, sessies en inkomsten.",
+    "generatedAt": "Bijgewerkt op {{date}}",
+    "tabs": {
+      "overview": "Overzicht",
+      "users": "Spelers",
+      "scores": "Scores",
+      "support": "Support",
+      "activity": "Activiteit"
+    },
+    "overview": {
+      "title": "Operationeel overzicht",
+      "description": "Wachtrijen die nu aandacht van een beheerder nodig hebben.",
+      "openTickets": "Open tickets",
+      "scoresToReview": "Scores ter controle",
+      "suspiciousUsers": "Verdachte spelers",
+      "unverifiedUsers": "Onbevestigde e-mail",
+      "requiresAttention": "Wachten op antwoord",
+      "antiCheatQueue": "Wachtrij voor anti-cheatcontrole",
+      "flaggedAccounts": "Accounts gemarkeerd voor controle",
+      "emailQueue": "Spelers zonder bevestiging"
+    },
+    "users": {
+      "title": "Spelersbeheer",
+      "description": "Zoek accounts, controleer statussen en voer beveiligde moderatieacties uit.",
+      "statusFilter": "Accountstatus",
+      "trustFilter": "Vertrouwensstatus",
+      "results": "{{count}} speler(s) weergegeven",
+      "emptyHint": "Probeer een andere zoekopdracht of wis de filters.",
+      "viewDetails": "Details bekijken",
+      "playerDetails": "Spelerdetails",
+      "removeThisRestriction": "Deze beperking verwijderen",
+      "noRestrictions": "Geen actieve beperkingen.",
+      "fields": {
+        "userId": "Gebruikers-ID",
+        "role": "Rol",
+        "created": "Account aangemaakt",
+        "trust": "Vertrouwensstatus",
+        "email": "E-mailstatus",
+        "passwordChanged": "Laatste wachtwoordwijziging",
+        "forcePasswordChange": "Moet wachtwoord wijzigen",
+        "restrictions": "Actieve beperkingen"
+      }
+    },
+    "scores": {
+      "description": "Controleer anti-cheatsignalen voordat een score op het klassement komt.",
+      "emptyHint": "Er zijn geen scores die aan dit filter voldoen.",
+      "filters": {
+        "review": "Controle nodig",
+        "all": "Alle scores",
+        "valid": "Geldig",
+        "suspicious": "Verdacht",
+        "pending_review": "In behandeling",
+        "rejected": "Afgewezen",
+        "hidden": "Verborgen"
+      }
+    },
+    "support": {
+      "description": "Beantwoord spelers, behandel beroepen en sluit afgeronde tickets.",
+      "search": "Tickets zoeken",
+      "searchPlaceholder": "Onderwerp, e-mail, speler of bericht",
+      "emptyHint": "Geen tickets komen overeen met de gekozen filters."
+    },
+    "activity": {
+      "auditDescription": "Beveiligde geschiedenis van beheerdersacties.",
+      "transferDescription": "Import van gastvoortgang en validatieresultaten.",
+      "search": "Auditlog zoeken",
+      "searchPlaceholder": "Actie, reden, beheerder of doel-ID",
+      "noAudit": "Geen auditgebeurtenissen gevonden"
+    }
   },
   "adminExtra": {
     "resetUserScores": "Gebruikersscores resetten", "defaultScoreResetReason": "Bevestigde scoremanipulatie of correctie door beheerder.", "trustedReason": "De beheerder heeft het account als betrouwbaar beoordeeld.", "suspiciousReason": "Het account vereist extra anti-cheatcontrole.", "restrictionRemovedReason": "Beperking verwijderd door beheerder.",

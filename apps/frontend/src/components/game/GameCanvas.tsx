@@ -5,16 +5,18 @@ import { createWavesGame } from "../../game/engine/createGame";
 import type { GameStats } from "../../game/engine/WavesScene";
 import { VirtualJoystick } from "./VirtualJoystick";
 import type { GameThemeDto } from "@waves/shared";
+import type { GameAudioSettings } from "../../game/audio/GameAudioManager";
 
 interface GameCanvasProps {
   skins: GameSkinBundle;
   theme: GameThemeDto;
+  audio: GameAudioSettings;
   paused: boolean;
   onStats: (stats: GameStats) => void;
   onGameOver: (stats: GameStats) => void | Promise<void>;
 }
 
-export function GameCanvas({ skins, theme, paused, onStats, onGameOver }: GameCanvasProps) {
+export function GameCanvas({ skins, theme, audio, paused, onStats, onGameOver }: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
 
@@ -26,6 +28,7 @@ export function GameCanvas({ skins, theme, paused, onStats, onGameOver }: GameCa
     gameRef.current = createWavesGame(containerRef.current, {
       skins,
       theme,
+      audio,
       onStats,
       onGameOver
     });
@@ -35,7 +38,7 @@ export function GameCanvas({ skins, theme, paused, onStats, onGameOver }: GameCa
       gameRef.current?.destroy(true);
       gameRef.current = null;
     };
-  }, [onGameOver, onStats, skins, theme]);
+  }, [audio, onGameOver, onStats, skins, theme]);
 
   useEffect(() => {
     window.dispatchEvent(new CustomEvent("waves:pause", { detail: { paused } }));

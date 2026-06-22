@@ -1,6 +1,32 @@
 import { useEffect, useMemo, useState } from "react";
-import { Ban, ClipboardCheck, Copy, HeartHandshake, History, Inbox, KeyRound, MailCheck, Search, Send, ShieldAlert, ShieldCheck, ShieldOff, Trophy } from "lucide-react";
+import {
+  Activity,
+  Ban,
+  BarChart3,
+  CheckCircle2,
+  ChevronDown,
+  CircleAlert,
+  ClipboardCheck,
+  Copy,
+  Eye,
+  HeartHandshake,
+  History,
+  Inbox,
+  KeyRound,
+  LayoutDashboard,
+  MailCheck,
+  RefreshCw,
+  Search,
+  Send,
+  ShieldAlert,
+  ShieldCheck,
+  ShieldOff,
+  Trophy,
+  UserRoundCog,
+  Users
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { AdminEmptyState, AdminMetricCard, AdminNavigation, AdminSectionHeader, type AdminSection } from "../components/admin/AdminWorkspace";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { Modal } from "../components/ui/Modal";
@@ -50,6 +76,13 @@ export function AdminPage() {
   const [restrictionType, setRestrictionType] = useState<RestrictionType>("leaderboard_restriction");
   const [restrictionReason, setRestrictionReason] = useState("");
   const [analytics, setAnalytics] = useState<AdminAnalyticsDto | null>(null);
+  const [selectedUser, setSelectedUser] = useState<AdminUserDto | null>(null);
+  const [activeSection, setActiveSection] = useState<AdminSection>("overview");
+  const [userStatusFilter, setUserStatusFilter] = useState<"ALL" | "ACTIVE" | "BANNED">("ALL");
+  const [userTrustFilter, setUserTrustFilter] = useState<"ALL" | "NORMAL" | "TRUSTED" | "SUSPICIOUS">("ALL");
+  const [scoreStatusFilter, setScoreStatusFilter] = useState<"review" | "all" | "valid" | "suspicious" | "pending_review" | "rejected" | "hidden">("review");
+  const [supportQuery, setSupportQuery] = useState("");
+  const [activityQuery, setActivityQuery] = useState("");
 
   const actionTitle = useMemo(() => {
     if (!action) {
@@ -57,6 +90,53 @@ export function AdminPage() {
     }
     return action.type === "resetScores" ? t("adminExtra.resetUserScores") : t(`admin.${action.type}`);
   }, [action, t]);
+
+  const filteredUsers = useMemo(
+    () =>
+      users.filter(
+        (user) =>
+          (userStatusFilter === "ALL" || user.status === userStatusFilter) &&
+          (userTrustFilter === "ALL" || user.trustStatus === userTrustFilter)
+      ),
+    [userStatusFilter, userTrustFilter, users]
+  );
+
+  const visibleScores = useMemo(
+    () =>
+      scores.filter((score) => {
+        if (scoreStatusFilter === "all") return true;
+        if (scoreStatusFilter === "review") return score.status !== "valid" || Boolean(score.reviewReason);
+        return score.status === scoreStatusFilter;
+      }),
+    [scoreStatusFilter, scores]
+  );
+
+  const visibleSupportTickets = useMemo(() => {
+    const normalized = supportQuery.trim().toLocaleLowerCase();
+    return supportTickets.filter((ticket) => {
+      const matchesStatus = supportStatus === "ALL" || ticket.status === supportStatus;
+      const matchesSource = supportSource === "ALL" || ticket.source === supportSource;
+      const matchesQuery = !normalized || [ticket.subject, ticket.message, ticket.userEmail, ticket.displayName, ticket.category]
+        .filter(Boolean)
+        .some((value) => String(value).toLocaleLowerCase().includes(normalized));
+      return matchesStatus && matchesSource && matchesQuery;
+    });
+  }, [supportQuery, supportSource, supportStatus, supportTickets]);
+
+  const visibleAuditLogs = useMemo(() => {
+    const normalized = activityQuery.trim().toLocaleLowerCase();
+    if (!normalized) return auditLogs;
+    return auditLogs.filter((log) =>
+      [log.actionType, log.reason, log.adminEmail, log.targetUserId, log.targetEntityId]
+        .filter(Boolean)
+        .some((value) => String(value).toLocaleLowerCase().includes(normalized))
+    );
+  }, [activityQuery, auditLogs]);
+
+  const pendingScoreCount = scores.filter((score) => score.status === "suspicious" || score.status === "pending_review").length;
+  const openTicketCount = supportTickets.filter((ticket) => ticket.status === "OPEN").length;
+  const suspiciousUserCount = users.filter((user) => user.trustStatus === "SUSPICIOUS").length;
+  const unverifiedUserCount = users.filter((user) => !user.emailVerifiedAt).length;
 
   async function loadUsers(search = query) {
     setBusy(true);
@@ -70,9 +150,9 @@ export function AdminPage() {
     }
   }
 
-  async function loadSupportTickets(status = supportStatus, source = supportSource) {
+  async function loadSupportTickets(_status = supportStatus, _source = supportSource) {
     try {
-      setSupportTickets(await supportApi.adminTickets(status, source));
+      setSupportTickets(await supportApi.adminTickets("ALL", "ALL"));
     } catch (error) {
       setError(error instanceof Error ? error.message : t("common.error"));
     }
@@ -216,6 +296,7 @@ export function AdminPage() {
     try {
       await adminApi.removeRestriction(restrictionId, t("adminExtra.restrictionRemovedReason"));
       setUsers((current) => current.map((item) => item.id === user.id ? { ...item, activeRestrictions: item.activeRestrictions.filter((restriction) => restriction.id !== restrictionId) } : item));
+      setSelectedUser((current) => current?.id === user.id ? { ...current, activeRestrictions: current.activeRestrictions.filter((restriction) => restriction.id !== restrictionId) } : current);
       await loadModerationData();
     } catch (error) {
       setError(error instanceof Error ? error.message : t("common.error"));
@@ -285,55 +366,159 @@ export function AdminPage() {
     }
   }
 
+  const navigationItems = [
+    { id: "overview" as const, label: t("adminWorkspace.tabs.overview"), icon: LayoutDashboard },
+    { id: "users" as const, label: t("adminWorkspace.tabs.users"), icon: Users, count: suspiciousUserCount, urgent: suspiciousUserCount > 0 },
+    { id: "scores" as const, label: t("adminWorkspace.tabs.scores"), icon: Trophy, count: pendingScoreCount, urgent: pendingScoreCount > 0 },
+    { id: "support" as const, label: t("adminWorkspace.tabs.support"), icon: Inbox, count: openTicketCount, urgent: openTicketCount > 0 },
+    { id: "activity" as const, label: t("adminWorkspace.tabs.activity"), icon: Activity, count: auditLogs.length }
+  ];
+
+  function renderUserActions(user: AdminUserDto) {
+    return (
+      <div className="flex flex-wrap items-center gap-2">
+        {user.status === "BANNED" ? (
+          <Button type="button" variant="secondary" onClick={() => openAction("unban", user)} icon={<ShieldCheck size={16} />}>
+            {t("admin.unban")}
+          </Button>
+        ) : (
+          <Button type="button" variant="danger" onClick={() => openAction("ban", user)} icon={<Ban size={16} />}>
+            {t("admin.ban")}
+          </Button>
+        )}
+        <details className="group min-w-40 rounded-md border border-white/10 bg-ink/80">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 px-3 text-sm font-bold text-slate-200 marker:content-none">
+            <span className="inline-flex items-center gap-2"><UserRoundCog size={16} />{t("adminWorkspace.moreActions")}</span>
+            <ChevronDown size={15} className="transition group-open:rotate-180" />
+          </summary>
+          <div className="grid gap-1 border-t border-white/10 p-2">
+            <button type="button" onClick={() => setSelectedUser(user)} className="admin-action"><Eye size={16} />{t("adminWorkspace.users.viewDetails")}</button>
+            <button type="button" onClick={() => openAction("thank", user)} className="admin-action"><HeartHandshake size={16} />{t("admin.thank")}</button>
+            <button type="button" disabled={busy} onClick={() => void resetPassword(user)} className="admin-action"><KeyRound size={16} />{t("adminExtra.resetPassword")}</button>
+            <button type="button" onClick={() => openAction("resetScores", user)} className="admin-action"><Trophy size={16} />{t("adminExtra.resetScores")}</button>
+            <button type="button" onClick={() => void setTrust(user, user.trustStatus !== "TRUSTED")} className="admin-action"><ClipboardCheck size={16} />{user.trustStatus === "TRUSTED" ? t("adminExtra.markSuspicious") : t("adminExtra.markTrusted")}</button>
+            <button type="button" onClick={() => { setRestrictionUser(user); setRestrictionReason(""); }} className="admin-action"><ShieldAlert size={16} />{t("adminExtra.restrict")}</button>
+            {!user.emailVerifiedAt ? (
+              <>
+                <button type="button" disabled={busy} onClick={() => void resendEmailVerification(user)} className="admin-action"><Send size={16} />{t("admin.resendVerification")}</button>
+                <button type="button" disabled={busy} onClick={() => setEmailVerificationUser(user)} className="admin-action"><MailCheck size={16} />{t("admin.verifyEmailManually")}</button>
+              </>
+            ) : null}
+          </div>
+        </details>
+      </div>
+    );
+  }
+
   return (
     <section className="grid gap-6">
-      <div>
-        <div className="mb-3 inline-flex items-center gap-2 rounded-md bg-cyanGlow px-3 py-2 text-sm font-black text-ink">
-          <ShieldCheck size={17} />
-          {t("nav.admin")}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <div className="mb-3 inline-flex items-center gap-2 rounded-md bg-cyanGlow px-3 py-2 text-sm font-black text-ink">
+            <ShieldCheck size={17} />
+            {t("nav.admin")}
+          </div>
+          <h1 className="text-3xl font-black text-white neon-text sm:text-4xl">{t("admin.title")}</h1>
+          <p className="mt-2 max-w-3xl text-slate-300">{t("admin.subtitle")}</p>
         </div>
-        <h1 className="text-4xl font-black text-white neon-text">{t("admin.title")}</h1>
-        <p className="mt-2 max-w-3xl text-slate-300">{t("admin.subtitle")}</p>
+        <Button
+          type="button"
+          variant="secondary"
+          disabled={busy}
+          icon={<RefreshCw size={17} className={busy ? "animate-spin" : ""} />}
+          onClick={() => void Promise.all([loadUsers(query), loadSupportTickets(supportStatus, supportSource), loadModerationData()])}
+        >
+          {t("adminWorkspace.refreshAll")}
+        </Button>
       </div>
 
-      {analytics ? (
-        <section className="grid grid-cols-2 gap-3 sm:grid-cols-4" aria-label={t("adminExtra.analytics.title")}>
-          {[
-            [t("adminExtra.analytics.registered"), analytics.registeredUsers],
-            [t("adminExtra.analytics.new7d"), analytics.registeredLast7Days],
-            [t("adminExtra.analytics.active7d"), analytics.activePlayers7Days],
-            [t("adminExtra.analytics.returning7d"), analytics.returningPlayers7Days],
-            [t("adminExtra.analytics.sessions30d"), analytics.gameSessions30Days],
-            [t("adminExtra.analytics.validScores30d"), analytics.validScores30Days],
-            [t("adminExtra.analytics.adViews30d"), analytics.completedAdViews30Days],
-            [t("adminExtra.analytics.guests30d"), analytics.guestUsers30Days]
-          ].map(([label, value]) => (
-            <div key={String(label)} className="rounded-md border border-white/10 bg-white/5 p-3">
-              <div className="text-xs font-black uppercase text-slate-400">{label}</div>
-              <div className="mt-1 text-2xl font-black text-white">{value}</div>
+      <AdminNavigation active={activeSection} items={navigationItems} onChange={setActiveSection} />
+
+      {error ? <div role="alert" className="rounded-md border border-magentaGlow/40 bg-magentaGlow/10 p-3 text-sm text-pink-200">{error}</div> : null}
+      {notice ? <div role="status" className="rounded-md border border-cyanGlow/30 bg-cyanGlow/10 p-3 text-sm text-cyanGlow">{notice}</div> : null}
+
+      {activeSection === "overview" ? (
+        <div className="grid gap-6">
+          <section className="arcade-border rounded-lg p-5">
+            <AdminSectionHeader
+              title={t("adminWorkspace.overview.title")}
+              description={t("adminWorkspace.overview.description")}
+              icon={LayoutDashboard}
+            />
+            <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+              <AdminMetricCard label={t("adminWorkspace.overview.openTickets")} value={openTicketCount} detail={t("adminWorkspace.overview.requiresAttention")} icon={Inbox} tone={openTicketCount ? "danger" : "cyan"} onClick={() => setActiveSection("support")} />
+              <AdminMetricCard label={t("adminWorkspace.overview.scoresToReview")} value={pendingScoreCount} detail={t("adminWorkspace.overview.antiCheatQueue")} icon={ShieldAlert} tone={pendingScoreCount ? "danger" : "cyan"} onClick={() => setActiveSection("scores")} />
+              <AdminMetricCard label={t("adminWorkspace.overview.suspiciousUsers")} value={suspiciousUserCount} detail={t("adminWorkspace.overview.flaggedAccounts")} icon={CircleAlert} tone={suspiciousUserCount ? "gold" : "cyan"} onClick={() => { setUserTrustFilter("SUSPICIOUS"); setActiveSection("users"); }} />
+              <AdminMetricCard label={t("adminWorkspace.overview.unverifiedUsers")} value={unverifiedUserCount} detail={t("adminWorkspace.overview.emailQueue")} icon={MailCheck} tone="neutral" onClick={() => setActiveSection("users")} />
             </div>
-          ))}
-        </section>
+          </section>
+
+          {analytics ? (
+            <section className="arcade-border rounded-lg p-5" aria-label={t("adminExtra.analytics.title")}>
+              <AdminSectionHeader title={t("adminExtra.analytics.title")} description={t("adminWorkspace.analyticsDescription")} icon={BarChart3} />
+              <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {[
+                  [t("adminExtra.analytics.registered"), analytics.registeredUsers],
+                  [t("adminExtra.analytics.new7d"), analytics.registeredLast7Days],
+                  [t("adminExtra.analytics.active7d"), analytics.activePlayers7Days],
+                  [t("adminExtra.analytics.returning7d"), analytics.returningPlayers7Days],
+                  [t("adminExtra.analytics.sessions30d"), analytics.gameSessions30Days],
+                  [t("adminExtra.analytics.validScores30d"), analytics.validScores30Days],
+                  [t("adminExtra.analytics.adViews30d"), analytics.completedAdViews30Days],
+                  [t("adminExtra.analytics.guests30d"), analytics.guestUsers30Days]
+                ].map(([label, value]) => (
+                  <div key={String(label)} className="rounded-md border border-white/10 bg-white/5 p-3">
+                    <div className="text-xs font-black uppercase text-slate-400">{label}</div>
+                    <div className="mt-1 text-2xl font-black text-white">{value}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 text-xs text-slate-500">{t("adminWorkspace.generatedAt", { date: new Date(analytics.generatedAt).toLocaleString() })}</div>
+            </section>
+          ) : null}
+        </div>
       ) : null}
 
+      {activeSection === "users" ? (
+      <section className="grid gap-4">
+        <div className="arcade-border rounded-lg p-4 sm:p-5">
+          <AdminSectionHeader title={t("adminWorkspace.users.title")} description={t("adminWorkspace.users.description")} icon={Users} />
+
       <form
-        className="flex flex-col gap-3 rounded-lg border border-white/10 bg-white/5 p-4 sm:flex-row"
+        className="mt-4 grid gap-3 lg:grid-cols-[minmax(16rem,1fr)_auto_auto_auto] lg:items-end"
         onSubmit={(event) => {
           event.preventDefault();
           void loadUsers(query);
         }}
       >
         <Input label={t("admin.search")} value={query} onChange={(event) => setQuery(event.target.value)} className="w-full" />
+        <label className="grid gap-2 text-sm text-slate-300">
+          <span>{t("adminWorkspace.users.statusFilter")}</span>
+          <select value={userStatusFilter} onChange={(event) => setUserStatusFilter(event.target.value as typeof userStatusFilter)} className="min-h-11 rounded-md border border-slate-700 bg-ink/70 px-3 text-white">
+            <option value="ALL">{t("adminExtra.ticketStatuses.ALL")}</option>
+            <option value="ACTIVE">{t("adminExtra.userStatuses.ACTIVE")}</option>
+            <option value="BANNED">{t("adminExtra.userStatuses.BANNED")}</option>
+          </select>
+        </label>
+        <label className="grid gap-2 text-sm text-slate-300">
+          <span>{t("adminWorkspace.users.trustFilter")}</span>
+          <select value={userTrustFilter} onChange={(event) => setUserTrustFilter(event.target.value as typeof userTrustFilter)} className="min-h-11 rounded-md border border-slate-700 bg-ink/70 px-3 text-white">
+            <option value="ALL">{t("adminExtra.ticketStatuses.ALL")}</option>
+            <option value="NORMAL">{t("adminExtra.trustStatuses.NORMAL")}</option>
+            <option value="TRUSTED">{t("adminExtra.trustStatuses.TRUSTED")}</option>
+            <option value="SUSPICIOUS">{t("adminExtra.trustStatuses.SUSPICIOUS")}</option>
+          </select>
+        </label>
         <Button type="submit" disabled={busy} icon={<Search size={18} />}>
           {t("admin.searchButton")}
         </Button>
       </form>
 
-      {error ? <div className="rounded-md border border-magentaGlow/40 bg-magentaGlow/10 p-3 text-sm text-pink-200">{error}</div> : null}
-      {notice ? <div className="rounded-md border border-cyanGlow/30 bg-cyanGlow/10 p-3 text-sm text-cyanGlow">{notice}</div> : null}
+          <div className="mt-3 text-xs text-slate-400">{t("adminWorkspace.users.results", { count: filteredUsers.length })}</div>
+        </div>
 
       <div className="arcade-border overflow-hidden rounded-lg">
-        <div className="overflow-x-auto">
+        <div className="hidden overflow-x-auto md:block">
           <table className="w-full min-w-[58rem] text-left text-sm">
             <thead className="text-slate-400">
               <tr className="border-b border-white/10">
@@ -346,8 +531,8 @@ export function AdminPage() {
               </tr>
             </thead>
             <tbody>
-              {users.map((user) => (
-                <tr key={user.id} className="border-b border-white/5">
+              {filteredUsers.map((user) => (
+                <tr key={user.id} className="border-b border-white/5 align-top transition hover:bg-white/[0.03]">
                   <td className="p-4">
                     <div className="font-bold text-white">{user.displayName}</div>
                     <div className="text-xs text-slate-400">{user.email}</div>
@@ -372,58 +557,11 @@ export function AdminPage() {
                   <td className="p-4 text-goldGlow">{user.coins}</td>
                   <td className="p-4 text-slate-300">{user.lastAction?.action ?? "-"}</td>
                   <td className="p-4">
-                    <div className="flex flex-wrap gap-2">
-                      {user.status === "BANNED" ? (
-                        <Button type="button" variant="secondary" onClick={() => openAction("unban", user)} icon={<ShieldCheck size={16} />}>
-                          {t("admin.unban")}
-                        </Button>
-                      ) : (
-                        <Button type="button" variant="danger" onClick={() => openAction("ban", user)} icon={<Ban size={16} />}>
-                          {t("admin.ban")}
-                        </Button>
-                      )}
-                      <Button type="button" variant="ghost" onClick={() => openAction("thank", user)} icon={<HeartHandshake size={16} />}>
-                        {t("admin.thank")}
-                      </Button>
-                      <Button type="button" variant="secondary" disabled={busy} onClick={() => void resetPassword(user)} icon={<KeyRound size={16} />}>
-                        {t("adminExtra.resetPassword")}
-                      </Button>
-                      <Button type="button" variant="ghost" onClick={() => openAction("resetScores", user)} icon={<Trophy size={16} />}>
-                        {t("adminExtra.resetScores")}
-                      </Button>
-                      <Button type="button" variant="ghost" onClick={() => void setTrust(user, user.trustStatus !== "TRUSTED")} icon={<ClipboardCheck size={16} />}>
-                        {user.trustStatus === "TRUSTED" ? t("adminExtra.markSuspicious") : t("adminExtra.markTrusted")}
-                      </Button>
-                      <Button type="button" variant="ghost" onClick={() => { setRestrictionUser(user); setRestrictionReason(""); }} icon={<ShieldAlert size={16} />}>
-                        {t("adminExtra.restrict")}
-                      </Button>
-                      {!user.emailVerifiedAt ? (
-                        <>
-                          <Button
-                            type="button"
-                            variant="secondary"
-                            disabled={busy}
-                            onClick={() => void resendEmailVerification(user)}
-                            icon={<Send size={16} />}
-                          >
-                            {t("admin.resendVerification")}
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            disabled={busy}
-                            onClick={() => setEmailVerificationUser(user)}
-                            icon={<MailCheck size={16} />}
-                          >
-                            {t("admin.verifyEmailManually")}
-                          </Button>
-                        </>
-                      ) : null}
-                    </div>
+                    {renderUserActions(user)}
                   </td>
                 </tr>
               ))}
-              {!users.length ? (
+              {!filteredUsers.length ? (
                 <tr>
                   <td className="p-4 text-slate-400" colSpan={6}>
                     {busy ? t("common.loading") : t("admin.empty")}
@@ -433,15 +571,60 @@ export function AdminPage() {
             </tbody>
           </table>
         </div>
+        <div className="grid gap-3 p-3 md:hidden">
+          {filteredUsers.map((user) => (
+            <article key={user.id} className="rounded-lg border border-white/10 bg-white/5 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="truncate font-black text-white">{user.displayName}</div>
+                  <div className="mt-1 break-all text-xs text-slate-400">{user.email}</div>
+                </div>
+                <span className={`shrink-0 rounded-md px-2 py-1 text-[11px] font-black ${user.status === "BANNED" ? "bg-magentaGlow/20 text-pink-200" : "bg-cyanGlow/15 text-cyanGlow"}`}>
+                  {t(`adminExtra.userStatuses.${user.status}`, user.status)}
+                </span>
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
+                <div className="rounded-md bg-ink/60 p-3"><div className="text-xs text-slate-500">{t("admin.score")}</div><strong className="text-white">{user.highScore}</strong></div>
+                <div className="rounded-md bg-ink/60 p-3"><div className="text-xs text-slate-500">{t("admin.coins")}</div><strong className="text-goldGlow">{user.coins}</strong></div>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                <span className={user.emailVerifiedAt ? "text-cyanGlow" : "text-goldGlow"}>{user.emailVerifiedAt ? t("admin.emailVerified") : t("admin.emailUnverified")}</span>
+                <span className="text-slate-600">|</span>
+                <span className={user.trustStatus === "SUSPICIOUS" ? "text-pink-200" : "text-slate-300"}>{t(`adminExtra.trustStatuses.${user.trustStatus}`, user.trustStatus)}</span>
+              </div>
+              {user.banReason ? <p className="mt-3 rounded-md bg-magentaGlow/10 p-2 text-xs text-pink-100">{user.banReason}</p> : null}
+              {user.activeRestrictions.length ? <p className="mt-2 text-xs text-pink-200">{t("adminExtra.activeRestrictions", { count: user.activeRestrictions.length })}</p> : null}
+              <div className="mt-4">{renderUserActions(user)}</div>
+            </article>
+          ))}
+          {!filteredUsers.length ? <AdminEmptyState icon={Users} title={busy ? t("common.loading") : t("admin.empty")} description={t("adminWorkspace.users.emptyHint")} /> : null}
+        </div>
       </div>
+      </section>
+      ) : null}
 
-      <div className="arcade-border rounded-lg p-5">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="flex items-center gap-2 text-xl font-black text-white"><Trophy size={20} className="text-goldGlow" /> {t("adminExtra.scoreModeration")}</h2>
-          <Button type="button" variant="ghost" onClick={() => void loadModerationData()}>{t("admin.refresh")}</Button>
+      {activeSection === "scores" ? (
+      <div className="arcade-border rounded-lg p-4 sm:p-5">
+        <AdminSectionHeader
+          title={t("adminExtra.scoreModeration")}
+          description={t("adminWorkspace.scores.description")}
+          icon={Trophy}
+          action={<Button type="button" variant="ghost" icon={<RefreshCw size={16} />} onClick={() => void loadModerationData()}>{t("admin.refresh")}</Button>}
+        />
+        <div className="my-4 flex gap-2 overflow-x-auto pb-1">
+          {(["review", "all", "valid", "suspicious", "pending_review", "rejected", "hidden"] as const).map((status) => (
+            <button
+              key={status}
+              type="button"
+              onClick={() => setScoreStatusFilter(status)}
+              className={`min-h-10 shrink-0 rounded-md border px-3 text-xs font-black transition ${scoreStatusFilter === status ? "border-cyanGlow bg-cyanGlow text-ink" : "border-white/10 bg-white/5 text-slate-300 hover:border-cyanGlow"}`}
+            >
+              {t(`adminWorkspace.scores.filters.${status}`)}
+            </button>
+          ))}
         </div>
         <div className="grid gap-3">
-          {scores.filter((score) => score.status !== "valid" || score.reviewReason).map((score) => (
+          {visibleScores.map((score) => (
             <article key={score.id} className="rounded-lg border border-white/10 bg-white/5 p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div><div className="font-black text-white">{score.displayName} | {score.score}</div><div className="mt-1 text-xs text-slate-400">{t(`adminExtra.scoreStatuses.${score.status}`, score.status)} | {score.durationMs} {t("adminExtra.ms")} | {t("game.distance")} {score.distance}</div></div>
@@ -457,38 +640,41 @@ export function AdminPage() {
               </div>
             </article>
           ))}
-          {!scores.some((score) => score.status !== "valid" || score.reviewReason) ? <div className="text-sm text-slate-400">{t("adminExtra.noScoresToReview")}</div> : null}
-          <details className="rounded-md border border-white/10 bg-white/5 p-3 text-sm text-slate-300"><summary className="cursor-pointer font-black text-white">{t("adminExtra.validScoreHistory", { count: scores.filter((score) => score.status === "valid").length })}</summary><div className="mt-3 grid gap-2">{scores.filter((score) => score.status === "valid").slice(0, 30).map((score) => <div key={score.id} className="flex justify-between gap-3 border-t border-white/5 pt-2"><span>{score.displayName}</span><strong className="text-cyanGlow">{score.score}</strong></div>)}</div></details>
+          {!visibleScores.length ? <AdminEmptyState icon={CheckCircle2} title={t("adminExtra.noScoresToReview")} description={t("adminWorkspace.scores.emptyHint")} /> : null}
         </div>
       </div>
+      ) : null}
 
+      {activeSection === "activity" ? (
       <div className="grid gap-5 xl:grid-cols-2">
-        <div className="arcade-border rounded-lg p-5">
-          <h2 className="flex items-center gap-2 text-xl font-black text-white"><History size={20} className="text-cyanGlow" /> {t("adminExtra.auditLog")}</h2>
+        <div className="arcade-border rounded-lg p-4 sm:p-5">
+          <AdminSectionHeader title={t("adminExtra.auditLog")} description={t("adminWorkspace.activity.auditDescription")} icon={History} />
+          <div className="mt-4"><Input label={t("adminWorkspace.activity.search")} value={activityQuery} onChange={(event) => setActivityQuery(event.target.value)} placeholder={t("adminWorkspace.activity.searchPlaceholder")} /></div>
           <div className="mt-4 grid max-h-[32rem] gap-2 overflow-y-auto pr-2">
-            {auditLogs.map((log) => <div key={log.id} className="rounded-md border border-white/10 bg-white/5 p-3 text-xs leading-5 text-slate-300"><strong className="text-white">{t(`adminExtra.auditActions.${log.actionType}`, log.actionType)}</strong><div>{log.reason || t("adminExtra.noReason")}</div><div className="text-slate-500">{new Date(log.createdAt).toLocaleString()} | {log.adminEmail || t("adminExtra.system")}</div></div>)}
+            {visibleAuditLogs.map((log) => <div key={log.id} className="rounded-md border border-white/10 bg-white/5 p-3 text-xs leading-5 text-slate-300"><strong className="text-white">{t(`adminExtra.auditActions.${log.actionType}`, log.actionType)}</strong><div>{log.reason || t("adminExtra.noReason")}</div><div className="text-slate-500">{new Date(log.createdAt).toLocaleString()} | {log.adminEmail || t("adminExtra.system")}</div></div>)}
+            {!visibleAuditLogs.length ? <AdminEmptyState icon={History} title={t("adminWorkspace.activity.noAudit")} /> : null}
           </div>
         </div>
-        <div className="arcade-border rounded-lg p-5">
-          <h2 className="text-xl font-black text-white">{t("adminExtra.guestTransfers")}</h2>
+        <div className="arcade-border rounded-lg p-4 sm:p-5">
+          <AdminSectionHeader title={t("adminExtra.guestTransfers")} description={t("adminWorkspace.activity.transferDescription")} icon={Activity} />
           <div className="mt-4 grid max-h-[32rem] gap-2 overflow-y-auto pr-2">
             {guestTransfers.map((transfer) => <div key={transfer.id} className="rounded-md border border-white/10 bg-white/5 p-3 text-xs leading-5 text-slate-300"><strong className="text-white">{t(`adminExtra.transferStatuses.${transfer.status}`, transfer.status)}</strong> | {t("adminExtra.localScore")} {transfer.bestScore} | {t("adminExtra.transferredScore")} {transfer.transferredScore}<div>{transfer.reason || t("adminExtra.passedValidation")}</div><div className="text-slate-500">{new Date(transfer.createdAt).toLocaleString()}</div></div>)}
             {!guestTransfers.length ? <div className="text-sm text-slate-400">{t("adminExtra.noTransfers")}</div> : null}
           </div>
         </div>
       </div>
+      ) : null}
 
-      <div className="arcade-border rounded-lg p-5">
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <h2 className="flex items-center gap-2 text-xl font-black text-white">
-            <Inbox size={20} className="text-cyanGlow" />
-            {t("admin.supportInbox")}
-          </h2>
-          <Button type="button" variant="ghost" onClick={() => void loadSupportTickets(supportStatus, supportSource)}>
-            {t("admin.refresh")}
-          </Button>
-        </div>
-        <div className="mb-4 flex flex-wrap gap-2">
+      {activeSection === "support" ? (
+      <div className="arcade-border rounded-lg p-4 sm:p-5">
+        <AdminSectionHeader
+          title={t("admin.supportInbox")}
+          description={t("adminWorkspace.support.description")}
+          icon={Inbox}
+          action={<Button type="button" variant="ghost" icon={<RefreshCw size={16} />} onClick={() => void loadSupportTickets(supportStatus, supportSource)}>{t("admin.refresh")}</Button>}
+        />
+        <div className="mt-4"><Input label={t("adminWorkspace.support.search")} value={supportQuery} onChange={(event) => setSupportQuery(event.target.value)} placeholder={t("adminWorkspace.support.searchPlaceholder")} /></div>
+        <div className="mb-4 mt-4 flex flex-wrap gap-2">
           {(["ALL", "OPEN", "ANSWERED", "CLOSED"] as Array<SupportTicketStatus | "ALL">).map((status) => (
             <button
               key={status}
@@ -527,7 +713,7 @@ export function AdminPage() {
           ))}
         </div>
         <div className="grid gap-3">
-          {supportTickets.map((ticket) => (
+          {visibleSupportTickets.map((ticket) => (
             <article key={ticket.id} className="rounded-lg border border-white/10 bg-white/5 p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
@@ -564,9 +750,68 @@ export function AdminPage() {
               </div>
             </article>
           ))}
-          {!supportTickets.length ? <div className="text-sm text-slate-400">{t("admin.noTickets")}</div> : null}
+          {!visibleSupportTickets.length ? <AdminEmptyState icon={Inbox} title={t("admin.noTickets")} description={t("adminWorkspace.support.emptyHint")} /> : null}
         </div>
       </div>
+      ) : null}
+
+      {selectedUser ? (
+        <Modal title={t("adminWorkspace.users.playerDetails")} closeLabel={t("common.close")} onClose={() => setSelectedUser(null)}>
+          <div className="grid gap-4">
+            <div className="flex items-start justify-between gap-3 rounded-lg border border-white/10 bg-white/5 p-4">
+              <div className="min-w-0">
+                <div className="text-xl font-black text-white">{selectedUser.displayName}</div>
+                <div className="mt-1 break-all text-sm text-slate-400">{selectedUser.email}</div>
+              </div>
+              <span className={`shrink-0 rounded-md px-2 py-1 text-xs font-black ${selectedUser.status === "BANNED" ? "bg-magentaGlow/20 text-pink-200" : "bg-cyanGlow/15 text-cyanGlow"}`}>
+                {t(`adminExtra.userStatuses.${selectedUser.status}`, selectedUser.status)}
+              </span>
+            </div>
+            <dl className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
+              {[
+                [t("adminWorkspace.users.fields.userId"), selectedUser.id],
+                [t("adminWorkspace.users.fields.role"), selectedUser.role],
+                [t("adminWorkspace.users.fields.created"), new Date(selectedUser.createdAt).toLocaleString()],
+                [t("adminWorkspace.users.fields.trust"), t(`adminExtra.trustStatuses.${selectedUser.trustStatus}`, selectedUser.trustStatus)],
+                [t("admin.score"), selectedUser.highScore],
+                [t("admin.coins"), selectedUser.coins],
+                [t("adminWorkspace.users.fields.email"), selectedUser.emailVerifiedAt ? t("admin.emailVerified") : t("admin.emailUnverified")],
+                [t("adminWorkspace.users.fields.passwordChanged"), new Date(selectedUser.lastPasswordChangeAt).toLocaleString()],
+                [t("adminWorkspace.users.fields.forcePasswordChange"), selectedUser.mustChangePassword ? t("adminWorkspace.yes") : t("adminWorkspace.no")],
+                [t("admin.lastAction"), selectedUser.lastAction ? t(`adminExtra.auditActions.${selectedUser.lastAction.action}`, selectedUser.lastAction.action) : "-"]
+              ].map(([label, value]) => (
+                <div key={String(label)} className="rounded-md border border-white/10 bg-ink/60 p-3">
+                  <dt className="text-xs font-bold text-slate-500">{label}</dt>
+                  <dd className="mt-1 break-all font-bold text-slate-100">{value}</dd>
+                </div>
+              ))}
+            </dl>
+            <section>
+              <h3 className="font-black text-white">{t("adminWorkspace.users.fields.restrictions")}</h3>
+              <div className="mt-2 grid gap-2">
+                {selectedUser.activeRestrictions.map((restriction) => (
+                  <div key={restriction.id} className="rounded-md border border-magentaGlow/20 bg-magentaGlow/5 p-3 text-sm text-slate-300">
+                    <div className="font-black text-pink-200">{t(`restrictions.types.${restriction.type}`, restriction.type.replaceAll("_", " "))}</div>
+                    <div className="mt-1">{restriction.reason}</div>
+                    <button type="button" disabled={busy} onClick={() => void removeRestriction(selectedUser, restriction.id)} className="mt-2 text-xs font-black text-cyanGlow hover:text-white">
+                      {t("adminWorkspace.users.removeThisRestriction")}
+                    </button>
+                  </div>
+                ))}
+                {!selectedUser.activeRestrictions.length ? <div className="rounded-md bg-white/5 p-3 text-sm text-slate-400">{t("adminWorkspace.users.noRestrictions")}</div> : null}
+              </div>
+            </section>
+            <div className="flex flex-wrap gap-2 border-t border-white/10 pt-4">
+              <Button type="button" variant="ghost" icon={<Copy size={16} />} onClick={() => void copySupportEmail(selectedUser.email)}>{t("admin.copyEmail")}</Button>
+              {selectedUser.status === "BANNED" ? (
+                <Button type="button" variant="secondary" icon={<ShieldCheck size={16} />} onClick={() => { openAction("unban", selectedUser); setSelectedUser(null); }}>{t("admin.unban")}</Button>
+              ) : (
+                <Button type="button" variant="danger" icon={<Ban size={16} />} onClick={() => { openAction("ban", selectedUser); setSelectedUser(null); }}>{t("admin.ban")}</Button>
+              )}
+            </div>
+          </div>
+        </Modal>
+      ) : null}
 
       {action ? (
         <Modal title={actionTitle} closeLabel={t("common.close")} onClose={() => setAction(null)}>

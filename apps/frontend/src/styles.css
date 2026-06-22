@@ -58,3 +58,9 @@ button {
   height: 100% !important;
   touch-action: none;
 }
+
+@layer components {
+  .admin-action {
+    @apply flex min-h-10 w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-bold text-slate-300 transition hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-50;
+  }
+}
