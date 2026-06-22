@@ -447,6 +447,81 @@
       "changes": { "title": "Changes", "body": "The policy may be updated before commercial launch or when providers change. The effective date is shown above." }
     } }
   },
+  "adminWorkspace": {
+    "refreshAll": "Refresh all data",
+    "moreActions": "More actions",
+    "yes": "Yes",
+    "no": "No",
+    "analyticsDescription": "Current player, session and monetization activity.",
+    "generatedAt": "Updated {{date}}",
+    "tabs": {
+      "overview": "Overview",
+      "users": "Players",
+      "scores": "Scores",
+      "support": "Support",
+      "activity": "Activity"
+    },
+    "overview": {
+      "title": "Operations overview",
+      "description": "Queues that need an administrator's attention right now.",
+      "openTickets": "Open tickets",
+      "scoresToReview": "Scores to review",
+      "suspiciousUsers": "Suspicious players",
+      "unverifiedUsers": "Unverified email",
+      "requiresAttention": "Waiting for a reply",
+      "antiCheatQueue": "Anti-cheat moderation queue",
+      "flaggedAccounts": "Accounts marked for review",
+      "emailQueue": "Players without verification"
+    },
+    "users": {
+      "title": "Player management",
+      "description": "Search accounts, review status and run protected moderation actions.",
+      "statusFilter": "Account status",
+      "trustFilter": "Trust status",
+      "results": "{{count}} player(s) shown",
+      "emptyHint": "Try another search or clear the filters.",
+      "viewDetails": "View details",
+      "playerDetails": "Player details",
+      "removeThisRestriction": "Remove this restriction",
+      "noRestrictions": "No active restrictions.",
+      "fields": {
+        "userId": "User ID",
+        "role": "Role",
+        "created": "Account created",
+        "trust": "Trust status",
+        "email": "Email status",
+        "passwordChanged": "Last password change",
+        "forcePasswordChange": "Must change password",
+        "restrictions": "Active restrictions"
+      }
+    },
+    "scores": {
+      "description": "Review anti-cheat signals before a score reaches the leaderboard.",
+      "emptyHint": "There are no scores matching this filter.",
+      "filters": {
+        "review": "Needs review",
+        "all": "All scores",
+        "valid": "Valid",
+        "suspicious": "Suspicious",
+        "pending_review": "Pending",
+        "rejected": "Rejected",
+        "hidden": "Hidden"
+      }
+    },
+    "support": {
+      "description": "Reply to players, handle appeals and close completed tickets.",
+      "search": "Search tickets",
+      "searchPlaceholder": "Subject, email, player or message",
+      "emptyHint": "No tickets match the selected filters."
+    },
+    "activity": {
+      "auditDescription": "Protected history of administrator actions.",
+      "transferDescription": "Guest progress imports and validation results.",
+      "search": "Search audit log",
+      "searchPlaceholder": "Action, reason, admin or target ID",
+      "noAudit": "No audit events found"
+    }
+  },
   "adminExtra": {
     "resetUserScores": "Reset user scores", "defaultScoreResetReason": "Confirmed score manipulation or administrator correction.", "trustedReason": "Administrator reviewed the account as trusted.", "suspiciousReason": "Account requires additional anti-cheat review.", "restrictionRemovedReason": "Restriction removed by administrator.",
     "analytics": { "title": "Product analytics", "registered": "Registered", "new7d": "New 7d", "active7d": "Active 7d", "returning7d": "Returning 7d", "sessions30d": "Sessions 30d", "validScores30d": "Valid scores 30d", "adViews30d": "Ad views 30d", "guests30d": "Guests 30d" },

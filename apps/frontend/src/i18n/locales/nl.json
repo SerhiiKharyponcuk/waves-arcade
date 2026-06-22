@@ -504,6 +504,81 @@
       "changes": { "title": "Wijzigingen", "body": "Het beleid kan vóór de commerciële lancering of bij wijzigingen van providers worden aangepast. De ingangsdatum staat hierboven." }
     } }
   },
+  "adminWorkspace": {
+    "refreshAll": "Alle gegevens vernieuwen",
+    "moreActions": "Meer acties",
+    "yes": "Ja",
+    "no": "Nee",
+    "analyticsDescription": "Huidige activiteit van spelers, sessies en inkomsten.",
+    "generatedAt": "Bijgewerkt op {{date}}",
+    "tabs": {
+      "overview": "Overzicht",
+      "users": "Spelers",
+      "scores": "Scores",
+      "support": "Support",
+      "activity": "Activiteit"
+    },
+    "overview": {
+      "title": "Operationeel overzicht",
+      "description": "Wachtrijen die nu aandacht van een beheerder nodig hebben.",
+      "openTickets": "Open tickets",
+      "scoresToReview": "Scores ter controle",
+      "suspiciousUsers": "Verdachte spelers",
+      "unverifiedUsers": "Onbevestigde e-mail",
+      "requiresAttention": "Wachten op antwoord",
+      "antiCheatQueue": "Wachtrij voor anti-cheatcontrole",
+      "flaggedAccounts": "Accounts gemarkeerd voor controle",
+      "emailQueue": "Spelers zonder bevestiging"
+    },
+    "users": {
+      "title": "Spelersbeheer",
+      "description": "Zoek accounts, controleer statussen en voer beveiligde moderatieacties uit.",
+      "statusFilter": "Accountstatus",
+      "trustFilter": "Vertrouwensstatus",
+      "results": "{{count}} speler(s) weergegeven",
+      "emptyHint": "Probeer een andere zoekopdracht of wis de filters.",
+      "viewDetails": "Details bekijken",
+      "playerDetails": "Spelerdetails",
+      "removeThisRestriction": "Deze beperking verwijderen",
+      "noRestrictions": "Geen actieve beperkingen.",
+      "fields": {
+        "userId": "Gebruikers-ID",
+        "role": "Rol",
+        "created": "Account aangemaakt",
+        "trust": "Vertrouwensstatus",
+        "email": "E-mailstatus",
+        "passwordChanged": "Laatste wachtwoordwijziging",
+        "forcePasswordChange": "Moet wachtwoord wijzigen",
+        "restrictions": "Actieve beperkingen"
+      }
+    },
+    "scores": {
+      "description": "Controleer anti-cheatsignalen voordat een score op het klassement komt.",
+      "emptyHint": "Er zijn geen scores die aan dit filter voldoen.",
+      "filters": {
+        "review": "Controle nodig",
+        "all": "Alle scores",
+        "valid": "Geldig",
+        "suspicious": "Verdacht",
+        "pending_review": "In behandeling",
+        "rejected": "Afgewezen",
+        "hidden": "Verborgen"
+      }
+    },
+    "support": {
+      "description": "Beantwoord spelers, behandel beroepen en sluit afgeronde tickets.",
+      "search": "Tickets zoeken",
+      "searchPlaceholder": "Onderwerp, e-mail, speler of bericht",
+      "emptyHint": "Geen tickets komen overeen met de gekozen filters."
+    },
+    "activity": {
+      "auditDescription": "Beveiligde geschiedenis van beheerdersacties.",
+      "transferDescription": "Import van gastvoortgang en validatieresultaten.",
+      "search": "Auditlog zoeken",
+      "searchPlaceholder": "Actie, reden, beheerder of doel-ID",
+      "noAudit": "Geen auditgebeurtenissen gevonden"
+    }
+  },
   "adminExtra": {
     "resetUserScores": "Gebruikersscores resetten", "defaultScoreResetReason": "Bevestigde scoremanipulatie of correctie door beheerder.", "trustedReason": "De beheerder heeft het account als betrouwbaar beoordeeld.", "suspiciousReason": "Het account vereist extra anti-cheatcontrole.", "restrictionRemovedReason": "Beperking verwijderd door beheerder.",
     "analytics": { "title": "Productanalyse", "registered": "Geregistreerd", "new7d": "Nieuw 7d", "active7d": "Actief 7d", "returning7d": "Terugkerend 7d", "sessions30d": "Sessies 30d", "validScores30d": "Geldige scores 30d", "adViews30d": "Advertenties 30d", "guests30d": "Gasten 30d" },
