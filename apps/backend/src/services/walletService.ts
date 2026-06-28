@@ -1,4 +1,4 @@
-import type { AdPlacement, AdProvider, AdRewardCompleteDto, AdRewardSessionDto, DailyRewardDto, SubscriptionBenefitsDto, WalletDto } from "@waves/shared";
+import { findPaymentProduct, type AdPlacement, type AdProvider, type AdRewardCompleteDto, type AdRewardSessionDto, type DailyRewardDto, type PaymentCurrency, type SubscriptionBenefitsDto, type WalletDto } from "@waves/shared";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "../config/prisma.js";
 import { env } from "../config/env.js";
@@ -31,13 +31,9 @@ type PurchasePlaceholderInput = {
   sku: string;
   amountCents?: number;
   supportAmountCents: number;
-  currency: "USD" | "EUR";
+  currency: PaymentCurrency;
   provider: PaymentProviderId;
   idempotencyKey: string;
-};
-
-const paymentCatalog: Record<string, { currency: "EUR" | "USD"; amountCents: number; type: string }> = {
-  premium_starter_pack: { currency: "EUR", amountCents: 499, type: "premium_starter_pack" }
 };
 
 function isKnownPrismaError(error: unknown, code: string): error is KnownPrismaError {
@@ -58,7 +54,7 @@ function rethrowSafeWalletMutationError(error: unknown): never {
 }
 
 function calculatePaymentOrder(input: PurchasePlaceholderInput) {
-  const product = paymentCatalog[input.sku];
+  const product = findPaymentProduct(input.sku);
   if (!product) {
     throw new AppError(400, "Unknown payment product.", "UNKNOWN_PAYMENT_SKU");
   }
@@ -78,11 +74,16 @@ function calculatePaymentOrder(input: PurchasePlaceholderInput) {
 
   return {
     sku: input.sku,
-    type: product.type,
+    type: product.kind,
     currency: product.currency,
     productAmountCents: product.amountCents,
     supportAmountCents,
-    amountCents
+    amountCents,
+    grants: {
+      coins: product.coins ?? 0,
+      premiumDays: product.premiumDays ?? 0,
+      skinSlug: product.skinSlug ?? null
+    }
   };
 }
 
@@ -92,7 +93,8 @@ function idempotencyPayloadMatches(metadata: Record<string, unknown>, order: Ret
     metadata.currency === order.currency &&
     metadata.amountCents === order.amountCents &&
     metadata.productAmountCents === order.productAmountCents &&
-    metadata.supportAmountCents === order.supportAmountCents
+    metadata.supportAmountCents === order.supportAmountCents &&
+    JSON.stringify(metadata.grants ?? {}) === JSON.stringify(order.grants)
   );
 }
 
@@ -403,6 +405,7 @@ export async function createPurchasePlaceholder(
           productAmountCents: order.productAmountCents,
           supportAmountCents: order.supportAmountCents,
           currency: order.currency,
+          grants: order.grants,
           externalId: intent.externalId
         })
       }

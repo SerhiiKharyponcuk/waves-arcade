@@ -1,9 +1,11 @@
-export type PaymentProviderId = "stripe" | "mollie" | "paypal" | "adyen" | "google_play" | "apple_iap" | "placeholder";
+import type { PaymentCurrency } from "@waves/shared";
+
+export type PaymentProviderId = "liqpay" | "stripe" | "mollie" | "paypal" | "adyen" | "google_play" | "apple_iap" | "placeholder";
 
 export interface PaymentIntentRequest {
   userId: string;
   sku: string;
-  currency: "USD" | "EUR";
+  currency: PaymentCurrency;
   amountCents: number;
   provider: PaymentProviderId;
   idempotencyKey: string;
@@ -29,7 +31,7 @@ export class PlaceholderPaymentProvider implements PaymentProvider {
       externalId: `placeholder_${request.idempotencyKey}`,
       status: "requires_configuration",
       message:
-        `Payment provider "${request.provider}" is not configured yet. Connect Stripe, Mollie, PayPal, Adyen, Google Play Billing, or Apple IAP here.`
+        `Payment provider "${request.provider}" is not configured yet. Connect LiqPay, Stripe, Mollie, PayPal, Adyen, Google Play Billing, or Apple IAP here.`
     };
   }
 }

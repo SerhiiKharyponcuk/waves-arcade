@@ -9,9 +9,10 @@ import type {
   SubscriptionBenefitsDto,
   WalletDto
 } from "../types/api";
+import type { PaymentCurrency } from "@waves/shared";
 import { apiRequest } from "./apiClient";
 
-export type PaymentProviderId = "stripe" | "mollie" | "paypal" | "adyen" | "google_play" | "apple_iap" | "placeholder";
+export type PaymentProviderId = "liqpay" | "stripe" | "mollie" | "paypal" | "adyen" | "google_play" | "apple_iap" | "placeholder";
 
 export interface PaymentIntentDto {
   provider: string;
@@ -67,7 +68,7 @@ export const walletApi = {
     sku: string;
     amountCents?: number;
     supportAmountCents?: number;
-    currency: "USD" | "EUR";
+    currency: PaymentCurrency;
     provider: PaymentProviderId;
     idempotencyKey?: string;
   }) {
