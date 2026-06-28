@@ -11,6 +11,17 @@ import type {
 } from "../types/api";
 import { apiRequest } from "./apiClient";
 
+export type PaymentProviderId = "stripe" | "mollie" | "paypal" | "adyen" | "google_play" | "apple_iap" | "placeholder";
+
+export interface PaymentIntentDto {
+  provider: string;
+  externalId: string;
+  status: "pending" | "requires_configuration";
+  message: string;
+  checkoutUrl?: string;
+  clientSecret?: string;
+}
+
 export const walletApi = {
   wallet() {
     return apiRequest<WalletDto>("/wallet");
@@ -56,11 +67,11 @@ export const walletApi = {
     sku: string;
     amountCents: number;
     currency: "USD" | "EUR";
-    provider: "stripe" | "google_play" | "apple_iap" | "placeholder";
+    provider: PaymentProviderId;
     idempotencyKey?: string;
   }) {
     const idempotencyKey = payload.idempotencyKey ?? `wallet-${Date.now()}-${crypto.randomUUID?.() ?? Math.random().toString(36).slice(2)}`;
-    return apiRequest("/wallet/purchase-placeholder", {
+    return apiRequest<PaymentIntentDto>("/wallet/purchase-placeholder", {
       method: "POST",
       body: JSON.stringify({ ...payload, idempotencyKey })
     });

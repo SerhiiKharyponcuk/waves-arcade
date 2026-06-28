@@ -4,7 +4,7 @@ import { prisma } from "../config/prisma.js";
 import { env } from "../config/env.js";
 import { AppError } from "../utils/appError.js";
 import { assertNoActiveRestriction } from "./restrictionService.js";
-import { paymentProvider } from "./paymentProvider.js";
+import { paymentProvider, type PaymentProviderId } from "./paymentProvider.js";
 import { mapSkinDto } from "./skinCatalogService.js";
 
 type RouletteOutcome = {
@@ -319,7 +319,7 @@ export async function claimDailyReward(userId: string): Promise<{ reward: DailyR
 
 export async function createPurchasePlaceholder(
   userId: string,
-  input: { sku: string; amountCents: number; currency: "USD" | "EUR"; provider: "stripe" | "google_play" | "apple_iap" | "placeholder"; idempotencyKey: string }
+  input: { sku: string; amountCents: number; currency: "USD" | "EUR"; provider: PaymentProviderId; idempotencyKey: string }
 ) {
   const existing = await prisma.purchaseTransaction.findUnique({ where: { idempotencyKey: input.idempotencyKey } });
   if (existing) {
@@ -328,7 +328,7 @@ export async function createPurchasePlaceholder(
       provider: existing.provider,
       externalId: metadata.externalId ?? `placeholder_${input.idempotencyKey}`,
       status: "requires_configuration" as const,
-      message: "Payment provider is not configured yet. Connect Stripe, Google Play Billing, or Apple IAP here."
+      message: `Payment provider "${existing.provider}" is not configured yet. Connect Stripe, Mollie, PayPal, Adyen, Google Play Billing, or Apple IAP here.`
     };
   }
 

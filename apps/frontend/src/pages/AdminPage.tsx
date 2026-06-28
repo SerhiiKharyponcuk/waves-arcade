@@ -33,7 +33,7 @@ import { Input } from "../components/ui/Input";
 import { Modal } from "../components/ui/Modal";
 import { adminApi } from "../services/adminApi";
 import { supportApi } from "../services/supportApi";
-import type { AdminAnalyticsDto, AdminAuditLogDto, AdminUserDto, FinancialTransactionDto, RestrictionType, ScoreReviewDto, SupportTicketDto, SupportTicketSource, SupportTicketStatus } from "../types/api";
+import type { AdminActivityDayDto, AdminAnalyticsDto, AdminAuditLogDto, AdminUserDto, FinancialTransactionDto, RestrictionType, ScoreReviewDto, SupportTicketDto, SupportTicketSource, SupportTicketStatus } from "../types/api";
 
 type AdminAction = "ban" | "unban" | "thank" | "resetScores";
 type SupportAction = { ticket: SupportTicketDto; status: SupportTicketStatus };
@@ -49,6 +49,101 @@ const banReasonKeys = [
   "devtools",
   "termsViolation"
 ];
+
+type ActivityMetricKey = "gameSessions" | "validScores" | "adViews" | "guestSessions" | "newUsers";
+
+function AdminActivityChart({ rows }: { rows: AdminActivityDayDto[] }) {
+  const { t } = useTranslation();
+  const metrics: Array<{ key: ActivityMetricKey; label: string; className: string }> = [
+    { key: "gameSessions", label: t("adminExtra.activityGraph.sessions"), className: "bg-cyanGlow" },
+    { key: "validScores", label: t("adminExtra.activityGraph.scores"), className: "bg-emerald-400" },
+    { key: "adViews", label: t("adminExtra.activityGraph.ads"), className: "bg-goldGlow" },
+    { key: "guestSessions", label: t("adminExtra.activityGraph.guests"), className: "bg-violet-400" },
+    { key: "newUsers", label: t("adminExtra.activityGraph.users"), className: "bg-sky-300" }
+  ];
+  const maxTotal = Math.max(1, ...rows.map((row) => metrics.reduce((total, metric) => total + row[metric.key], 0)));
+  const maxErrors = Math.max(1, ...rows.map((row) => row.clientErrors));
+
+  return (
+    <div className="mt-6 rounded-lg border border-white/10 bg-ink/55 p-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h3 className="text-lg font-black text-white">{t("adminExtra.activityGraph.title")}</h3>
+          <p className="mt-1 text-sm text-slate-400">{t("adminExtra.activityGraph.description")}</p>
+        </div>
+        <div className="flex flex-wrap gap-2 text-xs font-bold text-slate-300">
+          {metrics.map((metric) => (
+            <span key={metric.key} className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/5 px-2 py-1">
+              <span className={`h-2.5 w-2.5 rounded-full ${metric.className}`} />
+              {metric.label}
+            </span>
+          ))}
+          <span className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/5 px-2 py-1">
+            <span className="h-2.5 w-2.5 rounded-full bg-magentaGlow" />
+            {t("adminExtra.activityGraph.errors")}
+          </span>
+        </div>
+      </div>
+
+      <div className="mt-5 grid min-h-64 grid-cols-[2.5rem_minmax(0,1fr)] gap-3">
+        <div className="flex flex-col justify-between text-right text-xs text-slate-500">
+          <span>{maxTotal}</span>
+          <span>{Math.ceil(maxTotal / 2)}</span>
+          <span>0</span>
+        </div>
+        <div className="relative rounded-md border border-white/10 bg-white/[0.03] px-2 pb-8 pt-3">
+          <div className="pointer-events-none absolute inset-x-2 top-1/2 border-t border-white/10" />
+          <div className="pointer-events-none absolute inset-x-2 top-3 border-t border-white/10" />
+          <div className="flex h-52 items-end gap-2">
+            {rows.map((row) => {
+              const total = metrics.reduce((sum, metric) => sum + row[metric.key], 0);
+              const barHeight = total === 0 ? 4 : Math.max(8, Math.round((total / maxTotal) * 100));
+              const errorHeight = row.clientErrors === 0 ? 0 : Math.max(8, Math.round((row.clientErrors / maxErrors) * 100));
+              return (
+                <div key={row.date} className="group relative flex h-full min-w-0 flex-1 flex-col items-center justify-end">
+                  {row.clientErrors ? (
+                    <span
+                      className="absolute z-10 h-2.5 w-2.5 rounded-full bg-magentaGlow shadow-danger"
+                      style={{ bottom: `${errorHeight}%` }}
+                      aria-label={t("adminExtra.activityGraph.errorCount", { count: row.clientErrors })}
+                    />
+                  ) : null}
+                  <div
+                    className="flex w-full max-w-9 flex-col-reverse overflow-hidden rounded-t-md border border-white/10 bg-white/5 transition group-hover:scale-[1.03]"
+                    style={{ height: `${barHeight}%` }}
+                    title={`${row.label}: ${total}`}
+                  >
+                    {metrics.map((metric) => {
+                      const value = row[metric.key];
+                      if (!value) return null;
+                      return (
+                        <span
+                          key={metric.key}
+                          className={metric.className}
+                          style={{ height: `${Math.max(8, (value / Math.max(total, 1)) * 100)}%` }}
+                        />
+                      );
+                    })}
+                  </div>
+                  <div className="absolute -bottom-7 hidden rotate-[-35deg] whitespace-nowrap text-[10px] font-bold text-slate-500 sm:block">{row.label}</div>
+                  <div className="pointer-events-none absolute bottom-full mb-2 hidden w-48 rounded-md border border-white/10 bg-panel p-3 text-xs text-slate-300 shadow-2xl group-hover:block">
+                    <div className="mb-2 font-black text-white">{row.label}</div>
+                    <div>{t("adminExtra.activityGraph.sessions")}: {row.gameSessions}</div>
+                    <div>{t("adminExtra.activityGraph.scores")}: {row.validScores}</div>
+                    <div>{t("adminExtra.activityGraph.ads")}: {row.adViews}</div>
+                    <div>{t("adminExtra.activityGraph.guests")}: {row.guestSessions}</div>
+                    <div>{t("adminExtra.activityGraph.users")}: {row.newUsers}</div>
+                    <div className="text-pink-200">{t("adminExtra.activityGraph.errors")}: {row.clientErrors}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function AdminPage() {
   const { t } = useTranslation();
@@ -488,6 +583,7 @@ export function AdminPage() {
                   </div>
                 ))}
               </div>
+              <AdminActivityChart rows={analytics.activityTimeline} />
               <div className="mt-4 text-xs text-slate-500">{t("adminWorkspace.generatedAt", { date: new Date(analytics.generatedAt).toLocaleString() })}</div>
             </section>
           ) : null}

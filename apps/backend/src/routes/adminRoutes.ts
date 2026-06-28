@@ -20,13 +20,14 @@ import {
 } from "../controllers/adminController.js";
 import { adminTickets, adminUpdateTicket } from "../controllers/supportController.js";
 import { requireAdmin, requireAuth } from "../middleware/auth.js";
+import { adminRateLimit } from "../middleware/security.js";
 import { validateBody } from "../middleware/validate.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { adminBanSchema, adminRestrictionSchema, adminScoreModerationSchema, adminSupportTicketSchema, adminThankSchema, adminTrustSchema } from "./schemas.js";
 
 export const adminRoutes = Router();
 
-adminRoutes.use(requireAuth, requireAdmin);
+adminRoutes.use(adminRateLimit, requireAuth, requireAdmin);
 adminRoutes.get("/users", asyncHandler(adminUsers));
 adminRoutes.get("/analytics", asyncHandler(adminAnalytics));
 adminRoutes.post("/users/:userId/ban", validateBody(adminBanSchema), asyncHandler(adminBanUser));

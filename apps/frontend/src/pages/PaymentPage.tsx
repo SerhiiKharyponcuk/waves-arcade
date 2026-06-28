@@ -2,7 +2,6 @@ import { FormEvent, useMemo, useState } from "react";
 import {
   ArrowRight,
   BadgeEuro,
-  Bitcoin,
   Building2,
   CheckCircle2,
   CircleAlert,
@@ -11,6 +10,8 @@ import {
   Landmark,
   LoaderCircle,
   LockKeyhole,
+  ReceiptText,
+  RotateCcw,
   ShieldCheck,
   Smartphone,
   Sparkles,
@@ -19,16 +20,20 @@ import {
 import { useTranslation } from "react-i18next";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
+import { walletApi, type PaymentIntentDto, type PaymentProviderId } from "../services/walletApi";
 import { useUiStore } from "../store/uiStore";
 
-type PaymentMethodId = "card" | "ideal" | "paypal" | "applePay" | "googlePay" | "bankTransfer" | "revolut" | "crypto";
-type PaymentStatus = "idle" | "loading" | "success" | "error";
-
-type PaymentErrors = Partial<Record<"cardNumber" | "expiry" | "cvc" | "cardName" | "idealBank" | "supportAmount", string>>;
+type PaymentMethodId = "card" | "ideal" | "paypal" | "applePay" | "googlePay" | "bankTransfer" | "revolut";
+type PaymentStatus = "idle" | "loading" | "checkout_ready" | "provider_required" | "error";
+type PaymentErrors = Partial<Record<"idealBank" | "supportAmount", string>>;
 
 const baseAmount = 4.99;
 const supportOptions = [1, 3, 5] as const;
 const idealBanks = ["ING", "Rabobank", "ABN AMRO", "Bunq", "Revolut"];
+
+function createPaymentKey() {
+  return `checkout-${Date.now()}-${crypto.randomUUID?.() ?? Math.random().toString(36).slice(2)}`;
+}
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("en-US", {
@@ -41,54 +46,33 @@ function normalizeAmount(value: string) {
   return Number(value.replace(",", ".").trim());
 }
 
-function formatCardNumber(value: string) {
-  return value.replace(/\D/g, "").slice(0, 19).replace(/(.{4})/g, "$1 ").trim();
-}
-
-function formatExpiry(value: string) {
-  const digits = value.replace(/\D/g, "").slice(0, 4);
-  if (digits.length <= 2) return digits;
-  return `${digits.slice(0, 2)}/${digits.slice(2)}`;
-}
-
-function isValidExpiry(value: string) {
-  const match = /^(0[1-9]|1[0-2])\/\d{2}$/.exec(value);
-  if (!match) return false;
-  const [month, year] = value.split("/").map(Number);
-  const expiry = new Date(2000 + Number(year), Number(month), 0, 23, 59, 59);
-  return expiry >= new Date();
-}
-
-async function demoProcessPayment() {
-  // TODO: Replace this demo layer with a real provider call.
-  // Stripe, Mollie, Adyen, PayPal, Apple Pay and Google Pay must tokenize sensitive payment data client-side.
-  await new Promise((resolve) => window.setTimeout(resolve, 1100));
+function providerForMethod(method: PaymentMethodId): PaymentProviderId {
+  if (method === "ideal" || method === "bankTransfer" || method === "revolut") return "mollie";
+  if (method === "paypal") return "paypal";
+  return "stripe";
 }
 
 export function PaymentPage() {
   const { t } = useTranslation();
   const setView = useUiStore((state) => state.setView);
-  const [selectedMethod, setSelectedMethod] = useState<PaymentMethodId>("card");
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethodId>("ideal");
   const [status, setStatus] = useState<PaymentStatus>("idle");
   const [errors, setErrors] = useState<PaymentErrors>({});
-  const [cardNumber, setCardNumber] = useState("");
-  const [expiry, setExpiry] = useState("");
-  const [cvc, setCvc] = useState("");
-  const [cardName, setCardName] = useState("");
   const [idealBank, setIdealBank] = useState("");
   const [supportEnabled, setSupportEnabled] = useState(false);
   const [selectedSupportAmount, setSelectedSupportAmount] = useState<number | "custom">(3);
   const [customSupportAmount, setCustomSupportAmount] = useState("");
+  const [paymentIntent, setPaymentIntent] = useState<PaymentIntentDto | null>(null);
+  const [idempotencyKey, setIdempotencyKey] = useState(createPaymentKey);
 
   const paymentMethods = [
-    { id: "card" as const, icon: CreditCard, title: t("payment.methods.card"), description: t("payment.methods.cardDescription"), disabled: false },
-    { id: "ideal" as const, icon: Landmark, title: t("payment.methods.ideal"), description: t("payment.methods.idealDescription"), disabled: false },
-    { id: "paypal" as const, icon: WalletCards, title: t("payment.methods.paypal"), description: t("payment.methods.paypalDescription"), disabled: false },
-    { id: "applePay" as const, icon: Smartphone, title: t("payment.methods.applePay"), description: t("payment.methods.applePayDescription"), disabled: false },
-    { id: "googlePay" as const, icon: BadgeEuro, title: t("payment.methods.googlePay"), description: t("payment.methods.googlePayDescription"), disabled: false },
-    { id: "bankTransfer" as const, icon: Building2, title: t("payment.methods.bankTransfer"), description: t("payment.methods.bankTransferDescription"), disabled: false },
-    { id: "revolut" as const, icon: Sparkles, title: t("payment.methods.revolut"), description: t("payment.methods.revolutDescription"), disabled: false },
-    { id: "crypto" as const, icon: Bitcoin, title: t("payment.methods.crypto"), description: t("payment.methods.cryptoDescription"), disabled: true }
+    { id: "ideal" as const, provider: "mollie" as const, icon: Landmark, title: t("payment.methods.ideal"), description: t("payment.methods.idealDescription"), recommended: true },
+    { id: "card" as const, provider: "stripe" as const, icon: CreditCard, title: t("payment.methods.card"), description: t("payment.methods.cardDescription") },
+    { id: "paypal" as const, provider: "paypal" as const, icon: WalletCards, title: t("payment.methods.paypal"), description: t("payment.methods.paypalDescription") },
+    { id: "applePay" as const, provider: "stripe" as const, icon: Smartphone, title: t("payment.methods.applePay"), description: t("payment.methods.applePayDescription") },
+    { id: "googlePay" as const, provider: "stripe" as const, icon: BadgeEuro, title: t("payment.methods.googlePay"), description: t("payment.methods.googlePayDescription") },
+    { id: "bankTransfer" as const, provider: "mollie" as const, icon: Building2, title: t("payment.methods.bankTransfer"), description: t("payment.methods.bankTransferDescription") },
+    { id: "revolut" as const, provider: "mollie" as const, icon: Sparkles, title: t("payment.methods.revolut"), description: t("payment.methods.revolutDescription") }
   ];
 
   const supportAmount = useMemo(() => {
@@ -104,33 +88,29 @@ export function PaymentPage() {
 
   function validate() {
     const nextErrors: PaymentErrors = {};
-
-    if (selectedMethod === "card") {
-      const digits = cardNumber.replace(/\D/g, "");
-      if (digits.length < 12 || digits.length > 19) nextErrors.cardNumber = t("payment.validation.cardNumber");
-      if (!isValidExpiry(expiry)) nextErrors.expiry = t("payment.validation.expiry");
-      if (!/^\d{3,4}$/.test(cvc)) nextErrors.cvc = t("payment.validation.cvc");
-      if (cardName.trim().length < 2) nextErrors.cardName = t("payment.validation.cardName");
-    }
-
     if (selectedMethod === "ideal" && !idealBank) {
       nextErrors.idealBank = t("payment.validation.idealBank");
     }
-
     if (supportEnabled && selectedSupportAmount === "custom" && customSupportAmount.trim()) {
       const value = normalizeAmount(customSupportAmount);
       if (!Number.isFinite(value) || value < 1 || value > 250) {
         nextErrors.supportAmount = t("payment.validation.supportAmount");
       }
     }
-
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   }
 
+  function resetPayment() {
+    setStatus("idle");
+    setErrors({});
+    setPaymentIntent(null);
+    setIdempotencyKey(createPaymentKey());
+  }
+
   async function submitPayment(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (activeMethod.disabled) return;
+    setPaymentIntent(null);
     setStatus("idle");
     if (!validate()) {
       setStatus("error");
@@ -139,45 +119,74 @@ export function PaymentPage() {
 
     setStatus("loading");
     try {
-      await demoProcessPayment();
-      setStatus("success");
-    } catch {
+      const intent = await walletApi.purchasePlaceholder({
+        sku: "premium_starter_pack",
+        amountCents: Math.round(totalAmount * 100),
+        currency: "EUR",
+        provider: providerForMethod(selectedMethod),
+        idempotencyKey
+      });
+      setPaymentIntent(intent);
+      if (intent.checkoutUrl) {
+        window.location.assign(intent.checkoutUrl);
+        return;
+      }
+      setStatus(intent.status === "requires_configuration" ? "provider_required" : "checkout_ready");
+    } catch (error) {
+      setPaymentIntent({
+        provider: activeMethod.provider,
+        externalId: idempotencyKey,
+        status: "requires_configuration",
+        message: error instanceof Error ? error.message : t("payment.error.description")
+      });
       setStatus("error");
     }
   }
 
-  function resetPayment() {
-    setStatus("idle");
-    setErrors({});
-  }
-
   return (
     <section className="payment-page-enter grid gap-6">
-      <header className="flex flex-col gap-5 rounded-lg border border-cyanGlow/20 bg-gradient-to-br from-white/[0.08] to-white/[0.03] p-5 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <div className="mb-3 inline-flex items-center gap-2 rounded-md bg-cyanGlow px-3 py-2 text-sm font-black text-ink">
-            <LockKeyhole size={17} />
-            {t("payment.title")}
+      <header className="relative overflow-hidden rounded-lg border border-cyanGlow/20 bg-[radial-gradient(circle_at_16%_18%,rgba(33,212,253,0.22),transparent_28rem),linear-gradient(135deg,rgba(15,23,42,0.98),rgba(7,9,20,0.96))] p-5 sm:p-6">
+        <div className="payment-orbit absolute -right-16 -top-20 hidden h-52 w-52 rounded-full border border-cyanGlow/20 bg-cyanGlow/5 lg:block" />
+        <div className="relative grid gap-5 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-center">
+          <div>
+            <div className="mb-3 inline-flex items-center gap-2 rounded-md bg-cyanGlow px-3 py-2 text-sm font-black text-ink">
+              <LockKeyhole size={17} />
+              {t("payment.title")}
+            </div>
+            <h1 className="max-w-3xl text-4xl font-black text-white neon-text sm:text-5xl">{t("payment.heading")}</h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">{t("payment.subtitle")}</p>
           </div>
-          <h1 className="text-4xl font-black text-white neon-text sm:text-5xl">{t("payment.heading")}</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">{t("payment.subtitle")}</p>
-        </div>
-        <div className="grid max-w-sm gap-3 rounded-lg border border-white/10 bg-ink/60 p-4 text-sm text-slate-300">
-          <div className="flex items-center gap-2 font-black text-cyanGlow"><ShieldCheck size={19} /> {t("payment.security.badge")}</div>
-          <p className="leading-6">{t("payment.security.note")}</p>
+          <div className="rounded-lg border border-white/10 bg-ink/70 p-4 text-sm text-slate-300 shadow-2xl">
+            <div className="mb-3 flex items-center gap-2 font-black text-cyanGlow">
+              <ShieldCheck size={19} />
+              {t("payment.security.badge")}
+            </div>
+            <div className="grid gap-2">
+              {[t("payment.flow.order"), t("payment.flow.provider"), t("payment.flow.confirmation")].map((item, index) => (
+                <div key={item} className="flex items-center gap-3 rounded-md bg-white/[0.04] px-3 py-2">
+                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-cyanGlow/15 text-xs font-black text-cyanGlow">{index + 1}</span>
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </header>
 
-      <form className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]" onSubmit={(event) => void submitPayment(event)}>
+      <form className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_25rem]" onSubmit={(event) => void submitPayment(event)}>
         <div className="grid gap-6">
-          <section>
-            <div className="mb-4 flex items-end justify-between gap-3">
+          <section className="arcade-border rounded-lg p-4 sm:p-5">
+            <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <h2 className="text-2xl font-black text-white">{t("payment.methods.title")}</h2>
                 <p className="mt-1 text-sm text-slate-400">{t("payment.methods.subtitle")}</p>
               </div>
+              <div className="rounded-md border border-cyanGlow/20 bg-cyanGlow/10 px-3 py-2 text-xs font-black uppercase tracking-wide text-cyanGlow">
+                {t("payment.providerStatus.safeMode")}
+              </div>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
+
+            <div className="grid gap-3 md:grid-cols-2">
               {paymentMethods.map((method) => {
                 const Icon = method.icon;
                 const selected = selectedMethod === method.id;
@@ -185,30 +194,32 @@ export function PaymentPage() {
                   <button
                     key={method.id}
                     type="button"
-                    disabled={method.disabled || status === "loading"}
                     aria-pressed={selected}
+                    disabled={status === "loading"}
                     onClick={() => {
-                      if (!method.disabled) {
-                        setSelectedMethod(method.id);
-                        resetPayment();
-                      }
+                      setSelectedMethod(method.id);
+                      resetPayment();
                     }}
-                    className={`payment-method-card group min-h-28 rounded-lg border p-4 text-left transition focus:outline-none focus:ring-2 focus:ring-cyanGlow/60 disabled:cursor-not-allowed disabled:opacity-55 ${
+                    className={`payment-method-card group min-h-32 rounded-lg border p-4 text-left transition focus:outline-none focus:ring-2 focus:ring-cyanGlow/60 disabled:cursor-not-allowed disabled:opacity-60 ${
                       selected
                         ? "payment-method-selected border-cyanGlow bg-cyanGlow/10 shadow-neon"
                         : "border-white/10 bg-white/[0.04] hover:border-cyanGlow/60 hover:bg-white/[0.07]"
                     }`}
                   >
                     <div className="flex items-start gap-3">
-                      <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-md border ${selected ? "border-cyanGlow bg-cyanGlow text-ink" : "border-white/10 bg-ink/70 text-cyanGlow"}`}>
-                        <Icon size={21} />
+                      <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-md border ${selected ? "border-cyanGlow bg-cyanGlow text-ink" : "border-white/10 bg-ink/70 text-cyanGlow"}`}>
+                        <Icon size={22} />
                       </span>
                       <span className="min-w-0">
-                        <span className="flex items-center gap-2 font-black text-white">
+                        <span className="flex flex-wrap items-center gap-2 font-black text-white">
                           {method.title}
-                          {method.disabled ? <span className="rounded-md bg-white/10 px-2 py-0.5 text-[10px] uppercase text-slate-300">{t("payment.methods.comingSoon")}</span> : null}
+                          {method.recommended ? <span className="rounded-md bg-goldGlow px-2 py-0.5 text-[10px] uppercase text-ink">{t("payment.methods.recommended")}</span> : null}
                         </span>
                         <span className="mt-1 block text-sm leading-5 text-slate-400">{method.description}</span>
+                        <span className="mt-3 inline-flex items-center gap-2 rounded-md bg-white/[0.05] px-2 py-1 text-xs font-bold text-slate-300">
+                          <ReceiptText size={13} />
+                          {t("payment.providerStatus.via", { provider: method.provider.toUpperCase() })}
+                        </span>
                       </span>
                     </div>
                   </button>
@@ -221,64 +232,10 @@ export function PaymentPage() {
             <div className="mb-5 flex items-center justify-between gap-3 border-b border-white/10 pb-4">
               <div>
                 <h2 className="text-xl font-black text-white">{t("payment.details.title")}</h2>
-                <p className="mt-1 text-sm text-slate-400">{t("payment.details.demoNotice")}</p>
+                <p className="mt-1 text-sm text-slate-400">{t("payment.details.hostedNotice")}</p>
               </div>
               <ActiveMethodIcon className="hidden text-cyanGlow sm:block" size={24} />
             </div>
-
-            {selectedMethod === "card" ? (
-              <div className="grid gap-4">
-                <Input
-                  label={t("payment.card.number")}
-                  inputMode="numeric"
-                  autoComplete="cc-number"
-                  value={cardNumber}
-                  onChange={(event) => setCardNumber(formatCardNumber(event.target.value))}
-                  aria-invalid={Boolean(errors.cardNumber)}
-                  aria-describedby={errors.cardNumber ? "card-number-error" : undefined}
-                  placeholder="4242 4242 4242 4242"
-                />
-                {errors.cardNumber ? <p id="card-number-error" className="payment-error-text">{errors.cardNumber}</p> : null}
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <Input
-                      label={t("payment.card.expiry")}
-                      inputMode="numeric"
-                      autoComplete="cc-exp"
-                      value={expiry}
-                      onChange={(event) => setExpiry(formatExpiry(event.target.value))}
-                      aria-invalid={Boolean(errors.expiry)}
-                      aria-describedby={errors.expiry ? "expiry-error" : undefined}
-                      placeholder="MM/YY"
-                    />
-                    {errors.expiry ? <p id="expiry-error" className="payment-error-text">{errors.expiry}</p> : null}
-                  </div>
-                  <div>
-                    <Input
-                      label={t("payment.card.cvc")}
-                      inputMode="numeric"
-                      autoComplete="cc-csc"
-                      value={cvc}
-                      onChange={(event) => setCvc(event.target.value.replace(/\D/g, "").slice(0, 4))}
-                      aria-invalid={Boolean(errors.cvc)}
-                      aria-describedby={errors.cvc ? "cvc-error" : undefined}
-                      placeholder="123"
-                    />
-                    {errors.cvc ? <p id="cvc-error" className="payment-error-text">{errors.cvc}</p> : null}
-                  </div>
-                </div>
-                <Input
-                  label={t("payment.card.name")}
-                  autoComplete="cc-name"
-                  value={cardName}
-                  onChange={(event) => setCardName(event.target.value)}
-                  aria-invalid={Boolean(errors.cardName)}
-                  aria-describedby={errors.cardName ? "card-name-error" : undefined}
-                  placeholder="Serhii Kharyponcuk"
-                />
-                {errors.cardName ? <p id="card-name-error" className="payment-error-text">{errors.cardName}</p> : null}
-              </div>
-            ) : null}
 
             {selectedMethod === "ideal" ? (
               <label className="grid gap-2 text-sm text-slate-300">
@@ -297,12 +254,20 @@ export function PaymentPage() {
               </label>
             ) : null}
 
-            {["paypal", "applePay", "googlePay", "bankTransfer", "revolut"].includes(selectedMethod) ? (
-              <div className="rounded-lg border border-cyanGlow/25 bg-cyanGlow/10 p-4 text-sm leading-6 text-slate-200">
-                <div className="mb-2 flex items-center gap-2 font-black text-white"><ActiveMethodIcon size={18} /> {activeMethod.title}</div>
-                <p>{t(`payment.providerBlocks.${selectedMethod}`)}</p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              <div className="rounded-lg border border-white/10 bg-white/[0.04] p-3 text-sm">
+                <div className="font-black text-white">{t("payment.details.noCardStorageTitle")}</div>
+                <p className="mt-1 leading-5 text-slate-400">{t("payment.details.noCardStorageBody")}</p>
               </div>
-            ) : null}
+              <div className="rounded-lg border border-white/10 bg-white/[0.04] p-3 text-sm">
+                <div className="font-black text-white">{t("payment.details.idempotencyTitle")}</div>
+                <p className="mt-1 break-all leading-5 text-slate-400">{idempotencyKey}</p>
+              </div>
+              <div className="rounded-lg border border-white/10 bg-white/[0.04] p-3 text-sm">
+                <div className="font-black text-white">{t("payment.details.providerTitle")}</div>
+                <p className="mt-1 leading-5 text-slate-400">{t("payment.providerStatus.via", { provider: providerForMethod(selectedMethod).toUpperCase() })}</p>
+              </div>
+            </div>
           </section>
 
           <section className="rounded-lg border border-goldGlow/25 bg-goldGlow/5 p-4 sm:p-5">
@@ -363,9 +328,9 @@ export function PaymentPage() {
           <div className="arcade-border rounded-lg p-5">
             <h2 className="text-xl font-black text-white">{t("payment.summary.title")}</h2>
             <div className="mt-5 grid gap-3 text-sm">
-              <div className="flex items-center justify-between gap-3 rounded-md bg-white/5 px-3 py-3">
-                <span className="text-slate-300">{t("payment.summary.product")}</span>
-                <strong className="text-white">{t("payment.summary.productName")}</strong>
+              <div className="rounded-md border border-cyanGlow/20 bg-cyanGlow/10 p-4">
+                <div className="font-black text-white">{t("payment.summary.productName")}</div>
+                <p className="mt-1 text-slate-300">{t("payment.summary.productDescription")}</p>
               </div>
               <div className="flex items-center justify-between gap-3 rounded-md bg-white/5 px-3 py-3">
                 <span className="text-slate-300">{t("payment.summary.price")}</span>
@@ -385,6 +350,22 @@ export function PaymentPage() {
               </div>
             </div>
 
+            {status === "provider_required" ? (
+              <div role="status" className="payment-error-shake mt-4 rounded-md border border-goldGlow/40 bg-goldGlow/10 p-4 text-sm leading-6 text-slate-100">
+                <div className="flex items-center gap-2 font-black text-goldGlow"><CircleAlert size={17} /> {t("payment.providerStatus.title")}</div>
+                <p className="mt-1">{t("payment.providerStatus.description")}</p>
+                {paymentIntent ? <p className="mt-2 break-all text-xs text-slate-400">{paymentIntent.message}</p> : null}
+              </div>
+            ) : null}
+
+            {status === "checkout_ready" ? (
+              <div role="status" className="mt-4 rounded-md border border-cyanGlow/40 bg-cyanGlow/10 p-4 text-center text-sm text-slate-100">
+                <CheckCircle2 className="payment-success-check mx-auto text-cyanGlow" size={42} />
+                <div className="mt-3 text-lg font-black text-white">{t("payment.checkoutReady.title")}</div>
+                <p className="mt-1 leading-6 text-slate-300">{t("payment.checkoutReady.description")}</p>
+              </div>
+            ) : null}
+
             {status === "error" ? (
               <div role="alert" className="payment-error-shake mt-4 rounded-md border border-magentaGlow/40 bg-magentaGlow/10 p-3 text-sm leading-6 text-pink-100">
                 <div className="flex items-center gap-2 font-black"><CircleAlert size={17} /> {t("payment.error.title")}</div>
@@ -392,29 +373,18 @@ export function PaymentPage() {
               </div>
             ) : null}
 
-            {status === "success" ? (
-              <div role="status" className="mt-4 rounded-md border border-cyanGlow/40 bg-cyanGlow/10 p-4 text-center text-sm text-slate-100">
-                <CheckCircle2 className="payment-success-check mx-auto text-cyanGlow" size={42} />
-                <div className="mt-3 text-lg font-black text-white">{t("payment.success.title")}</div>
-                <p className="mt-1 leading-6 text-slate-300">{t("payment.success.description")}</p>
-                <Button type="button" variant="secondary" className="mt-4 w-full" onClick={() => setView("premium")}>
-                  {t("payment.actions.continue")}
-                </Button>
-              </div>
-            ) : (
-              <Button
-                type="submit"
-                disabled={status === "loading" || activeMethod.disabled}
-                className="mt-5 w-full"
-                icon={status === "loading" ? <LoaderCircle className="animate-spin" size={18} /> : <ArrowRight size={18} />}
-              >
-                {status === "loading" ? t("payment.actions.processing") : selectedMethod === "ideal" ? t("payment.actions.continueIdeal") : t("payment.actions.payNow")}
-              </Button>
-            )}
+            <Button
+              type="submit"
+              disabled={status === "loading"}
+              className="mt-5 w-full"
+              icon={status === "loading" ? <LoaderCircle className="animate-spin" size={18} /> : <ArrowRight size={18} />}
+            >
+              {status === "loading" ? t("payment.actions.processing") : t("payment.actions.createCheckout")}
+            </Button>
 
-            {status === "error" ? (
-              <Button type="button" variant="ghost" className="mt-2 w-full" onClick={resetPayment}>
-                {t("payment.actions.tryAgain")}
+            {status !== "idle" ? (
+              <Button type="button" variant="ghost" className="mt-2 w-full" onClick={resetPayment} icon={<RotateCcw size={17} />}>
+                {t("payment.actions.reset")}
               </Button>
             ) : null}
 
@@ -425,6 +395,19 @@ export function PaymentPage() {
           </div>
         </aside>
       </form>
+
+      <div className="grid gap-3 rounded-lg border border-white/10 bg-white/[0.03] p-4 sm:grid-cols-3">
+        {[t("payment.launchChecklist.provider"), t("payment.launchChecklist.webhook"), t("payment.launchChecklist.ads")].map((item) => (
+          <div key={item} className="flex items-center gap-3 text-sm text-slate-300">
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-cyanGlow/10 text-cyanGlow"><CheckCircle2 size={17} /></span>
+            <span>{item}</span>
+          </div>
+        ))}
+      </div>
+
+      <Button type="button" variant="ghost" className="justify-self-start" onClick={() => setView("settings")}>
+        {t("payment.actions.backToSettings")}
+      </Button>
     </section>
   );
 }

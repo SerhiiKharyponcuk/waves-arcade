@@ -1,5 +1,5 @@
 import { FormEvent, useMemo, useState } from "react";
-import { BookOpen, Cookie, KeyRound, LifeBuoy, Lock, LogOut, RotateCcw, Save, Settings, ShieldCheck, Trash2, Volume2 } from "lucide-react";
+import { BookOpen, Cookie, CreditCard, KeyRound, LifeBuoy, Lock, LogOut, RotateCcw, Save, Settings, ShieldCheck, Trash2, Volume2 } from "lucide-react";
 import type { SupportedLocale } from "@waves/shared";
 import { AccountRequiredModal } from "../components/auth/AccountRequiredModal";
 import { LanguageSelector } from "../components/settings/LanguageSelector";
@@ -191,8 +191,29 @@ export function SettingsPage() {
           <>
             <SettingSection title={t("settings.privacy")}><ToggleSetting label={t("settingsDetails.showLeaderboardName")} checked={showUsername} onChange={setShowUsername} /><ToggleSetting label={t("settingsDetails.hideProfile")} checked={hideProfile} onChange={setHideProfile} /><Button type="button" variant="ghost" onClick={openConsentPreferences} icon={<Cookie size={18} />}>{t("consent.preferences")}</Button></SettingSection>
             <SettingSection title={t("settings.ads")}><ToggleSetting label={t("settingsDetails.allowRewardedAds")} checked={settings.rewardedAdsPermission} onChange={(value) => patchSetting("rewardedAdsPermission", value)} /><p className="text-xs leading-5 text-slate-400">{t("settingsDetails.rewardedAdsHelp")}</p></SettingSection>
+            <SettingSection title={t("settings.payments")}>
+              <p className="text-sm leading-6 text-slate-400">{t("settings.paymentsNote")}</p>
+              <div className="rounded-md border border-cyanGlow/20 bg-cyanGlow/10 p-3 text-sm leading-6 text-slate-200">{t("payment.settingsEntry.description")}</div>
+              <Button
+                type="button"
+                onClick={() => {
+                  if (window.location.pathname !== "/payment") {
+                    window.history.pushState({}, "", "/payment");
+                  }
+                  setView("payment");
+                }}
+                icon={<CreditCard size={18} />}
+              >
+                {t("payment.settingsEntry.open")}
+              </Button>
+            </SettingSection>
           </>
-        ) : null}
+        ) : (
+          <SettingSection title={t("settings.payments")} locked>
+            <p className="text-sm leading-6 text-slate-400">{t("payment.settingsEntry.guestLocked")}</p>
+            <Button type="button" onClick={() => setAccountRequired(true)} icon={<Lock size={18} />}>{t("settingsDetails.unlockAccountSettings")}</Button>
+          </SettingSection>
+        )}
 
         <SettingSection title={t("settings.support")}>
           <div className="rounded-md border border-goldGlow/30 bg-goldGlow/10 p-3 text-sm text-slate-200">{t("support.passwordWarning")}</div>

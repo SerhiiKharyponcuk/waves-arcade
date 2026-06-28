@@ -1,7 +1,7 @@
 import cookieParser from "cookie-parser";
 import express from "express";
 import { apiRoutes } from "./routes/index.js";
-import { apiRateLimit, corsMiddleware, helmetMiddleware } from "./middleware/security.js";
+import { apiRateLimit, corsMiddleware, helmetMiddleware, noStoreApiMiddleware, requestTimeoutMiddleware, strictJsonContentType } from "./middleware/security.js";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
 
 export function createApp() {
@@ -11,7 +11,10 @@ export function createApp() {
 
   app.use(helmetMiddleware);
   app.use(corsMiddleware);
+  app.use(requestTimeoutMiddleware);
+  app.use(noStoreApiMiddleware);
   app.use(apiRateLimit);
+  app.use(strictJsonContentType);
   app.use(express.json({ limit: "256kb" }));
   app.use(cookieParser());
 
