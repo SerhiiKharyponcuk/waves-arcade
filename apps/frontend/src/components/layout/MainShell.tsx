@@ -1,5 +1,5 @@
 import { Suspense, lazy, useEffect, useState } from "react";
-import { BookOpen, CreditCard, Gamepad2, LifeBuoy, Lock, LogIn, LogOut, PackageOpen, Palette, Settings, ShieldCheck, ShoppingBag, Trophy, UserPlus, UserRound, WalletCards } from "lucide-react";
+import { BookOpen, Gamepad2, LifeBuoy, Lock, LogIn, LogOut, PackageOpen, Palette, Settings, ShieldCheck, ShoppingBag, Trophy, UserPlus, UserRound, WalletCards } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../../store/authStore";
 import { useGuestStore } from "../../store/guestStore";
@@ -31,7 +31,6 @@ const navItems: Array<{ view: AppView; icon: typeof Gamepad2; labelKey: string }
   { view: "inventory", icon: PackageOpen, labelKey: "nav.inventory" },
   { view: "themes", icon: Palette, labelKey: "nav.themes" },
   { view: "premium", icon: WalletCards, labelKey: "nav.premium" },
-  { view: "payment", icon: CreditCard, labelKey: "nav.payment" },
   { view: "profile", icon: Trophy, labelKey: "nav.profile" },
   { view: "support", icon: LifeBuoy, labelKey: "nav.support" },
   { view: "settings", icon: Settings, labelKey: "nav.settings" },
@@ -188,7 +187,7 @@ export function MainShell() {
           <UserMenu isGuest={isGuest} navigate={navigate} requestAuthentication={requestAuthentication} logout={() => void logout()} />
         </div>
 
-        <nav className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 pb-3 sm:grid sm:grid-cols-7 sm:overflow-visible lg:grid-cols-10">
+        <nav className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 pb-3 sm:grid sm:grid-cols-7 sm:overflow-visible lg:grid-cols-8">
           {visibleNavItems.map((item) => {
             const Icon = item.icon;
             const active = view === item.view;

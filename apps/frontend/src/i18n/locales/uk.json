@@ -186,11 +186,22 @@
       "revolutDescription": "Сучасний гаманець, підготовлений для запуску.",
       "crypto": "Crypto",
       "cryptoDescription": "Криптооплата запланована на пізніший етап.",
-      "comingSoon": "Скоро"
+      "comingSoon": "Скоро",
+      "recommended": "Рекомендовано"
+    },
+    "flow": {
+      "order": "Створити замовлення на сервері",
+      "provider": "Відкрити hosted checkout провайдера",
+      "confirmation": "Підтвердити платіж через webhook"
     },
     "details": {
       "title": "Дані оплати",
-      "demoNotice": "Це лише demo checkout. Реальний провайдер токенізуватиме платіжні дані перед запуском."
+      "demoNotice": "Це лише demo checkout. Реальний провайдер токенізуватиме платіжні дані перед запуском.",
+      "hostedNotice": "Чутливі платіжні дані вводяться тільки у провайдера, а не в Waves Arcade.",
+      "noCardStorageTitle": "Без сирих даних картки",
+      "noCardStorageBody": "Номери карток і CVC-коди мають обробляти Stripe, Mollie, PayPal або Adyen.",
+      "idempotencyTitle": "Ключ безпеки замовлення",
+      "providerTitle": "Маршрут провайдера"
     },
     "card": {
       "number": "Номер картки",
@@ -213,6 +224,7 @@
       "title": "Підсумок замовлення",
       "product": "Продукт",
       "productName": "Premium starter pack",
+      "productDescription": "Платний продукт, готовий до checkout, для преміум-доступу й майбутніх launch-пропозицій.",
       "price": "Ціна",
       "support": "Підтримка розробника",
       "fees": "Комісії",
@@ -230,7 +242,30 @@
       "tryAgain": "Спробувати ще раз",
       "continue": "Продовжити",
       "continueIdeal": "Продовжити з iDEAL",
-      "openPayment": "Відкрити сторінку оплати"
+      "openPayment": "Відкрити центр оплати",
+      "createCheckout": "Створити безпечний checkout",
+      "reset": "Скинути checkout",
+      "backToSettings": "Назад у налаштування"
+    },
+    "providerStatus": {
+      "safeMode": "Безпечний режим провайдера",
+      "via": "Через {{provider}}",
+      "title": "Потрібен платіжний провайдер",
+      "description": "Backend створив захищений payment intent, але реальні списання вимкнені, доки не налаштовано акаунт провайдера й webhook."
+    },
+    "checkoutReady": {
+      "title": "Checkout-сесія готова",
+      "description": "Реальний провайдер зможе перенаправити гравця на hosted checkout після додавання конфігурації."
+    },
+    "launchChecklist": {
+      "provider": "Підключити ключі Stripe, Mollie, PayPal або Adyen",
+      "webhook": "Додати webhook-підтвердження перед видачею premium-предметів",
+      "ads": "Тримати рекламу й платежі окремо для безпечної монетизації"
+    },
+    "settingsEntry": {
+      "description": "Відкрийте безпечний центр оплати, щоб створювати замовлення через провайдера. Реальні списання залишаться вимкненими до налаштування production-ключів.",
+      "open": "Відкрити центр оплати",
+      "guestLocked": "Створіть акаунт, щоб використовувати оплату, рахунки, преміум-покупки й майбутню історію платежів."
     },
     "success": {
       "title": "Оплата успішна",
@@ -580,6 +615,7 @@
   "adminExtra": {
     "resetUserScores": "Скинути результати гравця", "defaultScoreResetReason": "Підтверджене накручування результату або виправлення адміністратором.", "trustedReason": "Адміністратор визнав акаунт довіреним.", "suspiciousReason": "Акаунт потребує додаткової античіт-перевірки.", "restrictionRemovedReason": "Обмеження знято адміністратором.",
     "analytics": { "title": "Аналітика продукту", "registered": "Реєстрації", "new7d": "Нові 7 дн.", "active7d": "Активні 7 дн.", "returning7d": "Повернулися 7 дн.", "sessions30d": "Сесії 30 дн.", "validScores30d": "Чесні результати 30 дн.", "adViews30d": "Реклама 30 дн.", "guests30d": "Гості 30 дн." },
+    "activityGraph": { "title": "Графік активності", "description": "Щоденна активність за останні 14 днів: гра, результати, реклама, гостьові старти, реєстрації та помилки клієнта.", "sessions": "Сесії", "scores": "Результати", "ads": "Реклама", "guests": "Гості", "users": "Нові гравці", "errors": "Помилки", "errorCount": "{{count}} клієнтських помилок" },
     "finance": { "title": "Фінансовий журнал", "empty": "Фінансових транзакцій немає.", "user": "Користувач", "item": "Предмет", "status": "Статус", "provider": "Provider", "amount": "Сума", "date": "Дата", "idempotencyKey": "Idempotency key", "noAmount": "Без зміни гаманця", "gems": "кристали", "tickets": "квитки", "lives": "життя" },
     "userStatuses": { "ACTIVE": "Активний", "BANNED": "Заблокований", "DELETED": "Видалений" }, "trustStatuses": { "NORMAL": "Звичайний", "TRUSTED": "Довірений", "SUSPICIOUS": "Підозрілий" }, "activeRestrictions": "Активних обмежень: {{count}}", "removeRestriction": "Зняти: {{type}}", "resetPassword": "Скинути пароль", "resetScores": "Скинути результати", "markSuspicious": "Позначити підозрілим", "markTrusted": "Позначити довіреним", "restrict": "Обмежити",
     "scoreModeration": "Перевірка результатів", "ms": "мс", "hits": "зіткнення", "noReasonRecorded": "Причину не вказано", "noSessionFlags": "немає позначок сесії", "approve": "Схвалити", "reject": "Відхилити", "hide": "Приховати", "banForCheating": "Заблокувати за чіти", "noScoresToReview": "Немає результатів для перевірки.", "validScoreHistory": "Історія чесних результатів ({{count}})", "scoreApprovedReason": "Результат перевірено та схвалено адміністратором.", "scoreRejectedReason": "Результат відхилено після перевірки.", "scoreHiddenReason": "Результат приховано адміністратором.", "cheatingReason": "Чіти: {{reason}}", "invalidScore": "недійсне надсилання результату",

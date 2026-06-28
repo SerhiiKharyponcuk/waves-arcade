@@ -76,6 +76,13 @@ button {
     transform: translateY(-2px);
   }
 
+  .payment-orbit {
+    animation: payment-orbit-float 5.5s ease-in-out infinite;
+    box-shadow:
+      0 0 60px rgba(33, 212, 253, 0.16),
+      inset 0 0 38px rgba(33, 212, 253, 0.12);
+  }
+
   .payment-method-selected {
     animation: payment-selected-pulse 0.32s ease both;
   }
@@ -120,6 +127,18 @@ button {
   }
 }
 
+@keyframes payment-orbit-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+    opacity: 0.62;
+  }
+  50% {
+    transform: translate3d(-10px, 12px, 0) rotate(10deg);
+    opacity: 0.95;
+  }
+}
+
 @keyframes payment-shake {
   0%,
   100% {
@@ -156,6 +175,7 @@ button {
 
 @media (prefers-reduced-motion: reduce) {
   .payment-page-enter,
+  .payment-orbit,
   .payment-method-selected,
   .payment-error-shake,
   .payment-success-check,

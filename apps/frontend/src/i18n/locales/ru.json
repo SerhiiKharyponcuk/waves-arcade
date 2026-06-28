@@ -186,11 +186,22 @@
       "revolutDescription": "Современный кошелёк, подготовленный для запуска.",
       "crypto": "Crypto",
       "cryptoDescription": "Криптооплата запланирована на более поздний этап.",
-      "comingSoon": "Скоро"
+      "comingSoon": "Скоро",
+      "recommended": "Рекомендуется"
+    },
+    "flow": {
+      "order": "Создать заказ на сервере",
+      "provider": "Открыть hosted checkout провайдера",
+      "confirmation": "Подтвердить платёж через webhook"
     },
     "details": {
       "title": "Данные оплаты",
-      "demoNotice": "Это только demo checkout. Реальный провайдер будет токенизировать платёжные данные перед запуском."
+      "demoNotice": "Это только demo checkout. Реальный провайдер будет токенизировать платёжные данные перед запуском.",
+      "hostedNotice": "Чувствительные платёжные данные вводятся только у провайдера, а не в Waves Arcade.",
+      "noCardStorageTitle": "Без сырых данных карты",
+      "noCardStorageBody": "Номера карт и CVC-коды должны обрабатываться Stripe, Mollie, PayPal или Adyen.",
+      "idempotencyTitle": "Ключ безопасности заказа",
+      "providerTitle": "Маршрут провайдера"
     },
     "card": {
       "number": "Номер карты",
@@ -213,6 +224,7 @@
       "title": "Сводка заказа",
       "product": "Продукт",
       "productName": "Premium starter pack",
+      "productDescription": "Платный продукт, готовый к checkout, для премиум-доступа и будущих launch-предложений.",
       "price": "Цена",
       "support": "Поддержка разработчика",
       "fees": "Комиссии",
@@ -230,7 +242,30 @@
       "tryAgain": "Попробовать ещё раз",
       "continue": "Продолжить",
       "continueIdeal": "Продолжить с iDEAL",
-      "openPayment": "Открыть страницу оплаты"
+      "openPayment": "Открыть центр оплаты",
+      "createCheckout": "Создать безопасный checkout",
+      "reset": "Сбросить checkout",
+      "backToSettings": "Назад в настройки"
+    },
+    "providerStatus": {
+      "safeMode": "Безопасный режим провайдера",
+      "via": "Через {{provider}}",
+      "title": "Нужен платёжный провайдер",
+      "description": "Backend создал защищённый payment intent, но реальные списания отключены, пока не настроены аккаунт провайдера и webhook."
+    },
+    "checkoutReady": {
+      "title": "Checkout-сессия готова",
+      "description": "Реальный провайдер сможет перенаправить игрока на hosted checkout после добавления конфигурации."
+    },
+    "launchChecklist": {
+      "provider": "Подключить ключи Stripe, Mollie, PayPal или Adyen",
+      "webhook": "Добавить webhook-подтверждение перед выдачей premium-предметов",
+      "ads": "Держать рекламу и платежи отдельно для безопасной монетизации"
+    },
+    "settingsEntry": {
+      "description": "Откройте безопасный центр оплаты, чтобы создавать заказы через провайдера. Реальные списания останутся выключенными до настройки production-ключей.",
+      "open": "Открыть центр оплаты",
+      "guestLocked": "Создайте аккаунт, чтобы использовать оплату, счета, премиум-покупки и будущую историю платежей."
     },
     "success": {
       "title": "Оплата успешна",
@@ -580,6 +615,7 @@
   "adminExtra": {
     "resetUserScores": "Сбросить результаты игрока", "defaultScoreResetReason": "Подтверждённая накрутка результата или исправление администратором.", "trustedReason": "Администратор признал аккаунт доверенным.", "suspiciousReason": "Аккаунту нужна дополнительная античит-проверка.", "restrictionRemovedReason": "Ограничение снято администратором.",
     "analytics": { "title": "Аналитика продукта", "registered": "Регистрации", "new7d": "Новые 7 дн.", "active7d": "Активные 7 дн.", "returning7d": "Вернулись 7 дн.", "sessions30d": "Сессии 30 дн.", "validScores30d": "Честные результаты 30 дн.", "adViews30d": "Реклама 30 дн.", "guests30d": "Гости 30 дн." },
+    "activityGraph": { "title": "График активности", "description": "Ежедневная активность за последние 14 дней: игра, результаты, реклама, гостевые старты, регистрации и ошибки клиента.", "sessions": "Сессии", "scores": "Результаты", "ads": "Реклама", "guests": "Гости", "users": "Новые игроки", "errors": "Ошибки", "errorCount": "{{count}} клиентских ошибок" },
     "finance": { "title": "Финансовый журнал", "empty": "Финансовых транзакций нет.", "user": "Пользователь", "item": "Предмет", "status": "Статус", "provider": "Provider", "amount": "Сумма", "date": "Дата", "idempotencyKey": "Idempotency key", "noAmount": "Без изменения кошелька", "gems": "кристаллы", "tickets": "билеты", "lives": "жизни" },
     "userStatuses": { "ACTIVE": "Активен", "BANNED": "Заблокирован", "DELETED": "Удалён" }, "trustStatuses": { "NORMAL": "Обычный", "TRUSTED": "Доверенный", "SUSPICIOUS": "Подозрительный" }, "activeRestrictions": "Активных ограничений: {{count}}", "removeRestriction": "Снять: {{type}}", "resetPassword": "Сбросить пароль", "resetScores": "Сбросить результаты", "markSuspicious": "Пометить подозрительным", "markTrusted": "Пометить доверенным", "restrict": "Ограничить",
     "scoreModeration": "Проверка результатов", "ms": "мс", "hits": "столкновения", "noReasonRecorded": "Причина не указана", "noSessionFlags": "нет флагов сессии", "approve": "Одобрить", "reject": "Отклонить", "hide": "Скрыть", "banForCheating": "Заблокировать за читы", "noScoresToReview": "Нет результатов для проверки.", "validScoreHistory": "История честных результатов ({{count}})", "scoreApprovedReason": "Результат проверен и одобрен администратором.", "scoreRejectedReason": "Результат отклонён после проверки.", "scoreHiddenReason": "Результат скрыт администратором.", "cheatingReason": "Читы: {{reason}}", "invalidScore": "недействительная отправка результата",

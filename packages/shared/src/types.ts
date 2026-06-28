@@ -421,7 +421,19 @@ export interface AdminAnalyticsDto {
   completedAdViews30Days: number;
   guestUsers30Days: number;
   returningPlayers7Days: number;
+  activityTimeline: AdminActivityDayDto[];
   generatedAt: string;
+}
+
+export interface AdminActivityDayDto {
+  date: string;
+  label: string;
+  gameSessions: number;
+  validScores: number;
+  adViews: number;
+  newUsers: number;
+  guestSessions: number;
+  clientErrors: number;
 }
 
 export interface ModerationActionDto {

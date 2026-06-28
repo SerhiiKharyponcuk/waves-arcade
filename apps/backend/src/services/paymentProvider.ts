@@ -1,9 +1,11 @@
+export type PaymentProviderId = "stripe" | "mollie" | "paypal" | "adyen" | "google_play" | "apple_iap" | "placeholder";
+
 export interface PaymentIntentRequest {
   userId: string;
   sku: string;
   currency: "USD" | "EUR";
   amountCents: number;
-  provider: "stripe" | "google_play" | "apple_iap" | "placeholder";
+  provider: PaymentProviderId;
   idempotencyKey: string;
 }
 
@@ -12,6 +14,8 @@ export interface PaymentIntentResponse {
   externalId: string;
   status: "pending" | "requires_configuration";
   message: string;
+  checkoutUrl?: string;
+  clientSecret?: string;
 }
 
 export interface PaymentProvider {
@@ -25,7 +29,7 @@ export class PlaceholderPaymentProvider implements PaymentProvider {
       externalId: `placeholder_${request.idempotencyKey}`,
       status: "requires_configuration",
       message:
-        "Payment provider is not configured yet. Connect Stripe, Google Play Billing, or Apple IAP here."
+        `Payment provider "${request.provider}" is not configured yet. Connect Stripe, Mollie, PayPal, Adyen, Google Play Billing, or Apple IAP here.`
     };
   }
 }

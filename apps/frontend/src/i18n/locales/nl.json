@@ -186,11 +186,22 @@
       "revolutDescription": "Moderne walletbetaling voorbereid voor lancering.",
       "crypto": "Crypto",
       "cryptoDescription": "Cryptobetalingen zijn gepland voor een latere fase.",
-      "comingSoon": "Binnenkort"
+      "comingSoon": "Binnenkort",
+      "recommended": "Aanbevolen"
+    },
+    "flow": {
+      "order": "Server-side bestelling aanmaken",
+      "provider": "Hosted provider-checkout openen",
+      "confirmation": "Betaling bevestigen via webhook"
     },
     "details": {
       "title": "Betaalgegevens",
-      "demoNotice": "Alleen demo-checkout. Een echte provider zal betaalgegevens tokeniseren voor de lancering."
+      "demoNotice": "Alleen demo-checkout. Een echte provider zal betaalgegevens tokeniseren voor de lancering.",
+      "hostedNotice": "Gevoelige betaalgegevens worden alleen ingevoerd bij de provider, niet in Waves Arcade.",
+      "noCardStorageTitle": "Geen ruwe kaartgegevens",
+      "noCardStorageBody": "Kaartnummers en CVC-codes moeten door Stripe, Mollie, PayPal of Adyen worden verwerkt.",
+      "idempotencyTitle": "Veilige ordersleutel",
+      "providerTitle": "Providerroute"
     },
     "card": {
       "number": "Kaartnummer",
@@ -213,6 +224,7 @@
       "title": "Besteloverzicht",
       "product": "Product",
       "productName": "Premium starterspakket",
+      "productDescription": "Een checkout-klaar betaald product voor premiumtoegang en toekomstige launch-aanbiedingen.",
       "price": "Prijs",
       "support": "Ontwikkelaar steunen",
       "fees": "Kosten",
@@ -230,7 +242,30 @@
       "tryAgain": "Opnieuw proberen",
       "continue": "Doorgaan",
       "continueIdeal": "Doorgaan met iDEAL",
-      "openPayment": "Betaalpagina openen"
+      "openPayment": "Betaalcentrum openen",
+      "createCheckout": "Veilige checkout maken",
+      "reset": "Checkout resetten",
+      "backToSettings": "Terug naar instellingen"
+    },
+    "providerStatus": {
+      "safeMode": "Provider safe mode",
+      "via": "Via {{provider}}",
+      "title": "Betaalprovider nodig",
+      "description": "De backend heeft een beveiligde payment intent gemaakt, maar echte betalingen blijven uit totdat provideraccount en webhook zijn ingesteld."
+    },
+    "checkoutReady": {
+      "title": "Checkoutsessie klaar",
+      "description": "Een echte provider kan de speler naar een hosted checkout sturen zodra de configuratie is toegevoegd."
+    },
+    "launchChecklist": {
+      "provider": "Koppel Stripe-, Mollie-, PayPal- of Adyen-sleutels",
+      "webhook": "Voeg webhookbevestiging toe voordat premiumitems worden gegeven",
+      "ads": "Houd advertenties en betalingen gescheiden voor veilige monetisatie volgens beleid"
+    },
+    "settingsEntry": {
+      "description": "Open het veilige betaalcentrum om provider-ondersteunde orders te maken. Echte betalingen blijven uit totdat productiesleutels zijn ingesteld.",
+      "open": "Betaalcentrum openen",
+      "guestLocked": "Maak een account om betalingen, facturen, premiumaankopen en toekomstige factuurgeschiedenis te gebruiken."
     },
     "success": {
       "title": "Betaling gelukt",
@@ -683,6 +718,7 @@
   "adminExtra": {
     "resetUserScores": "Gebruikersscores resetten", "defaultScoreResetReason": "Bevestigde scoremanipulatie of correctie door beheerder.", "trustedReason": "De beheerder heeft het account als betrouwbaar beoordeeld.", "suspiciousReason": "Het account vereist extra anti-cheatcontrole.", "restrictionRemovedReason": "Beperking verwijderd door beheerder.",
     "analytics": { "title": "Productanalyse", "registered": "Geregistreerd", "new7d": "Nieuw 7d", "active7d": "Actief 7d", "returning7d": "Terugkerend 7d", "sessions30d": "Sessies 30d", "validScores30d": "Geldige scores 30d", "adViews30d": "Advertenties 30d", "guests30d": "Gasten 30d" },
+    "activityGraph": { "title": "Activiteitsgrafiek", "description": "Dagelijkse activiteit van de laatste 14 dagen, inclusief gameplay, scores, advertenties, gaststarts, registraties en clientfouten.", "sessions": "Sessies", "scores": "Scores", "ads": "Ads", "guests": "Gasten", "users": "Nieuwe users", "errors": "Fouten", "errorCount": "{{count}} clientfout(en)" },
     "finance": { "title": "Financieel logboek", "empty": "Geen financiele transacties gevonden.", "user": "Gebruiker", "item": "Item", "status": "Status", "provider": "Provider", "amount": "Bedrag", "date": "Datum", "idempotencyKey": "Idempotency key", "noAmount": "Geen wallet-wijziging", "gems": "edelstenen", "tickets": "tickets", "lives": "levens" },
     "userStatuses": { "ACTIVE": "Actief", "BANNED": "Geblokkeerd", "DELETED": "Verwijderd" }, "trustStatuses": { "NORMAL": "Normaal", "TRUSTED": "Betrouwbaar", "SUSPICIOUS": "Verdacht" }, "activeRestrictions": "{{count}} actieve beperking(en)", "removeRestriction": "{{type}} verwijderen", "resetPassword": "Wachtwoord resetten", "resetScores": "Scores resetten", "markSuspicious": "Als verdacht markeren", "markTrusted": "Als betrouwbaar markeren", "restrict": "Beperken",
     "scoreModeration": "Scoremoderatie", "ms": "ms", "hits": "botsingen", "noReasonRecorded": "Geen reden vastgelegd", "noSessionFlags": "geen sessiemeldingen", "approve": "Goedkeuren", "reject": "Afwijzen", "hide": "Verbergen", "banForCheating": "Bannen wegens valsspelen", "noScoresToReview": "Geen scores om te beoordelen.", "validScoreHistory": "Geschiedenis geldige scores ({{count}})", "scoreApprovedReason": "Score door beheerder beoordeeld en goedgekeurd.", "scoreRejectedReason": "Score na beoordeling afgewezen.", "scoreHiddenReason": "Score door beheerder verborgen.", "cheatingReason": "Valsspelen: {{reason}}", "invalidScore": "ongeldige score-inzending",

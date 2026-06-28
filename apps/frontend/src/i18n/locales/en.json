@@ -200,11 +200,22 @@
       "revolutDescription": "Modern wallet payment prepared for launch.",
       "crypto": "Crypto",
       "cryptoDescription": "Crypto payments are planned for a later phase.",
-      "comingSoon": "Coming soon"
+      "comingSoon": "Coming soon",
+      "recommended": "Recommended"
+    },
+    "flow": {
+      "order": "Create a server-side order",
+      "provider": "Open hosted provider checkout",
+      "confirmation": "Confirm payment by webhook"
     },
     "details": {
       "title": "Payment details",
-      "demoNotice": "Demo checkout only. A real provider will tokenize payment data before launch."
+      "demoNotice": "Demo checkout only. A real provider will tokenize payment data before launch.",
+      "hostedNotice": "Sensitive payment data is entered only in the provider checkout, not in Waves Arcade.",
+      "noCardStorageTitle": "No raw card data",
+      "noCardStorageBody": "Card numbers and CVC codes must be handled by Stripe, Mollie, PayPal, or Adyen.",
+      "idempotencyTitle": "Order safety key",
+      "providerTitle": "Provider route"
     },
     "card": {
       "number": "Card number",
@@ -227,6 +238,7 @@
       "title": "Order summary",
       "product": "Product",
       "productName": "Premium starter pack",
+      "productDescription": "A paid checkout-ready product for premium access and future launch offers.",
       "price": "Price",
       "support": "Developer support",
       "fees": "Fees",
@@ -244,7 +256,30 @@
       "tryAgain": "Try again",
       "continue": "Continue",
       "continueIdeal": "Continue with iDEAL",
-      "openPayment": "Open payment page"
+      "openPayment": "Open payment center",
+      "createCheckout": "Create secure checkout",
+      "reset": "Reset checkout",
+      "backToSettings": "Back to settings"
+    },
+    "providerStatus": {
+      "safeMode": "Provider safe mode",
+      "via": "Via {{provider}}",
+      "title": "Payment provider required",
+      "description": "The backend created a protected payment intent, but real charging is disabled until a provider account and webhook are configured."
+    },
+    "checkoutReady": {
+      "title": "Checkout session ready",
+      "description": "A real provider can now redirect the player to a hosted checkout URL when configuration is added."
+    },
+    "launchChecklist": {
+      "provider": "Connect Stripe, Mollie, PayPal, or Adyen keys",
+      "webhook": "Add webhook confirmation before granting premium items",
+      "ads": "Keep ads and payments separate for policy-safe monetization"
+    },
+    "settingsEntry": {
+      "description": "Open the secure payment center to create provider-backed orders. Real charges stay disabled until production keys are configured.",
+      "open": "Open payment center",
+      "guestLocked": "Create an account to access payments, invoices, premium purchases, and future billing history."
     },
     "success": {
       "title": "Payment successful",
@@ -626,6 +661,7 @@
   "adminExtra": {
     "resetUserScores": "Reset user scores", "defaultScoreResetReason": "Confirmed score manipulation or administrator correction.", "trustedReason": "Administrator reviewed the account as trusted.", "suspiciousReason": "Account requires additional anti-cheat review.", "restrictionRemovedReason": "Restriction removed by administrator.",
     "analytics": { "title": "Product analytics", "registered": "Registered", "new7d": "New 7d", "active7d": "Active 7d", "returning7d": "Returning 7d", "sessions30d": "Sessions 30d", "validScores30d": "Valid scores 30d", "adViews30d": "Ad views 30d", "guests30d": "Guests 30d" },
+    "activityGraph": { "title": "Activity graph", "description": "Daily activity for the last 14 days, including gameplay, scores, ads, guest starts, registrations and client errors.", "sessions": "Sessions", "scores": "Scores", "ads": "Ads", "guests": "Guests", "users": "New users", "errors": "Errors", "errorCount": "{{count}} client error(s)" },
     "finance": { "title": "Financial journal", "empty": "No financial transactions found.", "user": "User", "item": "Item", "status": "Status", "provider": "Provider", "amount": "Amount", "date": "Date", "idempotencyKey": "Idempotency key", "noAmount": "No wallet change", "gems": "gems", "tickets": "tickets", "lives": "lives" },
     "userStatuses": { "ACTIVE": "Active", "BANNED": "Banned", "DELETED": "Deleted" }, "trustStatuses": { "NORMAL": "Normal", "TRUSTED": "Trusted", "SUSPICIOUS": "Suspicious" },
     "activeRestrictions": "{{count}} active restriction(s)", "removeRestriction": "Remove {{type}}", "resetPassword": "Reset password", "resetScores": "Reset scores", "markSuspicious": "Mark suspicious", "markTrusted": "Mark trusted", "restrict": "Restrict",

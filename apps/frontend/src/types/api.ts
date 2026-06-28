@@ -39,6 +39,7 @@ import type {
   ScoreStatus,
   UserTrustStatus,
   AdminAnalyticsDto,
+  AdminActivityDayDto,
   ProgressionDto,
   FinancialTransactionDto
 } from "@waves/shared";
@@ -133,6 +134,7 @@ export type {
   ScoreStatus,
   UserTrustStatus,
   AdminAnalyticsDto,
+  AdminActivityDayDto,
   ProgressionDto,
   FinancialTransactionDto
 };
