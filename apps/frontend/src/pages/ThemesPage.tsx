@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check, Coins, Lock, Palette, Sparkles } from "lucide-react";
 import type { GameThemeDto } from "@waves/shared";
 import { AccountRequiredModal } from "../components/auth/AccountRequiredModal";
 import { Button } from "../components/ui/Button";
+import { ApiRequestError } from "../services/apiClient";
 import { authApi } from "../services/authApi";
 import { shopApi } from "../services/shopApi";
 import { useAuthStore } from "../store/authStore";
@@ -21,6 +22,7 @@ export function ThemesPage() {
   const [busyId, setBusyId] = useState("");
   const [error, setError] = useState("");
   const [accountRequired, setAccountRequired] = useState(false);
+  const pendingThemeActions = useRef(new Set<string>());
 
   useEffect(() => {
     void shopApi.themes().then(setThemes).catch((error) => setError(error instanceof Error ? error.message : t("themesPage.loadError")));
@@ -36,6 +38,10 @@ export function ThemesPage() {
       return;
     }
 
+    if (pendingThemeActions.current.has(theme.id)) {
+      return;
+    }
+    pendingThemeActions.current.add(theme.id);
     setBusyId(theme.id);
     setError("");
     try {
@@ -44,8 +50,9 @@ export function ThemesPage() {
       if (!theme.owned) setThemes(await shopApi.equipTheme(theme.id));
       replaceUser(await authApi.me());
     } catch (error) {
-      setError(error instanceof Error ? error.message : t("themesPage.selectError"));
+      setError(error instanceof ApiRequestError && error.code === "PURCHASE_CONFLICT" ? t("shop.purchaseProcessing") : error instanceof Error ? error.message : t("themesPage.selectError"));
     } finally {
+      pendingThemeActions.current.delete(theme.id);
       setBusyId("");
     }
   }

@@ -1,4 +1,4 @@
-import type { AdminAnalyticsDto, AdminAuditLogDto, AdminEmailVerificationDto, AdminPasswordResetDto, AdminUserDto, ModerationActionDto, RestrictionDto, RestrictionType, ScoreReviewDto, ScoreStatus, UserTrustStatus } from "../types/api";
+import type { AdminAnalyticsDto, AdminAuditLogDto, AdminEmailVerificationDto, AdminPasswordResetDto, AdminUserDto, FinancialTransactionDto, ModerationActionDto, RestrictionDto, RestrictionType, ScoreReviewDto, ScoreStatus, UserTrustStatus } from "../types/api";
 import { apiRequest } from "./apiClient";
 
 export const adminApi = {
@@ -60,6 +60,9 @@ export const adminApi = {
   },
   auditLogs() {
     return apiRequest<AdminAuditLogDto[]>("/admin/audit-logs");
+  },
+  financialTransactions() {
+    return apiRequest<FinancialTransactionDto[]>("/admin/financial-transactions");
   },
   guestTransfers() {
     return apiRequest<Array<{ id: string; userId: string; status: string; bestScore: number; transferredScore: number; reason?: string | null; metadata?: string | null; createdAt: string }>>("/admin/guest-transfers");

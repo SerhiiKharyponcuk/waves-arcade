@@ -1,7 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
-export type AdminSection = "overview" | "users" | "scores" | "support" | "activity";
+export type AdminSection = "overview" | "users" | "scores" | "support" | "finance" | "activity";
 
 export interface AdminNavigationItem {
   id: AdminSection;
@@ -20,7 +20,7 @@ interface AdminNavigationProps {
 export function AdminNavigation({ active, items, onChange }: AdminNavigationProps) {
   return (
     <nav className="sticky top-2 z-20 -mx-2 overflow-x-auto px-2 pb-2" aria-label="Admin workspace">
-      <div className="flex min-w-max gap-2 rounded-lg border border-white/10 bg-ink/95 p-2 shadow-xl backdrop-blur md:grid md:min-w-0 md:grid-cols-5">
+      <div className="flex min-w-max gap-2 rounded-lg border border-white/10 bg-ink/95 p-2 shadow-xl backdrop-blur md:grid md:min-w-0 md:grid-cols-6">
         {items.map(({ id, label, icon: Icon, count, urgent }) => (
           <button
             key={id}

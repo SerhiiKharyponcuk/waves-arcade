@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import type { AdminAuditLogDto, AdminEmailVerificationDto, AdminPasswordResetDto, AdminUserDto, ModerationActionDto, RestrictionDto, RestrictionType, ScoreReviewDto, ScoreStatus } from "@waves/shared";
+import type { AdminAuditLogDto, AdminEmailVerificationDto, AdminPasswordResetDto, AdminUserDto, FinancialTransactionDto, ModerationActionDto, RestrictionDto, RestrictionType, ScoreReviewDto, ScoreStatus } from "@waves/shared";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "../config/prisma.js";
 import { AppError } from "../utils/appError.js";
@@ -53,6 +53,18 @@ function toRestrictionDto(restriction: AdminUserRow["restrictions"][number]): Re
     active: restriction.active,
     appealPossible: true
   };
+}
+
+function parseMetadata(metadata?: string | null): Record<string, unknown> | null {
+  if (!metadata) {
+    return null;
+  }
+  try {
+    const parsed = JSON.parse(metadata) as unknown;
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed as Record<string, unknown> : null;
+  } catch {
+    return null;
+  }
 }
 
 async function getAdminUserOrThrow(userId: string) {
@@ -398,6 +410,41 @@ export async function listAdminAuditLogs(): Promise<AdminAuditLogDto[]> {
     metadata: log.metadata ? JSON.parse(log.metadata) as Record<string, unknown> : null,
     createdAt: log.createdAt.toISOString()
   }));
+}
+
+export async function listFinancialTransactions(): Promise<FinancialTransactionDto[]> {
+  const rows = await prisma.purchaseTransaction.findMany({
+    take: 150,
+    orderBy: { createdAt: "desc" },
+    include: {
+      user: { include: { profile: true } },
+      skin: { select: { id: true, nameKey: true, slug: true } }
+    }
+  });
+
+  return rows.map((row) => {
+    const metadata = parseMetadata(row.metadata);
+    const sku = typeof metadata?.sku === "string" ? metadata.sku : null;
+    return {
+      id: row.id,
+      userId: row.userId,
+      userEmail: row.user.email,
+      displayName: row.user.profile?.displayName ?? "Player",
+      type: row.type,
+      status: row.status,
+      provider: row.provider,
+      productLabel: row.skin?.slug ?? sku ?? row.type,
+      skinId: row.skinId,
+      skinNameKey: row.skin?.nameKey ?? null,
+      amountCoins: row.amountCoins,
+      amountGems: row.amountGems,
+      amountTickets: row.amountTickets,
+      amountExtraLives: row.amountExtraLives,
+      idempotencyKey: row.idempotencyKey,
+      metadata,
+      createdAt: row.createdAt.toISOString()
+    };
+  });
 }
 
 export async function listGuestTransferAttempts() {

@@ -51,7 +51,6 @@ export function GamePage() {
   const [spinBusy, setSpinBusy] = useState(false);
   const [adBusy, setAdBusy] = useState(false);
   const [error, setError] = useState("");
-  const [devtoolsBlocked, setDevtoolsBlocked] = useState(false);
   const [accountRequiredMessage, setAccountRequiredMessage] = useState("");
   const [showGuestAd, setShowGuestAd] = useState(false);
   const latestStatsRef = useRef<GameStats>(emptyStats);
@@ -103,25 +102,6 @@ export function GamePage() {
     };
   }, [guestSession?.temporarySettings.masterVolume, guestSession?.temporarySettings.muted, isGuest, user?.profile.gameSettings]);
 
-  useEffect(() => {
-    if (!import.meta.env.PROD || runState !== "running") {
-      return;
-    }
-
-    const checkDevtools = () => {
-      const widthGap = window.outerWidth - window.innerWidth;
-      const heightGap = window.outerHeight - window.innerHeight;
-      if (widthGap > 170 || heightGap > 170) {
-        setDevtoolsBlocked(true);
-        setRunState("paused");
-      }
-    };
-
-    const interval = window.setInterval(checkDevtools, 900);
-    checkDevtools();
-    return () => window.clearInterval(interval);
-  }, [runState]);
-
   async function startRun() {
     setBusy(true);
     setError("");
@@ -131,7 +111,6 @@ export function GamePage() {
         setStats(emptyStats);
         setResult(null);
         setShowGuestAd(false);
-        setDevtoolsBlocked(false);
         setRunState("running");
         trackEvent("game_start", { mode: "guest" });
         latestStatsRef.current = emptyStats;
@@ -142,7 +121,6 @@ export function GamePage() {
       setSessionId(session.sessionId);
       setStats(emptyStats);
       setResult(null);
-      setDevtoolsBlocked(false);
       setRunState("running");
       trackEvent("game_start", { mode: "account" });
       latestStatsRef.current = emptyStats;
@@ -386,31 +364,6 @@ export function GamePage() {
                 </div>
               ) : null}
               {isGuest ? <Button type="button" variant="ghost" onClick={() => setRunState("idle")}>{t("guest.continue")}</Button> : null}
-            </div>
-          </Modal>
-        ) : null}
-
-        {devtoolsBlocked ? (
-          <Modal
-            title={t("security.devtoolsTitle")}
-            closeLabel={t("common.close")}
-            onClose={() => {
-              setDevtoolsBlocked(false);
-              setRunState("idle");
-            }}
-          >
-            <div className="grid gap-4">
-              <p className="text-sm leading-6 text-slate-300">{t("security.devtoolsBody")}</p>
-              <Button
-                type="button"
-                variant="danger"
-                onClick={() => {
-                  setDevtoolsBlocked(false);
-                  setRunState("idle");
-                }}
-              >
-                {t("game.exit")}
-              </Button>
             </div>
           </Modal>
         ) : null}

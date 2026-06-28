@@ -169,6 +169,26 @@ export interface WalletTransactionDto {
   createdAt: string;
 }
 
+export interface FinancialTransactionDto {
+  id: string;
+  userId: string;
+  userEmail: string;
+  displayName: string;
+  type: string;
+  status: string;
+  provider: string;
+  productLabel: string;
+  skinId?: string | null;
+  skinNameKey?: string | null;
+  amountCoins: number;
+  amountGems: number;
+  amountTickets: number;
+  amountExtraLives: number;
+  idempotencyKey?: string | null;
+  metadata?: Record<string, unknown> | null;
+  createdAt: string;
+}
+
 export interface SubscriptionBenefitsDto {
   premiumOnlySkins: number;
   extraDailySpins: number;

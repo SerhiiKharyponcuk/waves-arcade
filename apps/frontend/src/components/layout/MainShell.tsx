@@ -11,6 +11,7 @@ import { authApi } from "../../services/authApi";
 import { UserMenu } from "./UserMenu";
 import { PolicyPage } from "../../pages/PolicyPage";
 import { AboutPage } from "../../pages/AboutPage";
+import { AppLoader } from "../ui/AppLoader";
 
 const GamePage = lazy(() => import("../../pages/GamePage").then((module) => ({ default: module.GamePage })));
 const ShopPage = lazy(() => import("../../pages/ShopPage").then((module) => ({ default: module.ShopPage })));
@@ -195,9 +196,7 @@ export function MainShell() {
         ))}
         <Suspense
           fallback={
-            <div className="arcade-border rounded-lg p-6 text-sm font-bold text-slate-300">
-              {t("common.loading")}
-            </div>
+            <AppLoader />
           }
         >
           {view === "play" ? <GamePage /> : null}

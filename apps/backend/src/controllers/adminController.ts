@@ -3,6 +3,7 @@ import {
   banUser,
   createUserRestriction,
   listAdminAuditLogs,
+  listFinancialTransactions,
   listGuestTransferAttempts,
   listScoresForReview,
   listAdminUsers,
@@ -82,6 +83,10 @@ export async function adminRemoveRestriction(request: Request, response: Respons
 
 export async function adminAuditLogs(_request: Request, response: Response) {
   response.json(await listAdminAuditLogs());
+}
+
+export async function adminFinancialTransactions(_request: Request, response: Response) {
+  response.json(await listFinancialTransactions());
 }
 
 export async function adminGuestTransfers(_request: Request, response: Response) {

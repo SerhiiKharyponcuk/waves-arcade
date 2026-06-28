@@ -13,6 +13,10 @@ type OwnedSkinRecord = {
   skin: SkinRecord;
 };
 
+type KnownPrismaError = {
+  code?: string;
+};
+
 function toWalletDto(wallet: { coins: number; gems: number; rouletteTickets: number; extraLives: number; lifetimeCoins: number }): WalletDto {
   return {
     coins: wallet.coins,
@@ -62,6 +66,26 @@ function sortOwnedSkin(a: SkinDto & { owned: boolean; equipped: boolean }, b: Sk
   return Number(b.equipped) - Number(a.equipped) || sortShopSkin(a, b);
 }
 
+function isKnownPrismaError(error: unknown, code: string): error is KnownPrismaError {
+  return Boolean(error && typeof error === "object" && "code" in error && (error as KnownPrismaError).code === code);
+}
+
+function rethrowSafePurchaseError(error: unknown): never {
+  if (error instanceof AppError) {
+    throw error;
+  }
+  if (isKnownPrismaError(error, "P2002")) {
+    throw new AppError(409, "Skin already owned.", "SKIN_ALREADY_OWNED");
+  }
+  if (isKnownPrismaError(error, "P1008") || isKnownPrismaError(error, "P2028") || isKnownPrismaError(error, "P2034")) {
+    throw new AppError(409, "Purchase is already being processed. Please refresh your wallet and try again.", "PURCHASE_CONFLICT");
+  }
+  if (isKnownPrismaError(error, "P2025")) {
+    throw new AppError(404, "Purchase data is incomplete.", "PURCHASE_DATA_NOT_FOUND");
+  }
+  throw error;
+}
+
 export async function listShopSkins(userId?: string): Promise<Array<SkinDto & { owned: boolean; equipped: boolean }>> {
   const [skins, owned, profile] = await Promise.all([
     prisma.skin.findMany({ where: { active: true }, orderBy: [{ rarity: "asc" }, { priceCoins: "asc" }] }),
@@ -99,70 +123,74 @@ export async function getOwnedSkins(userId: string) {
 
 export async function buySkin(userId: string, skinId: string): Promise<{ skin: SkinDto; wallet: WalletDto }> {
   await assertNoActiveRestriction(userId, ["shop_restriction", "temporary_ban", "permanent_ban"], "Shop access");
-  const skin = await prisma.skin.findFirst({ where: { id: skinId, active: true } });
-  if (!skin) {
-    throw new AppError(404, "Skin not found.", "SKIN_NOT_FOUND");
-  }
 
-  const alreadyOwned = await prisma.ownedSkin.findUnique({
-    where: { userId_skinId: { userId, skinId } }
-  });
-
-  if (alreadyOwned) {
-    throw new AppError(409, "Skin already owned.", "SKIN_ALREADY_OWNED");
-  }
-
-  const wallet = await prisma.wallet.findUnique({ where: { userId } });
-  if (!wallet) {
-    throw new AppError(404, "Wallet not found.", "WALLET_NOT_FOUND");
-  }
-
-  if (skin.priceCoins > wallet.coins || skin.priceGems > wallet.gems) {
-    throw new AppError(402, "Not enough currency.", "INSUFFICIENT_FUNDS");
-  }
-
-  const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-    const updatedWallet = await tx.wallet.update({
-      where: { userId },
-      data: {
-        coins: { decrement: skin.priceCoins },
-        gems: { decrement: skin.priceGems }
+  try {
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      const skin = await tx.skin.findFirst({ where: { id: skinId, active: true } });
+      if (!skin) {
+        throw new AppError(404, "Skin not found.", "SKIN_NOT_FOUND");
       }
+
+      const wallet = await tx.wallet.findUnique({ where: { userId }, select: { id: true } });
+      if (!wallet) {
+        throw new AppError(404, "Wallet not found.", "WALLET_NOT_FOUND");
+      }
+
+      await tx.ownedSkin.create({ data: { userId, skinId } });
+
+      const debit = await tx.wallet.updateMany({
+        where: {
+          userId,
+          coins: { gte: skin.priceCoins },
+          gems: { gte: skin.priceGems }
+        },
+        data: {
+          coins: { decrement: skin.priceCoins },
+          gems: { decrement: skin.priceGems }
+        }
+      });
+
+      if (debit.count !== 1) {
+        throw new AppError(402, "Not enough currency.", "INSUFFICIENT_FUNDS");
+      }
+
+      const updatedWallet = await tx.wallet.findUniqueOrThrow({ where: { userId } });
+
+      await tx.purchaseTransaction.create({
+        data: {
+          userId,
+          skinId,
+          provider: "wallet",
+          type: "skin",
+          status: "completed",
+          amountCoins: skin.priceCoins,
+          amountGems: skin.priceGems,
+          metadata: JSON.stringify({ idempotencyScope: `skin:${skinId}` })
+        }
+      });
+
+      await tx.walletTransaction.create({
+        data: {
+          userId,
+          walletId: wallet.id,
+          type: "SHOP_PURCHASE",
+          provider: "wallet",
+          amountCoins: -skin.priceCoins,
+          amountGems: -skin.priceGems,
+          metadata: JSON.stringify({ skinId })
+        }
+      });
+
+      return { skin, wallet: updatedWallet };
     });
 
-    await tx.ownedSkin.create({ data: { userId, skinId } });
-
-    await tx.purchaseTransaction.create({
-      data: {
-        userId,
-        skinId,
-        provider: "wallet",
-        type: "skin",
-        status: "completed",
-        amountCoins: skin.priceCoins,
-        amountGems: skin.priceGems
-      }
-    });
-
-    await tx.walletTransaction.create({
-      data: {
-        userId,
-        walletId: wallet.id,
-        type: "SHOP_PURCHASE",
-        provider: "wallet",
-        amountCoins: -skin.priceCoins,
-        amountGems: -skin.priceGems,
-        metadata: JSON.stringify({ skinId })
-      }
-    });
-
-    return updatedWallet;
-  });
-
-  return {
-    skin: mapSkinDto(skin),
-    wallet: toWalletDto(result)
-  };
+    return {
+      skin: mapSkinDto(result.skin),
+      wallet: toWalletDto(result.wallet)
+    };
+  } catch (error) {
+    rethrowSafePurchaseError(error);
+  }
 }
 
 export async function equipSkin(userId: string, skinId: string) {

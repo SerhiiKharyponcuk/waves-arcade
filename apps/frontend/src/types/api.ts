@@ -39,7 +39,8 @@ import type {
   ScoreStatus,
   UserTrustStatus,
   AdminAnalyticsDto,
-  ProgressionDto
+  ProgressionDto,
+  FinancialTransactionDto
 } from "@waves/shared";
 
 export interface RegisterPayload {
@@ -132,5 +133,6 @@ export type {
   ScoreStatus,
   UserTrustStatus,
   AdminAnalyticsDto,
-  ProgressionDto
+  ProgressionDto,
+  FinancialTransactionDto
 };

@@ -4,6 +4,7 @@ export interface PaymentIntentRequest {
   currency: "USD" | "EUR";
   amountCents: number;
   provider: "stripe" | "google_play" | "apple_iap" | "placeholder";
+  idempotencyKey: string;
 }
 
 export interface PaymentIntentResponse {
@@ -21,7 +22,7 @@ export class PlaceholderPaymentProvider implements PaymentProvider {
   async createPaymentIntent(request: PaymentIntentRequest): Promise<PaymentIntentResponse> {
     return {
       provider: request.provider,
-      externalId: `placeholder_${request.userId}_${Date.now()}`,
+      externalId: `placeholder_${request.idempotencyKey}`,
       status: "requires_configuration",
       message:
         "Payment provider is not configured yet. Connect Stripe, Google Play Billing, or Apple IAP here."
