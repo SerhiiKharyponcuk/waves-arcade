@@ -82,8 +82,8 @@ export const purchasePlaceholderSchema = z.object({
   sku: z.string().min(3).max(80),
   amountCents: z.number().int().positive().max(50_000).optional(),
   supportAmountCents: z.number().int().min(0).max(25_000).default(0),
-  currency: z.enum(["USD", "EUR"]),
-  provider: z.enum(["stripe", "mollie", "paypal", "adyen", "google_play", "apple_iap", "placeholder"]).default("placeholder"),
+  currency: z.enum(["UAH", "USD", "EUR"]),
+  provider: z.enum(["liqpay", "stripe", "mollie", "paypal", "adyen", "google_play", "apple_iap", "placeholder"]).default("placeholder"),
   idempotencyKey: z.string().trim().min(8).max(160)
 });
 

@@ -263,11 +263,11 @@ test("payment placeholder validates server-side pricing and idempotency payloads
       method: "POST",
       headers: user.headers,
       body: JSON.stringify({
-        sku: "premium_starter_pack",
+        sku: "coins_1000",
         amountCents: 1,
         supportAmountCents: 0,
-        currency: "EUR",
-        provider: "stripe",
+        currency: "UAH",
+        provider: "liqpay",
         idempotencyKey: `payment-tamper-${randomUUID()}`
       })
     });
@@ -279,33 +279,40 @@ test("payment placeholder validates server-side pricing and idempotency payloads
       method: "POST",
       headers: user.headers,
       body: JSON.stringify({
-        sku: "premium_starter_pack",
-        amountCents: 799,
-        supportAmountCents: 300,
-        currency: "EUR",
-        provider: "mollie",
+        sku: "coins_1000",
+        amountCents: 14_900,
+        supportAmountCents: 5_000,
+        currency: "UAH",
+        provider: "liqpay",
         idempotencyKey
       })
     });
     assert.equal(valid.status, 202);
 
     const transaction = await prisma.purchaseTransaction.findUniqueOrThrow({ where: { idempotencyKey } });
-    const metadata = JSON.parse(transaction.metadata ?? "{}") as { amountCents: number; productAmountCents: number; supportAmountCents: number; currency: string };
-    assert.equal(transaction.type, "premium_starter_pack");
-    assert.equal(metadata.amountCents, 799);
-    assert.equal(metadata.productAmountCents, 499);
-    assert.equal(metadata.supportAmountCents, 300);
-    assert.equal(metadata.currency, "EUR");
+    const metadata = JSON.parse(transaction.metadata ?? "{}") as {
+      amountCents: number;
+      productAmountCents: number;
+      supportAmountCents: number;
+      currency: string;
+      grants: { coins: number; premiumDays: number; skinSlug: string | null };
+    };
+    assert.equal(transaction.type, "coins");
+    assert.equal(metadata.amountCents, 14_900);
+    assert.equal(metadata.productAmountCents, 9_900);
+    assert.equal(metadata.supportAmountCents, 5_000);
+    assert.equal(metadata.currency, "UAH");
+    assert.equal(metadata.grants.coins, 1_000);
 
     const conflict = await rawRequest<{ code?: string }>(base, "/wallet/purchase-placeholder", {
       method: "POST",
       headers: user.headers,
       body: JSON.stringify({
-        sku: "premium_starter_pack",
-        amountCents: 599,
-        supportAmountCents: 100,
-        currency: "EUR",
-        provider: "mollie",
+        sku: "coins_1000",
+        amountCents: 10_900,
+        supportAmountCents: 1_000,
+        currency: "UAH",
+        provider: "liqpay",
         idempotencyKey
       })
     });

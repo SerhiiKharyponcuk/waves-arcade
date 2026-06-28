@@ -167,6 +167,19 @@
     "title": "Betaling",
     "heading": "Rond je bestelling af",
     "subtitle": "Kies een betaalmethode en rond je bestelling veilig af.",
+    "products": {
+      "title": "Kies een pakket",
+      "subtitle": "Munten, premiumtoegang en cosmetische aanbiedingen. Prijzen worden server-side gecontroleerd.",
+      "serverPriced": "Serverprijs",
+      "featured": "Populair",
+      "bestValue": "Beste waarde",
+      "coins1000": { "name": "1.000 munten", "description": "Een sterk muntenpakket voor skins, thema's en unlocks." },
+      "coins2500": { "name": "2.500 munten", "description": "Meer ruimte om zeldzame cosmetica vrij te spelen zonder lang grinden." },
+      "coins5500": { "name": "5.500 munten", "description": "Het beste muntenpakket voor serieuze personalisatie." },
+      "premium30": { "name": "Premium 30 dagen", "description": "Premiumstatus, bonussen en toekomstige premiumfuncties voor een maand." },
+      "premium90": { "name": "Premium 90 dagen", "description": "Drie maanden premiumtoegang voor een betere prijs." },
+      "skinGalaxyVip": { "name": "Galaxy VIP-skin", "description": "Een premium galaxy-cosmetic voorbereid voor betaalde unlocks." }
+    },
     "methods": {
       "title": "Betaalmethode",
       "subtitle": "Kies de optie die het beste bij je past.",
@@ -258,7 +271,7 @@
       "description": "Een echte provider kan de speler naar een hosted checkout sturen zodra de configuratie is toegevoegd."
     },
     "launchChecklist": {
-      "provider": "Koppel Stripe-, Mollie-, PayPal- of Adyen-sleutels",
+      "provider": "Koppel LiqPay-, Stripe-, Mollie-, PayPal- of Adyen-sleutels",
       "webhook": "Voeg webhookbevestiging toe voordat premiumitems worden gegeven",
       "ads": "Houd advertenties en betalingen gescheiden voor veilige monetisatie volgens beleid"
     },
@@ -286,7 +299,7 @@
       "cvc": "Voer een geldige CVC in.",
       "cardName": "Voer de naam op de kaart in.",
       "idealBank": "Kies een bank om door te gaan met iDEAL.",
-      "supportAmount": "Voer een steunbedrag tussen EUR 1 en EUR 250 in."
+      "supportAmount": "Voer een steunbedrag tussen 1 en 250 in."
     }
   },
   "settings": {

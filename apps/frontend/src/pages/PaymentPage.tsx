@@ -5,7 +5,9 @@ import {
   Building2,
   CheckCircle2,
   CircleAlert,
+  Coins,
   CreditCard,
+  Crown,
   Heart,
   Landmark,
   LoaderCircle,
@@ -17,6 +19,7 @@ import {
   Sparkles,
   WalletCards
 } from "lucide-react";
+import { paymentProducts, type PaymentCurrency, type PaymentProduct } from "@waves/shared";
 import { useTranslation } from "react-i18next";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
@@ -27,19 +30,19 @@ type PaymentMethodId = "card" | "ideal" | "paypal" | "applePay" | "googlePay" | 
 type PaymentStatus = "idle" | "loading" | "checkout_ready" | "provider_required" | "error";
 type PaymentErrors = Partial<Record<"idealBank" | "supportAmount", string>>;
 
-const baseAmount = 4.99;
-const supportOptions = [1, 3, 5] as const;
+const supportOptions = [20, 50, 100] as const;
 const idealBanks = ["ING", "Rabobank", "ABN AMRO", "Bunq", "Revolut"];
 
 function createPaymentKey() {
   return `checkout-${Date.now()}-${crypto.randomUUID?.() ?? Math.random().toString(36).slice(2)}`;
 }
 
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("en-US", {
+function formatCurrency(amountCents: number, currency: PaymentCurrency) {
+  return new Intl.NumberFormat(currency === "UAH" ? "uk-UA" : "en-US", {
     style: "currency",
-    currency: "EUR"
-  }).format(value);
+    currency,
+    maximumFractionDigits: currency === "UAH" ? 0 : 2
+  }).format(amountCents / 100);
 }
 
 function normalizeAmount(value: string) {
@@ -49,13 +52,20 @@ function normalizeAmount(value: string) {
 function providerForMethod(method: PaymentMethodId): PaymentProviderId {
   if (method === "ideal" || method === "bankTransfer" || method === "revolut") return "mollie";
   if (method === "paypal") return "paypal";
-  return "stripe";
+  return "liqpay";
+}
+
+function iconForProduct(product: PaymentProduct) {
+  if (product.kind === "coins") return Coins;
+  if (product.kind === "premium") return Crown;
+  return Sparkles;
 }
 
 export function PaymentPage() {
   const { t } = useTranslation();
   const setView = useUiStore((state) => state.setView);
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethodId>("ideal");
+  const [selectedSku, setSelectedSku] = useState<string>(paymentProducts[0]!.sku);
   const [status, setStatus] = useState<PaymentStatus>("idle");
   const [errors, setErrors] = useState<PaymentErrors>({});
   const [idealBank, setIdealBank] = useState("");
@@ -64,13 +74,14 @@ export function PaymentPage() {
   const [customSupportAmount, setCustomSupportAmount] = useState("");
   const [paymentIntent, setPaymentIntent] = useState<PaymentIntentDto | null>(null);
   const [idempotencyKey, setIdempotencyKey] = useState(createPaymentKey);
+  const selectedProduct = paymentProducts.find((product) => product.sku === selectedSku) ?? paymentProducts[0]!;
 
   const paymentMethods = [
     { id: "ideal" as const, provider: "mollie" as const, icon: Landmark, title: t("payment.methods.ideal"), description: t("payment.methods.idealDescription"), recommended: true },
-    { id: "card" as const, provider: "stripe" as const, icon: CreditCard, title: t("payment.methods.card"), description: t("payment.methods.cardDescription") },
+    { id: "card" as const, provider: "liqpay" as const, icon: CreditCard, title: t("payment.methods.card"), description: t("payment.methods.cardDescription") },
     { id: "paypal" as const, provider: "paypal" as const, icon: WalletCards, title: t("payment.methods.paypal"), description: t("payment.methods.paypalDescription") },
-    { id: "applePay" as const, provider: "stripe" as const, icon: Smartphone, title: t("payment.methods.applePay"), description: t("payment.methods.applePayDescription") },
-    { id: "googlePay" as const, provider: "stripe" as const, icon: BadgeEuro, title: t("payment.methods.googlePay"), description: t("payment.methods.googlePayDescription") },
+    { id: "applePay" as const, provider: "liqpay" as const, icon: Smartphone, title: t("payment.methods.applePay"), description: t("payment.methods.applePayDescription") },
+    { id: "googlePay" as const, provider: "liqpay" as const, icon: BadgeEuro, title: t("payment.methods.googlePay"), description: t("payment.methods.googlePayDescription") },
     { id: "bankTransfer" as const, provider: "mollie" as const, icon: Building2, title: t("payment.methods.bankTransfer"), description: t("payment.methods.bankTransferDescription") },
     { id: "revolut" as const, provider: "mollie" as const, icon: Sparkles, title: t("payment.methods.revolut"), description: t("payment.methods.revolutDescription") }
   ];
@@ -82,7 +93,8 @@ export function PaymentPage() {
     return Number.isFinite(value) && value >= 1 && value <= 250 ? value : 0;
   }, [customSupportAmount, selectedSupportAmount, supportEnabled]);
 
-  const totalAmount = baseAmount + supportAmount;
+  const supportAmountCents = Math.round(supportAmount * 100);
+  const totalAmountCents = selectedProduct.amountCents + supportAmountCents;
   const activeMethod = paymentMethods.find((method) => method.id === selectedMethod) ?? paymentMethods[0]!;
   const ActiveMethodIcon = activeMethod.icon;
 
@@ -120,9 +132,9 @@ export function PaymentPage() {
     setStatus("loading");
     try {
       const intent = await walletApi.purchasePlaceholder({
-        sku: "premium_starter_pack",
-        supportAmountCents: Math.round(supportAmount * 100),
-        currency: "EUR",
+        sku: selectedProduct.sku,
+        supportAmountCents,
+        currency: selectedProduct.currency,
         provider: providerForMethod(selectedMethod),
         idempotencyKey
       });
@@ -175,6 +187,59 @@ export function PaymentPage() {
 
       <form className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_25rem]" onSubmit={(event) => void submitPayment(event)}>
         <div className="grid gap-6">
+          <section className="arcade-border rounded-lg p-4 sm:p-5">
+            <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h2 className="text-2xl font-black text-white">{t("payment.products.title")}</h2>
+                <p className="mt-1 text-sm text-slate-400">{t("payment.products.subtitle")}</p>
+              </div>
+              <div className="rounded-md border border-goldGlow/25 bg-goldGlow/10 px-3 py-2 text-xs font-black uppercase tracking-wide text-goldGlow">
+                {t("payment.products.serverPriced")}
+              </div>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {paymentProducts.map((product) => {
+                const ProductIcon = iconForProduct(product);
+                const selected = selectedSku === product.sku;
+                return (
+                  <button
+                    key={product.sku}
+                    type="button"
+                    aria-pressed={selected}
+                    disabled={status === "loading"}
+                    onClick={() => {
+                      setSelectedSku(product.sku);
+                      resetPayment();
+                    }}
+                    className={`payment-method-card min-h-36 rounded-lg border p-4 text-left transition focus:outline-none focus:ring-2 focus:ring-goldGlow/60 disabled:cursor-not-allowed disabled:opacity-60 ${
+                      selected
+                        ? "payment-method-selected border-goldGlow bg-goldGlow/10 shadow-[0_0_28px_rgba(249,199,79,0.22)]"
+                        : "border-white/10 bg-white/[0.04] hover:border-goldGlow/60 hover:bg-white/[0.07]"
+                    }`}
+                  >
+                    <div className="flex h-full flex-col justify-between gap-4">
+                      <div className="flex items-start gap-3">
+                        <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-md border ${selected ? "border-goldGlow bg-goldGlow text-ink" : "border-white/10 bg-ink/70 text-goldGlow"}`}>
+                          <ProductIcon size={22} />
+                        </span>
+                        <span className="min-w-0">
+                          <span className="font-black text-white">{t(product.nameKey)}</span>
+                          <span className="mt-1 block text-sm leading-5 text-slate-400">{t(product.descriptionKey)}</span>
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <strong className="text-xl text-cyanGlow">{formatCurrency(product.amountCents, product.currency)}</strong>
+                        {product.bestValue ? <span className="rounded-md bg-cyanGlow px-2 py-1 text-[10px] font-black uppercase text-ink">{t("payment.products.bestValue")}</span> : null}
+                        {product.featured ? <span className="rounded-md bg-goldGlow px-2 py-1 text-[10px] font-black uppercase text-ink">{t("payment.products.featured")}</span> : null}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
           <section className="arcade-border rounded-lg p-4 sm:p-5">
             <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
@@ -294,7 +359,7 @@ export function PaymentPage() {
                       onClick={() => setSelectedSupportAmount(amount)}
                       className={`min-h-10 rounded-md border px-4 text-sm font-black transition ${selectedSupportAmount === amount ? "border-goldGlow bg-goldGlow text-ink" : "border-white/10 bg-white/5 text-slate-200 hover:border-goldGlow"}`}
                     >
-                      {formatCurrency(amount)}
+                      {formatCurrency(amount * 100, selectedProduct.currency)}
                     </button>
                   ))}
                   <button
@@ -329,24 +394,24 @@ export function PaymentPage() {
             <h2 className="text-xl font-black text-white">{t("payment.summary.title")}</h2>
             <div className="mt-5 grid gap-3 text-sm">
               <div className="rounded-md border border-cyanGlow/20 bg-cyanGlow/10 p-4">
-                <div className="font-black text-white">{t("payment.summary.productName")}</div>
-                <p className="mt-1 text-slate-300">{t("payment.summary.productDescription")}</p>
+                <div className="font-black text-white">{t(selectedProduct.nameKey)}</div>
+                <p className="mt-1 text-slate-300">{t(selectedProduct.descriptionKey)}</p>
               </div>
               <div className="flex items-center justify-between gap-3 rounded-md bg-white/5 px-3 py-3">
                 <span className="text-slate-300">{t("payment.summary.price")}</span>
-                <strong className="text-white">{formatCurrency(baseAmount)}</strong>
+                <strong className="text-white">{formatCurrency(selectedProduct.amountCents, selectedProduct.currency)}</strong>
               </div>
               <div className="flex items-center justify-between gap-3 rounded-md bg-white/5 px-3 py-3">
                 <span className="text-slate-300">{t("payment.summary.support")}</span>
-                <strong className={supportAmount > 0 ? "text-goldGlow" : "text-slate-400"}>{formatCurrency(supportAmount)}</strong>
+                <strong className={supportAmount > 0 ? "text-goldGlow" : "text-slate-400"}>{formatCurrency(supportAmountCents, selectedProduct.currency)}</strong>
               </div>
               <div className="flex items-center justify-between gap-3 rounded-md bg-white/5 px-3 py-3">
                 <span className="text-slate-300">{t("payment.summary.fees")}</span>
-                <strong className="text-white">{formatCurrency(0)}</strong>
+                <strong className="text-white">{formatCurrency(0, selectedProduct.currency)}</strong>
               </div>
               <div className="mt-2 flex items-center justify-between border-t border-white/10 pt-4">
                 <span className="font-black text-white">{t("payment.summary.total")}</span>
-                <strong className="text-3xl text-cyanGlow">{formatCurrency(totalAmount)}</strong>
+                <strong className="text-3xl text-cyanGlow">{formatCurrency(totalAmountCents, selectedProduct.currency)}</strong>
               </div>
             </div>
 

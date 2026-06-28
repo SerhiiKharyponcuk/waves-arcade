@@ -181,6 +181,19 @@
     "title": "Payment",
     "heading": "Complete your order",
     "subtitle": "Choose a payment method and complete your order securely.",
+    "products": {
+      "title": "Choose a pack",
+      "subtitle": "Coins, premium access, and cosmetic offers. Prices are verified by the server.",
+      "serverPriced": "Server-priced",
+      "featured": "Popular",
+      "bestValue": "Best value",
+      "coins1000": { "name": "1,000 coins", "description": "A solid coin pack for skins, themes, and unlocks." },
+      "coins2500": { "name": "2,500 coins", "description": "More room to unlock rare cosmetics without grinding." },
+      "coins5500": { "name": "5,500 coins", "description": "Best-value coin pack for serious customization." },
+      "premium30": { "name": "Premium 30 days", "description": "Premium status, bonuses, and future premium features for one month." },
+      "premium90": { "name": "Premium 90 days", "description": "Three months of premium access with a better price." },
+      "skinGalaxyVip": { "name": "Galaxy VIP skin", "description": "A premium galaxy cosmetic prepared for paid unlocks." }
+    },
     "methods": {
       "title": "Payment method",
       "subtitle": "Pick the option that works best for you.",
@@ -272,7 +285,7 @@
       "description": "A real provider can now redirect the player to a hosted checkout URL when configuration is added."
     },
     "launchChecklist": {
-      "provider": "Connect Stripe, Mollie, PayPal, or Adyen keys",
+      "provider": "Connect LiqPay, Stripe, Mollie, PayPal, or Adyen keys",
       "webhook": "Add webhook confirmation before granting premium items",
       "ads": "Keep ads and payments separate for policy-safe monetization"
     },
@@ -300,7 +313,7 @@
       "cvc": "Enter a valid CVC.",
       "cardName": "Enter the name on the card.",
       "idealBank": "Choose a bank to continue with iDEAL.",
-      "supportAmount": "Enter a support amount between EUR 1 and EUR 250."
+      "supportAmount": "Enter a support amount between 1 and 250."
     }
   },
   "settings": {
