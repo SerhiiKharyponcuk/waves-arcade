@@ -10,7 +10,7 @@
     "build:prod": "npm run build --workspace @waves/shared && prisma generate --schema prisma-postgres/schema.prisma && tsc -p tsconfig.json",
     "start": "node dist/apps/backend/src/server.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "tsx --test src/services/antiCheatService.test.ts src/app.integration.test.ts src/shopPurchaseConcurrency.test.ts",
+    "test": "tsx --test --test-concurrency=1 src/services/antiCheatService.test.ts src/app.integration.test.ts src/shopPurchaseConcurrency.test.ts",
     "db:generate": "prisma generate",
     "db:generate:prod": "prisma generate --schema prisma-postgres/schema.prisma",
     "db:migrate": "prisma migrate dev",

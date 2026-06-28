@@ -7,6 +7,7 @@ import { supportRoutes } from "./supportRoutes.js";
 import { userRoutes } from "./userRoutes.js";
 import { walletRoutes } from "./walletRoutes.js";
 import { analyticsRoutes } from "./analyticsRoutes.js";
+import { paymentRoutes } from "./paymentRoutes.js";
 
 export const apiRoutes = Router();
 
@@ -21,4 +22,5 @@ apiRoutes.use("/game", gameRoutes);
 apiRoutes.use("/shop", shopRoutes);
 apiRoutes.use("/support", supportRoutes);
 apiRoutes.use("/wallet", walletRoutes);
+apiRoutes.use("/payments", paymentRoutes);
 apiRoutes.use("/analytics", analyticsRoutes);

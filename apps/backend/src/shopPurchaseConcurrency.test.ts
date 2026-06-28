@@ -5,7 +5,9 @@ import type { AddressInfo } from "node:net";
 import type { Request, Response } from "express";
 import { createApp } from "./app.js";
 import { prisma } from "./config/prisma.js";
+import { env } from "./config/env.js";
 import { errorHandler } from "./middleware/errorHandler.js";
+import { signLiqPayData } from "./services/liqpayProvider.js";
 
 type ApiResponse<T> = {
   status: number;
@@ -366,6 +368,94 @@ test("server-side anti-cheat restriction blocks gameplay after suspicious checkp
     assert.equal(blocked.status, 403);
     assert.equal(blocked.body.code, "FEATURE_RESTRICTED");
   } finally {
+    if (userId) await prisma.user.deleteMany({ where: { id: userId } });
+    await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+  }
+});
+
+test("liqpay sandbox webhook completes a paid order only once", async () => {
+  const server = createApp().listen(0);
+  await new Promise<void>((resolve) => server.once("listening", resolve));
+  const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}/api`;
+  const originalEnv = {
+    PAYMENT_PROVIDER: env.PAYMENT_PROVIDER,
+    LIQPAY_MODE: env.LIQPAY_MODE,
+    LIQPAY_PUBLIC_KEY: env.LIQPAY_PUBLIC_KEY,
+    LIQPAY_PRIVATE_KEY: env.LIQPAY_PRIVATE_KEY,
+    LIQPAY_RESULT_URL: env.LIQPAY_RESULT_URL,
+    LIQPAY_SERVER_URL: env.LIQPAY_SERVER_URL
+  };
+  let userId = "";
+
+  try {
+    env.PAYMENT_PROVIDER = "liqpay";
+    env.LIQPAY_MODE = "sandbox";
+    env.LIQPAY_PUBLIC_KEY = "sandbox_test_public";
+    env.LIQPAY_PRIVATE_KEY = "sandbox_test_private";
+    env.LIQPAY_RESULT_URL = "https://waves-arcade.vercel.app/payment?status=success";
+    env.LIQPAY_SERVER_URL = `${base}/payments/liqpay/webhook`;
+
+    const user = await registerTestAccount(base, "LiqPay Pilot");
+    userId = user.userId;
+
+    const idempotencyKey = `liqpay-${randomUUID()}`;
+    const intent = await rawRequest<{ status: string; checkoutUrl?: string; externalId: string }>(base, "/wallet/purchase-placeholder", {
+      method: "POST",
+      headers: user.headers,
+      body: JSON.stringify({
+        sku: "coins_1000",
+        supportAmountCents: 0,
+        currency: "UAH",
+        provider: "liqpay",
+        idempotencyKey
+      })
+    });
+    assert.equal(intent.status, 202);
+    assert.equal(intent.body.status, "pending");
+    assert.ok(intent.body.checkoutUrl?.includes(`/api/payments/liqpay/checkout/${idempotencyKey}`));
+
+    const callbackPayload = {
+      order_id: idempotencyKey,
+      status: "sandbox",
+      amount: "99.00",
+      currency: "UAH",
+      transaction_id: 10101
+    };
+    const data = Buffer.from(JSON.stringify(callbackPayload)).toString("base64");
+    const signature = signLiqPayData(data, env.LIQPAY_PRIVATE_KEY);
+
+    const callback = await rawRequest<{ status: string }>(base, "/payments/liqpay/webhook", {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ data, signature }).toString()
+    });
+    assert.equal(callback.status, 200);
+    assert.equal(callback.body.status, "completed");
+
+    const wallet = await prisma.wallet.findUniqueOrThrow({ where: { userId } });
+    assert.equal(wallet.coins, 1_250);
+
+    const transaction = await prisma.purchaseTransaction.findUniqueOrThrow({ where: { idempotencyKey } });
+    assert.equal(transaction.status, "completed");
+    assert.equal(transaction.amountCoins, 1_000);
+
+    const repeatedCallback = await rawRequest<{ status: string }>(base, "/payments/liqpay/webhook", {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ data, signature }).toString()
+    });
+    assert.equal(repeatedCallback.status, 200);
+    assert.equal(repeatedCallback.body.status, "already_processed");
+
+    const finalWallet = await prisma.wallet.findUniqueOrThrow({ where: { userId } });
+    assert.equal(finalWallet.coins, 1_250);
+  } finally {
+    env.PAYMENT_PROVIDER = originalEnv.PAYMENT_PROVIDER;
+    env.LIQPAY_MODE = originalEnv.LIQPAY_MODE;
+    env.LIQPAY_PUBLIC_KEY = originalEnv.LIQPAY_PUBLIC_KEY;
+    env.LIQPAY_PRIVATE_KEY = originalEnv.LIQPAY_PRIVATE_KEY;
+    env.LIQPAY_RESULT_URL = originalEnv.LIQPAY_RESULT_URL;
+    env.LIQPAY_SERVER_URL = originalEnv.LIQPAY_SERVER_URL;
     if (userId) await prisma.user.deleteMany({ where: { id: userId } });
     await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
   }

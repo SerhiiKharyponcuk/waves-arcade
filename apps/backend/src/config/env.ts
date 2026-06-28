@@ -22,6 +22,13 @@ const envSchema = z.object({
   TURNSTILE_SECRET_KEY: optionalString(z.string().min(10)),
   SENTRY_DSN: optionalString(z.string().url()),
   SENTRY_ENVIRONMENT: z.string().default("development"),
+  PAYMENT_PROVIDER: z.enum(["placeholder", "liqpay"]).default("placeholder"),
+  LIQPAY_MODE: z.enum(["sandbox", "production"]).default("sandbox"),
+  LIQPAY_PUBLIC_KEY: optionalString(z.string().min(8)),
+  LIQPAY_PRIVATE_KEY: optionalString(z.string().min(8)),
+  LIQPAY_CURRENCY: z.enum(["UAH", "EUR", "USD"]).default("UAH"),
+  LIQPAY_RESULT_URL: optionalString(z.string().url()),
+  LIQPAY_SERVER_URL: optionalString(z.string().url()),
   AD_PROVIDER: z.enum(["mock", "crazygames", "admob", "unity", "google_ad_manager"]).default("mock"),
   AD_SESSION_TTL_SECONDS: z.coerce.number().int().positive().default(600)
 });
@@ -37,4 +44,13 @@ export const env = parsed.data;
 
 if (env.NODE_ENV === "production" && env.CAPTCHA_PROVIDER === "turnstile" && !env.TURNSTILE_SECRET_KEY) {
   throw new Error("TURNSTILE_SECRET_KEY is required when CAPTCHA_PROVIDER=turnstile");
+}
+
+if (env.PAYMENT_PROVIDER === "liqpay") {
+  if (!env.LIQPAY_PUBLIC_KEY || !env.LIQPAY_PRIVATE_KEY) {
+    throw new Error("LIQPAY_PUBLIC_KEY and LIQPAY_PRIVATE_KEY are required when PAYMENT_PROVIDER=liqpay");
+  }
+  if (!env.LIQPAY_RESULT_URL || !env.LIQPAY_SERVER_URL) {
+    throw new Error("LIQPAY_RESULT_URL and LIQPAY_SERVER_URL are required when PAYMENT_PROVIDER=liqpay");
+  }
 }
