@@ -6,9 +6,11 @@ import { useGuestStore } from "./store/guestStore";
 import { ConsentBanner } from "./components/privacy/ConsentBanner";
 import { trackEvent } from "./services/analytics";
 import { useConsentStore } from "./store/consentStore";
+import { DevtoolsGuard } from "./components/security/DevtoolsGuard";
+import { AppLoader } from "./components/ui/AppLoader";
 
 export function App() {
-  const { token, user, bootstrap } = useAuthStore();
+  const { token, user, loading, bootstrap } = useAuthStore();
   const guestActive = useGuestStore((state) => state.active);
   const analyticsConsent = useConsentStore((state) => state.analytics);
 
@@ -28,9 +30,13 @@ export function App() {
     trackEvent("guest_session_start");
   }, [analyticsConsent, guestActive]);
 
-  if ((!token || !user) && !guestActive) {
-    return <><AuthPage /><ConsentBanner /></>;
+  if (loading && token && !user && !guestActive) {
+    return <><AppLoader fullscreen /><ConsentBanner /><DevtoolsGuard /></>;
   }
 
-  return <><MainShell /><ConsentBanner /></>;
+  if ((!token || !user) && !guestActive) {
+    return <><AuthPage /><ConsentBanner /><DevtoolsGuard /></>;
+  }
+
+  return <><MainShell /><ConsentBanner /><DevtoolsGuard /></>;
 }

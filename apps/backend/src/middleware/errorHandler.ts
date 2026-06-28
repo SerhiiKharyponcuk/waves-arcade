@@ -5,6 +5,14 @@ import { AppError } from "../utils/appError.js";
 import { env } from "../config/env.js";
 import { captureServerError } from "../services/errorTrackingService.js";
 
+type KnownPrismaError = {
+  code?: string;
+};
+
+function isKnownPrismaError(error: unknown, code: string): error is KnownPrismaError {
+  return Boolean(error && typeof error === "object" && "code" in error && (error as KnownPrismaError).code === code);
+}
+
 export function notFoundHandler(request: Request, _response: Response, next: NextFunction) {
   next(new AppError(404, `Route not found: ${request.method} ${request.path}`, "ROUTE_NOT_FOUND"));
 }
@@ -27,6 +35,33 @@ export function errorHandler(error: unknown, request: Request, response: Respons
       fields: error.fields
     };
     response.status(error.statusCode).json(body);
+    return;
+  }
+
+  if (isKnownPrismaError(error, "P2002")) {
+    const body: ApiErrorDto = {
+      message: "Request conflicts with an existing record.",
+      code: "CONFLICT"
+    };
+    response.status(409).json(body);
+    return;
+  }
+
+  if (isKnownPrismaError(error, "P1008") || isKnownPrismaError(error, "P2028") || isKnownPrismaError(error, "P2034")) {
+    const body: ApiErrorDto = {
+      message: "The request conflicts with another operation. Please try again.",
+      code: "TRANSACTION_CONFLICT"
+    };
+    response.status(409).json(body);
+    return;
+  }
+
+  if (isKnownPrismaError(error, "P2025")) {
+    const body: ApiErrorDto = {
+      message: "Requested record was not found.",
+      code: "RECORD_NOT_FOUND"
+    };
+    response.status(404).json(body);
     return;
   }
 

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Activity,
   Ban,
+  BadgeDollarSign,
   BarChart3,
   CheckCircle2,
   ChevronDown,
@@ -32,7 +33,7 @@ import { Input } from "../components/ui/Input";
 import { Modal } from "../components/ui/Modal";
 import { adminApi } from "../services/adminApi";
 import { supportApi } from "../services/supportApi";
-import type { AdminAnalyticsDto, AdminAuditLogDto, AdminUserDto, RestrictionType, ScoreReviewDto, SupportTicketDto, SupportTicketSource, SupportTicketStatus } from "../types/api";
+import type { AdminAnalyticsDto, AdminAuditLogDto, AdminUserDto, FinancialTransactionDto, RestrictionType, ScoreReviewDto, SupportTicketDto, SupportTicketSource, SupportTicketStatus } from "../types/api";
 
 type AdminAction = "ban" | "unban" | "thank" | "resetScores";
 type SupportAction = { ticket: SupportTicketDto; status: SupportTicketStatus };
@@ -71,6 +72,7 @@ export function AdminPage() {
   const [scoreAction, setScoreAction] = useState<{ score: ScoreReviewDto; status: "valid" | "rejected" | "hidden" } | null>(null);
   const [scoreReason, setScoreReason] = useState("");
   const [auditLogs, setAuditLogs] = useState<AdminAuditLogDto[]>([]);
+  const [financialTransactions, setFinancialTransactions] = useState<FinancialTransactionDto[]>([]);
   const [guestTransfers, setGuestTransfers] = useState<Array<{ id: string; userId: string; status: string; bestScore: number; transferredScore: number; reason?: string | null; createdAt: string }>>([]);
   const [restrictionUser, setRestrictionUser] = useState<AdminUserDto | null>(null);
   const [restrictionType, setRestrictionType] = useState<RestrictionType>("leaderboard_restriction");
@@ -160,11 +162,12 @@ export function AdminPage() {
 
   async function loadModerationData() {
     try {
-      const [scoreRows, logs, transfers, analyticsSummary] = await Promise.all([adminApi.scores("all"), adminApi.auditLogs(), adminApi.guestTransfers(), adminApi.analytics()]);
+      const [scoreRows, logs, transfers, analyticsSummary, financialRows] = await Promise.all([adminApi.scores("all"), adminApi.auditLogs(), adminApi.guestTransfers(), adminApi.analytics(), adminApi.financialTransactions()]);
       setScores(scoreRows);
       setAuditLogs(logs);
       setGuestTransfers(transfers);
       setAnalytics(analyticsSummary);
+      setFinancialTransactions(financialRows);
     } catch (error) {
       setError(error instanceof Error ? error.message : t("common.error"));
     }
@@ -371,8 +374,19 @@ export function AdminPage() {
     { id: "users" as const, label: t("adminWorkspace.tabs.users"), icon: Users, count: suspiciousUserCount, urgent: suspiciousUserCount > 0 },
     { id: "scores" as const, label: t("adminWorkspace.tabs.scores"), icon: Trophy, count: pendingScoreCount, urgent: pendingScoreCount > 0 },
     { id: "support" as const, label: t("adminWorkspace.tabs.support"), icon: Inbox, count: openTicketCount, urgent: openTicketCount > 0 },
+    { id: "finance" as const, label: t("adminWorkspace.tabs.finance"), icon: BadgeDollarSign, count: financialTransactions.length },
     { id: "activity" as const, label: t("adminWorkspace.tabs.activity"), icon: Activity, count: auditLogs.length }
   ];
+
+  function formatFinancialAmount(transaction: FinancialTransactionDto) {
+    const parts = [
+      transaction.amountCoins ? `${transaction.amountCoins} ${t("game.coins")}` : "",
+      transaction.amountGems ? `${transaction.amountGems} ${t("adminExtra.finance.gems")}` : "",
+      transaction.amountTickets ? `${transaction.amountTickets} ${t("adminExtra.finance.tickets")}` : "",
+      transaction.amountExtraLives ? `${transaction.amountExtraLives} ${t("adminExtra.finance.lives")}` : ""
+    ].filter(Boolean);
+    return parts.length ? parts.join(" | ") : t("adminExtra.finance.noAmount");
+  }
 
   function renderUserActions(user: AdminUserDto) {
     return (
@@ -445,10 +459,11 @@ export function AdminPage() {
               description={t("adminWorkspace.overview.description")}
               icon={LayoutDashboard}
             />
-            <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-5">
               <AdminMetricCard label={t("adminWorkspace.overview.openTickets")} value={openTicketCount} detail={t("adminWorkspace.overview.requiresAttention")} icon={Inbox} tone={openTicketCount ? "danger" : "cyan"} onClick={() => setActiveSection("support")} />
               <AdminMetricCard label={t("adminWorkspace.overview.scoresToReview")} value={pendingScoreCount} detail={t("adminWorkspace.overview.antiCheatQueue")} icon={ShieldAlert} tone={pendingScoreCount ? "danger" : "cyan"} onClick={() => setActiveSection("scores")} />
               <AdminMetricCard label={t("adminWorkspace.overview.suspiciousUsers")} value={suspiciousUserCount} detail={t("adminWorkspace.overview.flaggedAccounts")} icon={CircleAlert} tone={suspiciousUserCount ? "gold" : "cyan"} onClick={() => { setUserTrustFilter("SUSPICIOUS"); setActiveSection("users"); }} />
+              <AdminMetricCard label={t("adminWorkspace.overview.financialEvents")} value={financialTransactions.length} detail={t("adminWorkspace.overview.financialJournal")} icon={BadgeDollarSign} tone="gold" onClick={() => setActiveSection("finance")} />
               <AdminMetricCard label={t("adminWorkspace.overview.unverifiedUsers")} value={unverifiedUserCount} detail={t("adminWorkspace.overview.emailQueue")} icon={MailCheck} tone="neutral" onClick={() => setActiveSection("users")} />
             </div>
           </section>
@@ -641,6 +656,63 @@ export function AdminPage() {
             </article>
           ))}
           {!visibleScores.length ? <AdminEmptyState icon={CheckCircle2} title={t("adminExtra.noScoresToReview")} description={t("adminWorkspace.scores.emptyHint")} /> : null}
+        </div>
+      </div>
+      ) : null}
+
+      {activeSection === "finance" ? (
+      <div className="arcade-border rounded-lg p-4 sm:p-5">
+        <AdminSectionHeader
+          title={t("adminExtra.finance.title")}
+          description={t("adminWorkspace.finance.description")}
+          icon={BadgeDollarSign}
+          action={<Button type="button" variant="ghost" icon={<RefreshCw size={16} />} onClick={() => void loadModerationData()}>{t("admin.refresh")}</Button>}
+        />
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full min-w-[62rem] text-left text-sm">
+            <thead className="text-slate-400">
+              <tr className="border-b border-white/10">
+                <th className="p-3">{t("adminExtra.finance.user")}</th>
+                <th className="p-3">{t("adminExtra.finance.item")}</th>
+                <th className="p-3">{t("adminExtra.finance.status")}</th>
+                <th className="p-3">{t("adminExtra.finance.provider")}</th>
+                <th className="p-3">{t("adminExtra.finance.amount")}</th>
+                <th className="p-3">{t("adminExtra.finance.date")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {financialTransactions.map((transaction) => (
+                <tr key={transaction.id} className="border-b border-white/5 align-top transition hover:bg-white/[0.03]">
+                  <td className="p-3">
+                    <div className="font-black text-white">{transaction.displayName}</div>
+                    <div className="break-all text-xs text-slate-500">{transaction.userEmail}</div>
+                  </td>
+                  <td className="p-3">
+                    <div className="font-bold text-slate-100">{transaction.productLabel}</div>
+                    <div className="text-xs text-slate-500">{transaction.type}</div>
+                  </td>
+                  <td className="p-3">
+                    <span className={`rounded-md px-2 py-1 text-xs font-black ${transaction.status === "completed" ? "bg-cyanGlow/15 text-cyanGlow" : transaction.status === "pending" ? "bg-goldGlow/15 text-goldGlow" : "bg-magentaGlow/15 text-pink-200"}`}>
+                      {transaction.status}
+                    </span>
+                  </td>
+                  <td className="p-3 text-slate-300">{transaction.provider}</td>
+                  <td className="p-3 font-bold text-goldGlow">{formatFinancialAmount(transaction)}</td>
+                  <td className="p-3">
+                    <div className="text-slate-300">{new Date(transaction.createdAt).toLocaleString()}</div>
+                    <div className="mt-1 break-all text-[11px] text-slate-600">{t("adminExtra.finance.idempotencyKey")}: {transaction.idempotencyKey ?? "-"}</div>
+                  </td>
+                </tr>
+              ))}
+              {!financialTransactions.length ? (
+                <tr>
+                  <td className="p-4" colSpan={6}>
+                    <AdminEmptyState icon={BadgeDollarSign} title={t("adminExtra.finance.empty")} />
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
         </div>
       </div>
       ) : null}

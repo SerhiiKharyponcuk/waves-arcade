@@ -26,6 +26,24 @@ type WalletBalanceUpdateData = {
 
 type SkinRecord = Parameters<typeof mapSkinDto>[0] & { id: string };
 type OwnedSkinIdRecord = { skinId: string };
+type KnownPrismaError = { code?: string };
+
+function isKnownPrismaError(error: unknown, code: string): error is KnownPrismaError {
+  return Boolean(error && typeof error === "object" && "code" in error && (error as KnownPrismaError).code === code);
+}
+
+function rethrowSafeWalletMutationError(error: unknown): never {
+  if (error instanceof AppError) {
+    throw error;
+  }
+  if (isKnownPrismaError(error, "P2002")) {
+    throw new AppError(409, "This transaction was already processed.", "DUPLICATE_TRANSACTION");
+  }
+  if (isKnownPrismaError(error, "P1008") || isKnownPrismaError(error, "P2028") || isKnownPrismaError(error, "P2034")) {
+    throw new AppError(409, "This wallet action is already being processed. Please refresh and try again.", "WALLET_ACTION_CONFLICT");
+  }
+  throw error;
+}
 
 function toWalletDto(wallet: {
   coins: number;
@@ -82,12 +100,11 @@ function resolveAdReward(placement: AdPlacement) {
 }
 
 async function ensureDailyClaim(userId: string) {
-  const existing = await prisma.dailyRewardClaim.findUnique({ where: { userId } });
-  if (existing) {
-    return existing;
-  }
-
-  return prisma.dailyRewardClaim.create({ data: { userId } });
+  return prisma.dailyRewardClaim.upsert({
+    where: { userId },
+    update: {},
+    create: { userId }
+  });
 }
 
 async function logWalletTransaction(
@@ -201,124 +218,152 @@ export async function getDailyRewardStatus(userId: string): Promise<DailyRewardD
 
 export async function claimDailyReward(userId: string): Promise<{ reward: DailyRewardDto; wallet: WalletDto }> {
   await assertNoActiveRestriction(userId, ["rewards_removed", "temporary_ban", "permanent_ban"], "Rewards");
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    include: { subscription: true, dailyClaim: true }
-  });
+  await ensureDailyClaim(userId);
 
-  if (!user) {
-    throw new AppError(404, "User not found.", "USER_NOT_FOUND");
-  }
+  try {
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      const [claimRow, subscription] = await Promise.all([
+        tx.dailyRewardClaim.findUniqueOrThrow({ where: { userId } }),
+        tx.subscription.findUnique({ where: { userId } })
+      ]);
+      const today = startOfUtcDay(new Date());
+      const lastClaimDay = claimRow.lastClaimAt ? startOfUtcDay(claimRow.lastClaimAt) : null;
+      const yesterday = new Date(today.getTime() - 86_400_000);
+      const streakContinues = lastClaimDay?.getTime() === yesterday.getTime();
+      const nextStreak = streakContinues ? claimRow.streak + 1 : 1;
 
-  const claimRow = user.dailyClaim ?? (await ensureDailyClaim(userId));
-  const today = startOfUtcDay(new Date());
-  const lastClaimDay = claimRow.lastClaimAt ? startOfUtcDay(claimRow.lastClaimAt) : null;
+      const claimUpdate = await tx.dailyRewardClaim.updateMany({
+        where: {
+          id: claimRow.id,
+          OR: [{ lastClaimAt: null }, { lastClaimAt: { lt: today } }]
+        },
+        data: {
+          lastClaimAt: new Date(),
+          streak: nextStreak
+        }
+      });
 
-  if (lastClaimDay && lastClaimDay.getTime() >= today.getTime()) {
-    throw new AppError(409, "Daily reward already claimed.", "DAILY_REWARD_ALREADY_CLAIMED");
-  }
-
-  const yesterday = new Date(today.getTime() - 86_400_000);
-  const streakContinues = lastClaimDay?.getTime() === yesterday.getTime();
-  const nextStreak = streakContinues ? claimRow.streak + 1 : 1;
-
-  const schedule = [
-    { coins: 120, gems: 0, tickets: 0, lives: 0 },
-    { coins: 0, gems: 0, tickets: 1, lives: 0 },
-    { coins: 0, gems: 0, tickets: 0, lives: 1 },
-    { coins: 0, gems: 18, tickets: 0, lives: 0 },
-    { coins: 180, gems: 0, tickets: 1, lives: 0 },
-    { coins: 260, gems: 0, tickets: 0, lives: 0 },
-    { coins: 0, gems: 0, tickets: 1, lives: 0 }
-  ];
-
-  const dailyReward = schedule[(nextStreak - 1) % schedule.length]!;
-  const hasPremium = user.subscription?.status === "premium_active" || user.subscription?.status === "trial_active";
-  const rewardGems = dailyReward.gems + (hasPremium ? 8 : 0);
-  const rewardTickets = dailyReward.tickets + (hasPremium ? 1 : 0);
-  const rewardLives = dailyReward.lives + (hasPremium ? 1 : 0);
-
-  const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-    const updatedClaim = await tx.dailyRewardClaim.update({
-      where: { userId },
-      data: {
-        lastClaimAt: new Date(),
-        streak: nextStreak
+      if (claimUpdate.count !== 1) {
+        throw new AppError(409, "Daily reward already claimed.", "DAILY_REWARD_ALREADY_CLAIMED");
       }
-    });
 
-    const wallet = await updateWalletBalance(
-      tx,
-      userId,
-      {
-        coins: dailyReward.coins,
-        gems: rewardGems,
-        tickets: rewardTickets,
-        extraLives: rewardLives,
-        lifetimeCoins: dailyReward.coins
-      },
-      "daily_reward",
-      "DAILY_REWARD",
-      {
-        streak: nextStreak,
-        premiumBonus: hasPremium
-      }
-    );
+      const schedule = [
+        { coins: 120, gems: 0, tickets: 0, lives: 0 },
+        { coins: 0, gems: 0, tickets: 1, lives: 0 },
+        { coins: 0, gems: 0, tickets: 0, lives: 1 },
+        { coins: 0, gems: 18, tickets: 0, lives: 0 },
+        { coins: 180, gems: 0, tickets: 1, lives: 0 },
+        { coins: 260, gems: 0, tickets: 0, lives: 0 },
+        { coins: 0, gems: 0, tickets: 1, lives: 0 }
+      ];
 
-    await tx.purchaseTransaction.create({
-      data: {
+      const dailyReward = schedule[(nextStreak - 1) % schedule.length]!;
+      const hasPremium = subscription?.status === "premium_active" || subscription?.status === "trial_active";
+      const rewardGems = dailyReward.gems + (hasPremium ? 8 : 0);
+      const rewardTickets = dailyReward.tickets + (hasPremium ? 1 : 0);
+      const rewardLives = dailyReward.lives + (hasPremium ? 1 : 0);
+
+      const wallet = await updateWalletBalance(
+        tx,
         userId,
-        provider: "daily_reward",
-        type: "daily_reward",
-        status: "completed",
-        amountCoins: dailyReward.coins,
-        amountGems: rewardGems,
-        amountTickets: rewardTickets,
-        amountExtraLives: rewardLives,
-        metadata: JSON.stringify({ streak: nextStreak, premiumBonus: hasPremium })
-      }
+        {
+          coins: dailyReward.coins,
+          gems: rewardGems,
+          tickets: rewardTickets,
+          extraLives: rewardLives,
+          lifetimeCoins: dailyReward.coins
+        },
+        "daily_reward",
+        "DAILY_REWARD",
+        {
+          streak: nextStreak,
+          premiumBonus: hasPremium
+        }
+      );
+
+      await tx.purchaseTransaction.create({
+        data: {
+          userId,
+          provider: "daily_reward",
+          type: "daily_reward",
+          status: "completed",
+          amountCoins: dailyReward.coins,
+          amountGems: rewardGems,
+          amountTickets: rewardTickets,
+          amountExtraLives: rewardLives,
+          idempotencyKey: `daily:${userId}:${today.toISOString().slice(0, 10)}`,
+          metadata: JSON.stringify({ streak: nextStreak, premiumBonus: hasPremium })
+        }
+      });
+
+      return { wallet, dailyReward, rewardGems, rewardTickets, rewardLives, hasPremium, nextStreak, today };
     });
 
-    return { wallet, updatedClaim };
-  });
-
-  return {
-    reward: {
-      canClaim: false,
-      streak: nextStreak,
-      rewardCoins: dailyReward.coins,
-      rewardGems,
-      rewardTickets,
-      rewardLives,
-      premiumBonus: hasPremium,
-      nextClaimAt: new Date(today.getTime() + 86_400_000).toISOString()
-    },
-    wallet: toWalletDto(result.wallet)
-  };
+    return {
+      reward: {
+        canClaim: false,
+        streak: result.nextStreak,
+        rewardCoins: result.dailyReward.coins,
+        rewardGems: result.rewardGems,
+        rewardTickets: result.rewardTickets,
+        rewardLives: result.rewardLives,
+        premiumBonus: result.hasPremium,
+        nextClaimAt: new Date(result.today.getTime() + 86_400_000).toISOString()
+      },
+      wallet: toWalletDto(result.wallet)
+    };
+  } catch (error) {
+    rethrowSafeWalletMutationError(error);
+  }
 }
 
 export async function createPurchasePlaceholder(
   userId: string,
-  input: { sku: string; amountCents: number; currency: "USD" | "EUR"; provider: "stripe" | "google_play" | "apple_iap" | "placeholder" }
+  input: { sku: string; amountCents: number; currency: "USD" | "EUR"; provider: "stripe" | "google_play" | "apple_iap" | "placeholder"; idempotencyKey: string }
 ) {
+  const existing = await prisma.purchaseTransaction.findUnique({ where: { idempotencyKey: input.idempotencyKey } });
+  if (existing) {
+    const metadata = existing.metadata ? parsePurchaseMetadata(existing.metadata) : {};
+    return {
+      provider: existing.provider,
+      externalId: metadata.externalId ?? `placeholder_${input.idempotencyKey}`,
+      status: "requires_configuration" as const,
+      message: "Payment provider is not configured yet. Connect Stripe, Google Play Billing, or Apple IAP here."
+    };
+  }
+
   const intent = await paymentProvider.createPaymentIntent({ userId, ...input });
 
-  await prisma.purchaseTransaction.create({
-    data: {
-      userId,
-      provider: input.provider,
-      type: "currency",
-      status: "pending",
-      metadata: JSON.stringify({
-        sku: input.sku,
-        amountCents: input.amountCents,
-        currency: input.currency,
-        externalId: intent.externalId
-      })
-    }
-  });
+  try {
+    await prisma.purchaseTransaction.create({
+      data: {
+        userId,
+        provider: input.provider,
+        type: "currency",
+        status: "pending",
+        idempotencyKey: input.idempotencyKey,
+        metadata: JSON.stringify({
+          sku: input.sku,
+          amountCents: input.amountCents,
+          currency: input.currency,
+          externalId: intent.externalId
+        })
+      }
+    });
+  } catch (error) {
+    rethrowSafeWalletMutationError(error);
+  }
 
   return intent;
+}
+
+function parsePurchaseMetadata(metadata: string): { externalId?: string } {
+  try {
+    const parsed = JSON.parse(metadata) as { externalId?: unknown };
+    return typeof parsed.externalId === "string" ? { externalId: parsed.externalId } : {};
+  } catch {
+    return {};
+  }
 }
 
 async function awardWalletReward(
@@ -375,74 +420,99 @@ export async function getRouletteConfig(userId: string) {
 
 export async function spinRoulette(userId: string, adsWatched: number) {
   await assertNoActiveRestriction(userId, ["rewards_removed", "temporary_ban", "permanent_ban"], "Roulette rewards");
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    include: { wallet: true, subscription: true }
-  });
 
-  if (!user || !user.wallet) {
-    throw new AppError(404, "User not found.", "USER_NOT_FOUND");
-  }
-
-  const spinCount = await prisma.rouletteSpin.count({ where: { userId } });
-  const requiredAds = requiredAdsForRouletteSpin(spinCount);
-
-  if (user.wallet.rouletteTickets < requiredAds) {
-    throw new AppError(400, "Watch rewarded ads to unlock this spin.", "AD_WATCH_REQUIRED");
-  }
-
-  const outcome = await getRouletteOutcome(userId);
-  const reward = outcome.reward;
-
-  const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-    const wallet = await updateWalletBalance(tx, userId, {
-      ...reward,
-      tickets: (reward.tickets ?? 0) - requiredAds
-    }, "roulette", "ROULETTE_REWARD", {
-      spinNumber: spinCount + 1,
-      adsWatched,
-      consumedAdTickets: requiredAds,
-      rewardType: outcome.type,
-      rewardAmount: outcome.amount
-    });
-
-    if (outcome.type === "skin" && outcome.skinId) {
-      await tx.ownedSkin.upsert({
-        where: { userId_skinId: { userId, skinId: outcome.skinId } },
-        update: {},
-        create: { userId, skinId: outcome.skinId }
+  try {
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      const user = await tx.user.findUnique({
+        where: { id: userId },
+        include: { wallet: true, subscription: true }
       });
-    }
 
-    const spin = await tx.rouletteSpin.create({
-      data: {
-        userId,
-        walletId: wallet.id,
-        rewardType: outcome.type,
-        rewardAmount: outcome.amount,
-        rarity: outcome.rarity,
-        rewardSkinId: outcome.skinId ?? null
+      if (!user || !user.wallet) {
+        throw new AppError(404, "User not found.", "USER_NOT_FOUND");
       }
+
+      await tx.wallet.update({ where: { userId }, data: { updatedAt: new Date() } });
+      const spinCount = await tx.rouletteSpin.count({ where: { userId } });
+      const requiredAds = requiredAdsForRouletteSpin(spinCount);
+      const outcome = await getRouletteOutcome(userId, tx);
+      const reward = outcome.reward;
+      const ticketDelta = (reward.tickets ?? 0) - requiredAds;
+      const balanceData: WalletBalanceUpdateData = {
+        coins: reward.coins ? { increment: reward.coins } : undefined,
+        gems: reward.gems ? { increment: reward.gems } : undefined,
+        rouletteTickets: ticketDelta ? { increment: ticketDelta } : undefined,
+        extraLives: reward.extraLives ? { increment: reward.extraLives } : undefined,
+        lifetimeCoins: reward.lifetimeCoins ? { increment: reward.lifetimeCoins } : undefined
+      };
+
+      const hasBalanceChanges = Object.values(balanceData).some(Boolean);
+      if (hasBalanceChanges) {
+        const walletUpdate = await tx.wallet.updateMany({
+          where: { userId, rouletteTickets: { gte: requiredAds } },
+          data: balanceData
+        });
+        if (walletUpdate.count !== 1) {
+          throw new AppError(400, "Watch rewarded ads to unlock this spin.", "AD_WATCH_REQUIRED");
+        }
+      } else if (user.wallet.rouletteTickets < requiredAds) {
+        throw new AppError(400, "Watch rewarded ads to unlock this spin.", "AD_WATCH_REQUIRED");
+      }
+
+      const wallet = await tx.wallet.findUniqueOrThrow({ where: { userId } });
+      await logWalletTransaction(tx, userId, wallet.id, "ROULETTE_REWARD", "roulette", {
+        coins: reward.coins ?? 0,
+        gems: reward.gems ?? 0,
+        tickets: ticketDelta,
+        extraLives: reward.extraLives ?? 0
+      }, {
+        spinNumber: spinCount + 1,
+        adsWatched,
+        consumedAdTickets: requiredAds,
+        rewardType: outcome.type,
+        rewardAmount: outcome.amount
+      });
+
+      if (outcome.type === "skin" && outcome.skinId) {
+        await tx.ownedSkin.upsert({
+          where: { userId_skinId: { userId, skinId: outcome.skinId } },
+          update: {},
+          create: { userId, skinId: outcome.skinId }
+        });
+      }
+
+      const spin = await tx.rouletteSpin.create({
+        data: {
+          userId,
+          walletId: wallet.id,
+          rewardType: outcome.type,
+          rewardAmount: outcome.amount,
+          rarity: outcome.rarity,
+          rewardSkinId: outcome.skinId ?? null
+        }
+      });
+
+      return { wallet, spin, spinCount, outcome };
     });
 
-    return { wallet, spin };
-  });
+    const nextSpinCostAds = remainingAdsForRouletteSpin(result.spinCount + 1, result.wallet.rouletteTickets);
 
-  const nextSpinCostAds = remainingAdsForRouletteSpin(spinCount + 1, result.wallet.rouletteTickets);
-
-  return {
-    wallet: toWalletDto(result.wallet),
-    spin: {
-      id: result.spin.id,
-      rewardType: outcome.type,
-      rewardAmount: outcome.amount,
-      rewardSkinId: outcome.skinId ?? undefined,
-      rewardSkin: outcome.rewardSkin,
-      rarity: outcome.rarity,
-      createdAt: result.spin.createdAt.toISOString()
-    },
-    nextSpinCostAds
-  };
+    return {
+      wallet: toWalletDto(result.wallet),
+      spin: {
+        id: result.spin.id,
+        rewardType: result.outcome.type,
+        rewardAmount: result.outcome.amount,
+        rewardSkinId: result.outcome.skinId ?? undefined,
+        rewardSkin: result.outcome.rewardSkin,
+        rarity: result.outcome.rarity,
+        createdAt: result.spin.createdAt.toISOString()
+      },
+      nextSpinCostAds
+    };
+  } catch (error) {
+    rethrowSafeWalletMutationError(error);
+  }
 }
 
 export async function startAdRewardSession(
@@ -491,79 +561,87 @@ export async function completeAdRewardSession(
     providerPayload?: Record<string, unknown>;
   }
 ): Promise<AdRewardCompleteDto> {
-  const adReward = await prisma.adReward.findFirst({
-    where: {
-      id: input.adSessionId,
-      userId
-    },
-    include: { wallet: true }
-  });
+  try {
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      const adReward = await tx.adReward.findFirst({
+        where: {
+          id: input.adSessionId,
+          userId
+        },
+        include: { wallet: true }
+      });
 
-  if (!adReward) {
-    throw new AppError(404, "Ad reward session not found.", "AD_SESSION_NOT_FOUND");
-  }
-
-  if (adReward.status !== "pending") {
-    throw new AppError(409, "Ad reward session already completed.", "AD_SESSION_ALREADY_USED");
-  }
-
-  const ageMs = Date.now() - adReward.createdAt.getTime();
-  if (ageMs > env.AD_SESSION_TTL_SECONDS * 1000) {
-    await prisma.adReward.update({
-      where: { id: adReward.id },
-      data: { status: "failed" }
-    });
-    throw new AppError(410, "Ad reward session expired.", "AD_SESSION_EXPIRED");
-  }
-
-  const placement = resolvePlacementFromReward(adReward.rewardType);
-  const selectedReward = resolveAdReward(placement);
-  const provider = adReward.provider as AdProvider;
-  if (input.provider && input.provider !== provider) {
-    throw new AppError(400, "Ad provider mismatch.", "AD_PROVIDER_MISMATCH");
-  }
-
-  const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-    const updatedAdReward = await tx.adReward.update({
-      where: { id: adReward.id },
-      data: { status: "completed" }
-    });
-
-    const wallet = await updateWalletBalance(
-      tx,
-      userId,
-      selectedReward.changes,
-      `rewarded_ad_${provider}`,
-      "AD_REWARD",
-      {
-        adSessionId: adReward.id,
-        provider,
-        providerEventId: input.providerEventId,
-        providerPayload: input.providerPayload,
-        placement,
-        rewardType: selectedReward.rewardType
+      if (!adReward) {
+        throw new AppError(404, "Ad reward session not found.", "AD_SESSION_NOT_FOUND");
       }
-    );
 
-    return { updatedAdReward, wallet };
-  });
+      if (adReward.status !== "pending") {
+        throw new AppError(409, "Ad reward session already completed.", "AD_SESSION_ALREADY_USED");
+      }
 
-  return {
-    wallet: toWalletDto(result.wallet),
-    reward: {
-      type: selectedReward.rewardType,
-      amount: selectedReward.rewardAmount
-    },
-    adReward: {
-      id: result.updatedAdReward.id,
-      provider: result.updatedAdReward.provider,
-      placement,
-      rewardType: result.updatedAdReward.rewardType as AdRewardCompleteDto["adReward"]["rewardType"],
-      rewardAmount: result.updatedAdReward.rewardAmount,
-      status: result.updatedAdReward.status as AdRewardCompleteDto["adReward"]["status"],
-      createdAt: result.updatedAdReward.createdAt.toISOString()
-    }
-  };
+      const ageMs = Date.now() - adReward.createdAt.getTime();
+      if (ageMs > env.AD_SESSION_TTL_SECONDS * 1000) {
+        await tx.adReward.updateMany({
+          where: { id: adReward.id, status: "pending" },
+          data: { status: "failed" }
+        });
+        throw new AppError(410, "Ad reward session expired.", "AD_SESSION_EXPIRED");
+      }
+
+      const placement = resolvePlacementFromReward(adReward.rewardType);
+      const selectedReward = resolveAdReward(placement);
+      const provider = adReward.provider as AdProvider;
+      if (input.provider && input.provider !== provider) {
+        throw new AppError(400, "Ad provider mismatch.", "AD_PROVIDER_MISMATCH");
+      }
+
+      const completed = await tx.adReward.updateMany({
+        where: { id: adReward.id, userId, status: "pending" },
+        data: { status: "completed" }
+      });
+      if (completed.count !== 1) {
+        throw new AppError(409, "Ad reward session already completed.", "AD_SESSION_ALREADY_USED");
+      }
+
+      const updatedAdReward = await tx.adReward.findUniqueOrThrow({ where: { id: adReward.id } });
+      const wallet = await updateWalletBalance(
+        tx,
+        userId,
+        selectedReward.changes,
+        `rewarded_ad_${provider}`,
+        "AD_REWARD",
+        {
+          adSessionId: adReward.id,
+          provider,
+          providerEventId: input.providerEventId,
+          providerPayload: input.providerPayload,
+          placement,
+          rewardType: selectedReward.rewardType
+        }
+      );
+
+      return { updatedAdReward, wallet, placement, selectedReward };
+    });
+
+    return {
+      wallet: toWalletDto(result.wallet),
+      reward: {
+        type: result.selectedReward.rewardType,
+        amount: result.selectedReward.rewardAmount
+      },
+      adReward: {
+        id: result.updatedAdReward.id,
+        provider: result.updatedAdReward.provider,
+        placement: result.placement,
+        rewardType: result.updatedAdReward.rewardType as AdRewardCompleteDto["adReward"]["rewardType"],
+        rewardAmount: result.updatedAdReward.rewardAmount,
+        status: result.updatedAdReward.status as AdRewardCompleteDto["adReward"]["status"],
+        createdAt: result.updatedAdReward.createdAt.toISOString()
+      }
+    };
+  } catch (error) {
+    rethrowSafeWalletMutationError(error);
+  }
 }
 
 export async function watchAdReward(userId: string, placement: AdPlacement = "coins") {
@@ -612,7 +690,7 @@ export async function getSubscriptionBenefits(userId: string): Promise<Subscript
   };
 }
 
-async function getRouletteOutcome(userId: string): Promise<RouletteOutcome> {
+async function getRouletteOutcome(userId: string, client: Prisma.TransactionClient | typeof prisma = prisma): Promise<RouletteOutcome> {
   const roll = Math.random();
   if (roll < 0.32) {
     return {
@@ -651,9 +729,9 @@ async function getRouletteOutcome(userId: string): Promise<RouletteOutcome> {
     };
   }
   if (roll < 0.94) {
-    const owned = await prisma.ownedSkin.findMany({ where: { userId }, select: { skinId: true } });
+    const owned = await client.ownedSkin.findMany({ where: { userId }, select: { skinId: true } });
     const ownedIds = new Set(owned.map((item: OwnedSkinIdRecord) => item.skinId));
-    const candidates = await prisma.skin.findMany({
+    const candidates = await client.skin.findMany({
       where: {
         active: true,
         isPremium: false

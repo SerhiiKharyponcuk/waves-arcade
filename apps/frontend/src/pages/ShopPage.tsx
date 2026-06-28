@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Coins, Gem, Lock, PackageOpen, ShoppingBag } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { SkinCard } from "../components/shop/SkinCard";
@@ -9,6 +9,7 @@ import { shopApi } from "../services/shopApi";
 import { useAuthStore } from "../store/authStore";
 import { useGuestStore } from "../store/guestStore";
 import { recordAdShown, shouldShowGuestAd } from "../services/ads/guestAdPolicy";
+import { ApiRequestError } from "../services/apiClient";
 import type { ShopSkin } from "../types/api";
 import { matchesSkinFilter, profileWithEquippedSkin, type SkinFilter } from "../utils/skinSelection";
 
@@ -25,6 +26,7 @@ export function ShopPage() {
   const [error, setError] = useState("");
   const [accountRequired, setAccountRequired] = useState(false);
   const [showGuestAd, setShowGuestAd] = useState(false);
+  const pendingSkinActions = useRef(new Set<string>());
   const ownedCount = useMemo(() => skins.filter((skin) => skin.owned).length, [skins]);
   const lockedCount = Math.max(0, skins.length - ownedCount);
 
@@ -49,6 +51,10 @@ export function ShopPage() {
       setAccountRequired(true);
       return;
     }
+    if (pendingSkinActions.current.has(skinId)) {
+      return;
+    }
+    pendingSkinActions.current.add(skinId);
     setBusySkinId(skinId);
     setError("");
     try {
@@ -56,8 +62,9 @@ export function ShopPage() {
       patchWallet(result.wallet);
       await refresh();
     } catch (error) {
-      setError(error instanceof Error ? error.message : t("common.error"));
+      setError(error instanceof ApiRequestError && error.code === "PURCHASE_CONFLICT" ? t("shop.purchaseProcessing") : error instanceof Error ? error.message : t("common.error"));
     } finally {
+      pendingSkinActions.current.delete(skinId);
       setBusySkinId("");
     }
   }
@@ -72,6 +79,10 @@ export function ShopPage() {
       setAccountRequired(true);
       return;
     }
+    if (pendingSkinActions.current.has(skinId)) {
+      return;
+    }
+    pendingSkinActions.current.add(skinId);
     setBusySkinId(skinId);
     setError("");
     try {
@@ -89,8 +100,9 @@ export function ShopPage() {
         patchProfile(nextProfile);
       }
     } catch (error) {
-      setError(error instanceof Error ? error.message : t("common.error"));
+      setError(error instanceof ApiRequestError && error.code === "PURCHASE_CONFLICT" ? t("shop.purchaseProcessing") : error instanceof Error ? error.message : t("common.error"));
     } finally {
+      pendingSkinActions.current.delete(skinId);
       setBusySkinId("");
     }
   }

@@ -3,6 +3,7 @@ import {
   adminAnalytics,
   adminBanUser,
   adminAuditLogs,
+  adminFinancialTransactions,
   adminGuestTransfers,
   adminModerateScore,
   adminRemoveRestriction,
@@ -40,6 +41,7 @@ adminRoutes.post("/users/:userId/restrictions", validateBody(adminRestrictionSch
 adminRoutes.delete("/restrictions/:restrictionId", validateBody(adminBanSchema), asyncHandler(adminRemoveRestriction));
 adminRoutes.get("/scores", asyncHandler(adminScores));
 adminRoutes.patch("/scores/:scoreId", validateBody(adminScoreModerationSchema), asyncHandler(adminModerateScore));
+adminRoutes.get("/financial-transactions", asyncHandler(adminFinancialTransactions));
 adminRoutes.get("/audit-logs", asyncHandler(adminAuditLogs));
 adminRoutes.get("/guest-transfers", asyncHandler(adminGuestTransfers));
 adminRoutes.get("/support/tickets", asyncHandler(adminTickets));

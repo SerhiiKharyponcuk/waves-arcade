@@ -112,7 +112,8 @@
     "coins": "{{count}} монет",
     "gems": "{{count}} кристаллов",
     "guestPreview": "Гость может просматривать все скины. Создайте аккаунт, чтобы покупать, открывать и выбирать предметы.",
-    "guestAccountRequired": "Для покупки или выбора скинов нужен аккаунт."
+    "guestAccountRequired": "Для покупки или выбора скинов нужен аккаунт.",
+    "purchaseProcessing": "Покупка уже обрабатывается. Обновите кошелек."
   },
   "inventory": {
     "title": "Инвентарь скинов",
@@ -198,7 +199,9 @@
   },
   "security": {
     "devtoolsTitle": "Обнаружены developer tools",
-    "devtoolsBody": "Этот забег остановлен ради честной игры. Закрой developer tools и начни новый забег."
+    "devtoolsBody": "Этот забег остановлен ради честной игры. Закрой developer tools и начни новый забег.",
+    "devtoolsGlobalBody": "Developer tools заблокированы в production-версии, чтобы защитить честную игру, покупки, награды и безопасность аккаунтов. Закрой developer tools и перезагрузи игру.",
+    "devtoolsGlobalAction": "Перезагрузить игру"
   },
   "admin": {
     "title": "Админ-панель",
@@ -413,6 +416,7 @@
       "users": "Игроки",
       "scores": "Результаты",
       "support": "Поддержка",
+      "finance": "Финансы",
       "activity": "Активность"
     },
     "overview": {
@@ -421,10 +425,12 @@
       "openTickets": "Открытые обращения",
       "scoresToReview": "Результаты на проверке",
       "suspiciousUsers": "Подозрительные игроки",
+      "financialEvents": "Финансовые события",
       "unverifiedUsers": "Неподтвержденные email",
       "requiresAttention": "Ожидают ответа",
       "antiCheatQueue": "Очередь античит-модерации",
       "flaggedAccounts": "Аккаунты для проверки",
+      "financialJournal": "Журнал кошелька и покупок",
       "emailQueue": "Игроки без подтверждения"
     },
     "users": {
@@ -468,6 +474,9 @@
       "searchPlaceholder": "Тема, email, игрок или сообщение",
       "emptyHint": "По выбранным фильтрам обращений нет."
     },
+    "finance": {
+      "description": "Просмотр покупок, наград, provider, статусов и idempotency key."
+    },
     "activity": {
       "auditDescription": "Защищенная история действий администраторов.",
       "transferDescription": "Перенос гостевого прогресса и результаты проверок.",
@@ -479,6 +488,7 @@
   "adminExtra": {
     "resetUserScores": "Сбросить результаты игрока", "defaultScoreResetReason": "Подтверждённая накрутка результата или исправление администратором.", "trustedReason": "Администратор признал аккаунт доверенным.", "suspiciousReason": "Аккаунту нужна дополнительная античит-проверка.", "restrictionRemovedReason": "Ограничение снято администратором.",
     "analytics": { "title": "Аналитика продукта", "registered": "Регистрации", "new7d": "Новые 7 дн.", "active7d": "Активные 7 дн.", "returning7d": "Вернулись 7 дн.", "sessions30d": "Сессии 30 дн.", "validScores30d": "Честные результаты 30 дн.", "adViews30d": "Реклама 30 дн.", "guests30d": "Гости 30 дн." },
+    "finance": { "title": "Финансовый журнал", "empty": "Финансовых транзакций нет.", "user": "Пользователь", "item": "Предмет", "status": "Статус", "provider": "Provider", "amount": "Сумма", "date": "Дата", "idempotencyKey": "Idempotency key", "noAmount": "Без изменения кошелька", "gems": "кристаллы", "tickets": "билеты", "lives": "жизни" },
     "userStatuses": { "ACTIVE": "Активен", "BANNED": "Заблокирован", "DELETED": "Удалён" }, "trustStatuses": { "NORMAL": "Обычный", "TRUSTED": "Доверенный", "SUSPICIOUS": "Подозрительный" }, "activeRestrictions": "Активных ограничений: {{count}}", "removeRestriction": "Снять: {{type}}", "resetPassword": "Сбросить пароль", "resetScores": "Сбросить результаты", "markSuspicious": "Пометить подозрительным", "markTrusted": "Пометить доверенным", "restrict": "Ограничить",
     "scoreModeration": "Проверка результатов", "ms": "мс", "hits": "столкновения", "noReasonRecorded": "Причина не указана", "noSessionFlags": "нет флагов сессии", "approve": "Одобрить", "reject": "Отклонить", "hide": "Скрыть", "banForCheating": "Заблокировать за читы", "noScoresToReview": "Нет результатов для проверки.", "validScoreHistory": "История честных результатов ({{count}})", "scoreApprovedReason": "Результат проверен и одобрен администратором.", "scoreRejectedReason": "Результат отклонён после проверки.", "scoreHiddenReason": "Результат скрыт администратором.", "cheatingReason": "Читы: {{reason}}", "invalidScore": "недействительная отправка результата",
     "scoreStatuses": { "valid": "Подтверждён", "suspicious": "Подозрительный", "pending_review": "Ожидает проверки", "rejected": "Отклонён", "hidden": "Скрыт" }, "auditLog": "Журнал действий администраторов", "noReason": "Без причины", "system": "Система", "guestTransfers": "Попытки переноса гостевого прогресса", "localScore": "локально", "transferredScore": "перенесено", "passedValidation": "Проверка пройдена", "noTransfers": "Попыток переноса нет.",
@@ -491,6 +501,10 @@
     "close": "Закрыть",
     "back": "Назад",
     "cancel": "Отмена"
+  },
+  "loader": {
+    "title": "Подготовка арены",
+    "subtitle": "Загружаем защищенный аккаунт, кошелек и системы игры..."
   },
   "skins": {
     "neonBlueTrail": {

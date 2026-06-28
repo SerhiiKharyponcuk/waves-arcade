@@ -112,7 +112,8 @@
     "coins": "{{count}} munten",
     "gems": "{{count}} edelstenen",
     "guestPreview": "Als gast kun je elke skin bekijken. Maak een account om items te kopen, vrij te spelen of te gebruiken.",
-    "guestAccountRequired": "Je hebt een account nodig om skins te kopen of te gebruiken."
+    "guestAccountRequired": "Je hebt een account nodig om skins te kopen of te gebruiken.",
+    "purchaseProcessing": "Aankoop wordt al verwerkt. Vernieuw je wallet."
   },
   "inventory": {
     "title": "Skininventaris",
@@ -198,7 +199,9 @@
   },
   "security": {
     "devtoolsTitle": "Ontwikkelaarstools gedetecteerd",
-    "devtoolsBody": "Deze ronde is voor eerlijk spel gepauzeerd. Sluit de ontwikkelaarstools en start een nieuwe ronde."
+    "devtoolsBody": "Deze ronde is voor eerlijk spel gepauzeerd. Sluit de ontwikkelaarstools en start een nieuwe ronde.",
+    "devtoolsGlobalBody": "Ontwikkelaarstools zijn geblokkeerd in deze productieversie om eerlijk spel, aankopen, beloningen en accountveiligheid te beschermen. Sluit de ontwikkelaarstools en herlaad de game.",
+    "devtoolsGlobalAction": "Game herladen"
   },
   "admin": {
     "title": "Beheerderspaneel",
@@ -516,6 +519,7 @@
       "users": "Spelers",
       "scores": "Scores",
       "support": "Support",
+      "finance": "Financien",
       "activity": "Activiteit"
     },
     "overview": {
@@ -524,10 +528,12 @@
       "openTickets": "Open tickets",
       "scoresToReview": "Scores ter controle",
       "suspiciousUsers": "Verdachte spelers",
+      "financialEvents": "Financiele events",
       "unverifiedUsers": "Onbevestigde e-mail",
       "requiresAttention": "Wachten op antwoord",
       "antiCheatQueue": "Wachtrij voor anti-cheatcontrole",
       "flaggedAccounts": "Accounts gemarkeerd voor controle",
+      "financialJournal": "Wallet- en aankooplogboek",
       "emailQueue": "Spelers zonder bevestiging"
     },
     "users": {
@@ -571,6 +577,9 @@
       "searchPlaceholder": "Onderwerp, e-mail, speler of bericht",
       "emptyHint": "Geen tickets komen overeen met de gekozen filters."
     },
+    "finance": {
+      "description": "Bekijk wallet-aankopen, beloningen, providers, status en idempotency keys."
+    },
     "activity": {
       "auditDescription": "Beveiligde geschiedenis van beheerdersacties.",
       "transferDescription": "Import van gastvoortgang en validatieresultaten.",
@@ -582,6 +591,7 @@
   "adminExtra": {
     "resetUserScores": "Gebruikersscores resetten", "defaultScoreResetReason": "Bevestigde scoremanipulatie of correctie door beheerder.", "trustedReason": "De beheerder heeft het account als betrouwbaar beoordeeld.", "suspiciousReason": "Het account vereist extra anti-cheatcontrole.", "restrictionRemovedReason": "Beperking verwijderd door beheerder.",
     "analytics": { "title": "Productanalyse", "registered": "Geregistreerd", "new7d": "Nieuw 7d", "active7d": "Actief 7d", "returning7d": "Terugkerend 7d", "sessions30d": "Sessies 30d", "validScores30d": "Geldige scores 30d", "adViews30d": "Advertenties 30d", "guests30d": "Gasten 30d" },
+    "finance": { "title": "Financieel logboek", "empty": "Geen financiele transacties gevonden.", "user": "Gebruiker", "item": "Item", "status": "Status", "provider": "Provider", "amount": "Bedrag", "date": "Datum", "idempotencyKey": "Idempotency key", "noAmount": "Geen wallet-wijziging", "gems": "edelstenen", "tickets": "tickets", "lives": "levens" },
     "userStatuses": { "ACTIVE": "Actief", "BANNED": "Geblokkeerd", "DELETED": "Verwijderd" }, "trustStatuses": { "NORMAL": "Normaal", "TRUSTED": "Betrouwbaar", "SUSPICIOUS": "Verdacht" }, "activeRestrictions": "{{count}} actieve beperking(en)", "removeRestriction": "{{type}} verwijderen", "resetPassword": "Wachtwoord resetten", "resetScores": "Scores resetten", "markSuspicious": "Als verdacht markeren", "markTrusted": "Als betrouwbaar markeren", "restrict": "Beperken",
     "scoreModeration": "Scoremoderatie", "ms": "ms", "hits": "botsingen", "noReasonRecorded": "Geen reden vastgelegd", "noSessionFlags": "geen sessiemeldingen", "approve": "Goedkeuren", "reject": "Afwijzen", "hide": "Verbergen", "banForCheating": "Bannen wegens valsspelen", "noScoresToReview": "Geen scores om te beoordelen.", "validScoreHistory": "Geschiedenis geldige scores ({{count}})", "scoreApprovedReason": "Score door beheerder beoordeeld en goedgekeurd.", "scoreRejectedReason": "Score na beoordeling afgewezen.", "scoreHiddenReason": "Score door beheerder verborgen.", "cheatingReason": "Valsspelen: {{reason}}", "invalidScore": "ongeldige score-inzending",
     "scoreStatuses": { "valid": "Geldig", "suspicious": "Verdacht", "pending_review": "Wacht op beoordeling", "rejected": "Afgewezen", "hidden": "Verborgen" }, "auditLog": "Beheerderslogboek", "noReason": "Geen reden", "system": "Systeem", "guestTransfers": "Pogingen tot overdracht van gastvoortgang", "localScore": "lokaal", "transferredScore": "overgezet", "passedValidation": "Validatie geslaagd", "noTransfers": "Geen overdrachtspogingen.",
@@ -594,6 +604,10 @@
     "close": "Sluiten",
     "back": "Terug",
     "cancel": "Annuleren"
+  },
+  "loader": {
+    "title": "Arena voorbereiden",
+    "subtitle": "Beveiligd account, wallet en gamesystemen laden..."
   },
   "skins": {
     "neonBlueTrail": {

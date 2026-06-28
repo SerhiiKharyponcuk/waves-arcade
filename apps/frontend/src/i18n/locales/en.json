@@ -112,7 +112,8 @@
     "coins": "{{count}} coins",
     "gems": "{{count}} gems",
     "guestPreview": "You can preview every skin as a Guest. Create an account to buy, unlock, or equip items.",
-    "guestAccountRequired": "You need an account to buy or equip skins."
+    "guestAccountRequired": "You need an account to buy or equip skins.",
+    "purchaseProcessing": "Purchase is already processing. Refresh wallet."
   },
   "inventory": {
     "title": "Skin inventory",
@@ -212,7 +213,9 @@
   },
   "security": {
     "devtoolsTitle": "Developer tools detected",
-    "devtoolsBody": "This run was paused for fair play. Close developer tools and start a new run."
+    "devtoolsBody": "This run was paused for fair play. Close developer tools and start a new run.",
+    "devtoolsGlobalBody": "Developer tools are blocked on this production build to protect fair play, purchases, rewards and account safety. Close developer tools and reload the game.",
+    "devtoolsGlobalAction": "Reload game"
   },
   "admin": {
     "title": "Admin control",
@@ -459,6 +462,7 @@
       "users": "Players",
       "scores": "Scores",
       "support": "Support",
+      "finance": "Finance",
       "activity": "Activity"
     },
     "overview": {
@@ -467,10 +471,12 @@
       "openTickets": "Open tickets",
       "scoresToReview": "Scores to review",
       "suspiciousUsers": "Suspicious players",
+      "financialEvents": "Financial events",
       "unverifiedUsers": "Unverified email",
       "requiresAttention": "Waiting for a reply",
       "antiCheatQueue": "Anti-cheat moderation queue",
       "flaggedAccounts": "Accounts marked for review",
+      "financialJournal": "Wallet and purchase ledger",
       "emailQueue": "Players without verification"
     },
     "users": {
@@ -514,6 +520,9 @@
       "searchPlaceholder": "Subject, email, player or message",
       "emptyHint": "No tickets match the selected filters."
     },
+    "finance": {
+      "description": "Review wallet purchases, rewards, providers, status and idempotency keys."
+    },
     "activity": {
       "auditDescription": "Protected history of administrator actions.",
       "transferDescription": "Guest progress imports and validation results.",
@@ -525,6 +534,7 @@
   "adminExtra": {
     "resetUserScores": "Reset user scores", "defaultScoreResetReason": "Confirmed score manipulation or administrator correction.", "trustedReason": "Administrator reviewed the account as trusted.", "suspiciousReason": "Account requires additional anti-cheat review.", "restrictionRemovedReason": "Restriction removed by administrator.",
     "analytics": { "title": "Product analytics", "registered": "Registered", "new7d": "New 7d", "active7d": "Active 7d", "returning7d": "Returning 7d", "sessions30d": "Sessions 30d", "validScores30d": "Valid scores 30d", "adViews30d": "Ad views 30d", "guests30d": "Guests 30d" },
+    "finance": { "title": "Financial journal", "empty": "No financial transactions found.", "user": "User", "item": "Item", "status": "Status", "provider": "Provider", "amount": "Amount", "date": "Date", "idempotencyKey": "Idempotency key", "noAmount": "No wallet change", "gems": "gems", "tickets": "tickets", "lives": "lives" },
     "userStatuses": { "ACTIVE": "Active", "BANNED": "Banned", "DELETED": "Deleted" }, "trustStatuses": { "NORMAL": "Normal", "TRUSTED": "Trusted", "SUSPICIOUS": "Suspicious" },
     "activeRestrictions": "{{count}} active restriction(s)", "removeRestriction": "Remove {{type}}", "resetPassword": "Reset password", "resetScores": "Reset scores", "markSuspicious": "Mark suspicious", "markTrusted": "Mark trusted", "restrict": "Restrict",
     "scoreModeration": "Score moderation", "ms": "ms", "hits": "hits", "noReasonRecorded": "No reason recorded", "noSessionFlags": "no session flags", "approve": "Approve", "reject": "Reject", "hide": "Hide", "banForCheating": "Ban for cheating", "noScoresToReview": "No scores need review.", "validScoreHistory": "Valid score history ({{count}})",
@@ -542,6 +552,10 @@
     "close": "Close",
     "back": "Back",
     "cancel": "Cancel"
+  },
+  "loader": {
+    "title": "Preparing arena",
+    "subtitle": "Loading secure account, wallet and game systems..."
   },
   "skins": {
     "neonBlueTrail": {

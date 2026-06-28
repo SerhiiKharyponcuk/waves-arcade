@@ -57,10 +57,12 @@ export const walletApi = {
     amountCents: number;
     currency: "USD" | "EUR";
     provider: "stripe" | "google_play" | "apple_iap" | "placeholder";
+    idempotencyKey?: string;
   }) {
+    const idempotencyKey = payload.idempotencyKey ?? `wallet-${Date.now()}-${crypto.randomUUID?.() ?? Math.random().toString(36).slice(2)}`;
     return apiRequest("/wallet/purchase-placeholder", {
       method: "POST",
-      body: JSON.stringify(payload)
+      body: JSON.stringify({ ...payload, idempotencyKey })
     });
   }
 };
