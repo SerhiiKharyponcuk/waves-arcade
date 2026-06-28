@@ -13,6 +13,7 @@ import { flagSuspiciousRun } from "./adminService.js";
 import { AppError } from "../utils/appError.js";
 import { validateCheckpointProgress, validateScoreSubmission } from "./antiCheatService.js";
 import { recordProgressForValidRun } from "./progressionService.js";
+import { assertNoActiveRestriction } from "./restrictionService.js";
 
 type LeaderboardScoreRow = {
   id: string;
@@ -27,6 +28,7 @@ type LeaderboardScoreRow = {
 };
 
 export async function startGameSession(userId: string): Promise<GameSessionStartResponseDto> {
+  await assertNoActiveRestriction(userId, ["temporary_ban", "permanent_ban"], "Gameplay");
   const seed = nanoid(18);
   const session = await prisma.gameSession.create({
     data: {
@@ -46,6 +48,7 @@ export async function recordGameCheckpoint(
   userId: string,
   input: GameSessionCheckpointRequestDto
 ): Promise<GameSessionCheckpointResponseDto> {
+  await assertNoActiveRestriction(userId, ["temporary_ban", "permanent_ban"], "Gameplay");
   const session = await prisma.gameSession.findFirst({ where: { id: input.sessionId, userId } });
   if (!session) throw new AppError(404, "Game session not found.", "SESSION_NOT_FOUND");
   if (session.endedAt || session.status !== "started") {
@@ -58,6 +61,7 @@ export async function recordGameCheckpoint(
       where: { id: session.id },
       data: { antiCheatNotes: [session.antiCheatNotes, ...reasons].filter(Boolean).join(",") }
     });
+    await flagSuspiciousRun(userId, reasons.join(","));
     throw new AppError(422, "Game checkpoint was rejected.", "CHECKPOINT_REJECTED");
   }
 
@@ -81,6 +85,7 @@ export async function endGameSession(
   userId: string,
   input: GameSessionEndRequestDto
 ): Promise<GameSessionEndResponseDto> {
+  await assertNoActiveRestriction(userId, ["temporary_ban", "permanent_ban"], "Gameplay");
   const session = await prisma.gameSession.findFirst({
     where: { id: input.sessionId, userId }
   });
@@ -215,6 +220,7 @@ export async function getLeaderboard(limit = 10): Promise<LeaderboardEntryDto[]>
 }
 
 export async function getMyBestScore(userId: string) {
+  await assertNoActiveRestriction(userId, ["permanent_ban"], "Score profile");
   const profile = await prisma.userProfile.findUnique({ where: { userId } });
   if (!profile) {
     throw new AppError(404, "Profile not found.", "PROFILE_NOT_FOUND");

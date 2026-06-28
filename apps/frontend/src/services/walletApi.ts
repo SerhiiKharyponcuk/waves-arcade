@@ -65,7 +65,8 @@ export const walletApi = {
   },
   purchasePlaceholder(payload: {
     sku: string;
-    amountCents: number;
+    amountCents?: number;
+    supportAmountCents?: number;
     currency: "USD" | "EUR";
     provider: PaymentProviderId;
     idempotencyKey?: string;

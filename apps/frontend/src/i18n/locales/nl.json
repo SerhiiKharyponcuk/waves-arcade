@@ -491,7 +491,8 @@
       "Wijzig geen spelgeheugen, timers, netwerkberichten of scoreberekeningen.",
       "Het gebruiken van bugs of exploits voor scores, valuta, unlocks of beloningen is verboden.",
       "Het bewust verbergen van een ernstig lek kan tot beperkingen leiden.",
-      "Omzeil geen integriteits-, sessie-, snelheids- of anti-cheatcontroles."
+      "Omzeil geen integriteits-, sessie-, snelheids- of anti-cheatcontroles.",
+      "Een door de server bevestigde onmogelijke checkpoint, onmogelijke score, vervalst verzoek of aangepaste client kan automatisch een gameplayban van 24 uur veroorzaken."
     ],
     "shop": [
       "Skins en thema's zijn licenties voor gebruik in het spel en geen geld of eigendom.",
@@ -534,6 +535,7 @@
       "Banontwijking via een ander account, apparaat, token of netwerk is verboden.",
       "Een score kan verborgen zijn terwijl het account speelbaar blijft.",
       "Misbruikte beloningen kunnen los van een ban worden verwijderd.",
+      "Automatische gameplaybans van 24 uur kunnen worden toegepast wanneer server-side anti-cheat manipulatie of onmogelijke gameplaygegevens bevestigt.",
       "Beheerders moeten een reden geven en de maatregel vastleggen.",
       "Misbruik van bezwaar kan leiden tot een supportbeperking."
     ],
