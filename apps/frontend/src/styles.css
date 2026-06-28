@@ -63,4 +63,109 @@ button {
   .admin-action {
     @apply flex min-h-10 w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-bold text-slate-300 transition hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-50;
   }
+
+  .payment-page-enter {
+    animation: payment-page-in 0.45s ease both;
+  }
+
+  .payment-method-card {
+    transform: translateY(0);
+  }
+
+  .payment-method-card:not(:disabled):hover {
+    transform: translateY(-2px);
+  }
+
+  .payment-method-selected {
+    animation: payment-selected-pulse 0.32s ease both;
+  }
+
+  .payment-error-text {
+    @apply mt-2 text-sm font-bold text-pink-200;
+  }
+
+  .payment-error-shake {
+    animation: payment-shake 0.28s ease both;
+  }
+
+  .payment-success-check {
+    animation: payment-check-pop 0.42s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+
+  .support-heart {
+    animation: support-heart-beat 1.9s ease-in-out infinite;
+  }
+}
+
+@keyframes payment-page-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes payment-selected-pulse {
+  0% {
+    box-shadow: 0 0 0 rgba(33, 212, 253, 0);
+  }
+  70% {
+    box-shadow: 0 0 24px rgba(33, 212, 253, 0.45);
+  }
+  100% {
+    box-shadow: 0 0 18px rgba(33, 212, 253, 0.3);
+  }
+}
+
+@keyframes payment-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes payment-check-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.78);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes support-heart-beat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.12);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .payment-page-enter,
+  .payment-method-selected,
+  .payment-error-shake,
+  .payment-success-check,
+  .support-heart {
+    animation: none !important;
+  }
+
+  .payment-method-card,
+  .payment-method-card:not(:disabled):hover {
+    transform: none !important;
+    transition: none !important;
+  }
 }

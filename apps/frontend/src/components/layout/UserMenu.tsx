@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BookOpen, Gamepad2, LifeBuoy, ListChecks, LogIn, LogOut, Menu, PackageOpen, Palette, Settings, Trophy, UserPlus, UserRound } from "lucide-react";
+import { BookOpen, CreditCard, Gamepad2, LifeBuoy, ListChecks, LogIn, LogOut, Menu, PackageOpen, Palette, Settings, Trophy, UserPlus, UserRound } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { AppView } from "../../store/uiStore";
 
@@ -20,6 +20,7 @@ export function UserMenu({ isGuest, navigate, requestAuthentication, logout }: U
     { labelKey: "userMenu.myThemes", view: "themes", icon: Palette },
     { labelKey: "userMenu.myScores", view: "profile", icon: Trophy },
     { labelKey: "progression.achievements", view: "profile", icon: ListChecks },
+    { labelKey: "nav.payment", view: "payment", icon: CreditCard },
     { labelKey: "nav.support", view: "support", icon: LifeBuoy },
     { labelKey: "nav.rules", view: "rules", icon: BookOpen }
   ];
