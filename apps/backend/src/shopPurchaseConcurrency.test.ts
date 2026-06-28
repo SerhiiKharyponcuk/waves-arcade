@@ -249,6 +249,121 @@ test("parallel rewards and guest transfers are atomic", async () => {
   }
 });
 
+test("payment placeholder validates server-side pricing and idempotency payloads", async () => {
+  const server = createApp().listen(0);
+  await new Promise<void>((resolve) => server.once("listening", resolve));
+  const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}/api`;
+  let userId = "";
+
+  try {
+    const user = await registerTestAccount(base, "Payment Pilot");
+    userId = user.userId;
+
+    const tampered = await rawRequest<{ code?: string }>(base, "/wallet/purchase-placeholder", {
+      method: "POST",
+      headers: user.headers,
+      body: JSON.stringify({
+        sku: "premium_starter_pack",
+        amountCents: 1,
+        supportAmountCents: 0,
+        currency: "EUR",
+        provider: "stripe",
+        idempotencyKey: `payment-tamper-${randomUUID()}`
+      })
+    });
+    assert.equal(tampered.status, 400);
+    assert.equal(tampered.body.code, "PAYMENT_AMOUNT_MISMATCH");
+
+    const idempotencyKey = `payment-valid-${randomUUID()}`;
+    const valid = await rawRequest<{ status: string }>(base, "/wallet/purchase-placeholder", {
+      method: "POST",
+      headers: user.headers,
+      body: JSON.stringify({
+        sku: "premium_starter_pack",
+        amountCents: 799,
+        supportAmountCents: 300,
+        currency: "EUR",
+        provider: "mollie",
+        idempotencyKey
+      })
+    });
+    assert.equal(valid.status, 202);
+
+    const transaction = await prisma.purchaseTransaction.findUniqueOrThrow({ where: { idempotencyKey } });
+    const metadata = JSON.parse(transaction.metadata ?? "{}") as { amountCents: number; productAmountCents: number; supportAmountCents: number; currency: string };
+    assert.equal(transaction.type, "premium_starter_pack");
+    assert.equal(metadata.amountCents, 799);
+    assert.equal(metadata.productAmountCents, 499);
+    assert.equal(metadata.supportAmountCents, 300);
+    assert.equal(metadata.currency, "EUR");
+
+    const conflict = await rawRequest<{ code?: string }>(base, "/wallet/purchase-placeholder", {
+      method: "POST",
+      headers: user.headers,
+      body: JSON.stringify({
+        sku: "premium_starter_pack",
+        amountCents: 599,
+        supportAmountCents: 100,
+        currency: "EUR",
+        provider: "mollie",
+        idempotencyKey
+      })
+    });
+    assert.equal(conflict.status, 409);
+    assert.equal(conflict.body.code, "IDEMPOTENCY_KEY_CONFLICT");
+  } finally {
+    if (userId) await prisma.user.deleteMany({ where: { id: userId } });
+    await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+  }
+});
+
+test("server-side anti-cheat restriction blocks gameplay after suspicious checkpoints", async () => {
+  const server = createApp().listen(0);
+  await new Promise<void>((resolve) => server.once("listening", resolve));
+  const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}/api`;
+  let userId = "";
+
+  try {
+    const user = await registerTestAccount(base, "Guard Pilot");
+    userId = user.userId;
+    const session = await request<{ sessionId: string }>(base, "/game/session/start", {
+      method: "POST",
+      headers: user.headers
+    });
+
+    const rejected = await rawRequest<{ code?: string }>(base, "/game/session/checkpoint", {
+      method: "POST",
+      headers: user.headers,
+      body: JSON.stringify({
+        sessionId: session.sessionId,
+        sequence: 1,
+        elapsedMs: 1_000,
+        distance: 1_000_000,
+        coinsCollected: 0,
+        inputTransitions: 1
+      })
+    });
+    assert.equal(rejected.status, 422);
+    assert.equal(rejected.body.code, "CHECKPOINT_REJECTED");
+
+    const restriction = await prisma.restriction.findFirstOrThrow({
+      where: { userId: user.userId, active: true, type: "temporary_ban" }
+    });
+    assert.ok(restriction.endsAt);
+    assert.ok(restriction.endsAt.getTime() > Date.now() + 23 * 60 * 60_000);
+
+    const blocked = await rawRequest<{ code?: string }>(base, "/game/session/start", {
+      method: "POST",
+      headers: user.headers
+    });
+    assert.equal(blocked.status, 403);
+    assert.equal(blocked.body.code, "FEATURE_RESTRICTED");
+  } finally {
+    if (userId) await prisma.user.deleteMany({ where: { id: userId } });
+    await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+  }
+});
+
 test("unexpected server errors are logged and returned without stack traces", () => {
   const logs: string[] = [];
   const originalConsoleError = console.error;

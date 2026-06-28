@@ -93,7 +93,8 @@ const sections: Array<Omit<GameRuleSection, "start">> = [
       "Do not change game memory, timers, network messages, or score calculations.",
       "Using bugs or exploits for score, currency, unlocks, or rewards is prohibited.",
       "Knowingly hiding a serious exploit instead of reporting it may lead to restrictions.",
-      "Do not disable or bypass integrity, session, rate-limit, or anti-cheat checks."
+      "Do not disable or bypass integrity, session, rate-limit, or anti-cheat checks.",
+      "A server-confirmed impossible checkpoint, impossible score, forged request, or modified client may trigger an automatic 24-hour gameplay ban."
     ]
   },
   {
@@ -152,6 +153,7 @@ const sections: Array<Omit<GameRuleSection, "start">> = [
       "Ban evasion through another account, device, token, or network is prohibited.",
       "A score may be hidden while the related account remains playable.",
       "Rewards obtained through abuse may be removed independently of a ban.",
+      "Automatic 24-hour gameplay bans may be applied when server-side anti-cheat confirms tampering or impossible gameplay data.",
       "Administrators must provide a reason for sanctions and record the action.",
       "Abuse of the appeal process may lead to a support restriction."
     ]

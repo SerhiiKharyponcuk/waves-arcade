@@ -27,6 +27,18 @@ type WalletBalanceUpdateData = {
 type SkinRecord = Parameters<typeof mapSkinDto>[0] & { id: string };
 type OwnedSkinIdRecord = { skinId: string };
 type KnownPrismaError = { code?: string };
+type PurchasePlaceholderInput = {
+  sku: string;
+  amountCents?: number;
+  supportAmountCents: number;
+  currency: "USD" | "EUR";
+  provider: PaymentProviderId;
+  idempotencyKey: string;
+};
+
+const paymentCatalog: Record<string, { currency: "EUR" | "USD"; amountCents: number; type: string }> = {
+  premium_starter_pack: { currency: "EUR", amountCents: 499, type: "premium_starter_pack" }
+};
 
 function isKnownPrismaError(error: unknown, code: string): error is KnownPrismaError {
   return Boolean(error && typeof error === "object" && "code" in error && (error as KnownPrismaError).code === code);
@@ -43,6 +55,45 @@ function rethrowSafeWalletMutationError(error: unknown): never {
     throw new AppError(409, "This wallet action is already being processed. Please refresh and try again.", "WALLET_ACTION_CONFLICT");
   }
   throw error;
+}
+
+function calculatePaymentOrder(input: PurchasePlaceholderInput) {
+  const product = paymentCatalog[input.sku];
+  if (!product) {
+    throw new AppError(400, "Unknown payment product.", "UNKNOWN_PAYMENT_SKU");
+  }
+  if (input.currency !== product.currency) {
+    throw new AppError(400, "Currency does not match this product.", "PAYMENT_CURRENCY_MISMATCH");
+  }
+
+  const supportAmountCents = input.supportAmountCents ?? 0;
+  if (supportAmountCents !== 0 && supportAmountCents < 100) {
+    throw new AppError(400, "Support amount must be at least 1.00 when enabled.", "SUPPORT_AMOUNT_TOO_SMALL");
+  }
+
+  const amountCents = product.amountCents + supportAmountCents;
+  if (input.amountCents !== undefined && input.amountCents !== amountCents) {
+    throw new AppError(400, "Payment amount does not match the server price.", "PAYMENT_AMOUNT_MISMATCH");
+  }
+
+  return {
+    sku: input.sku,
+    type: product.type,
+    currency: product.currency,
+    productAmountCents: product.amountCents,
+    supportAmountCents,
+    amountCents
+  };
+}
+
+function idempotencyPayloadMatches(metadata: Record<string, unknown>, order: ReturnType<typeof calculatePaymentOrder>) {
+  return (
+    metadata.sku === order.sku &&
+    metadata.currency === order.currency &&
+    metadata.amountCents === order.amountCents &&
+    metadata.productAmountCents === order.productAmountCents &&
+    metadata.supportAmountCents === order.supportAmountCents
+  );
 }
 
 function toWalletDto(wallet: {
@@ -319,11 +370,15 @@ export async function claimDailyReward(userId: string): Promise<{ reward: DailyR
 
 export async function createPurchasePlaceholder(
   userId: string,
-  input: { sku: string; amountCents: number; currency: "USD" | "EUR"; provider: PaymentProviderId; idempotencyKey: string }
+  input: PurchasePlaceholderInput
 ) {
+  const order = calculatePaymentOrder(input);
   const existing = await prisma.purchaseTransaction.findUnique({ where: { idempotencyKey: input.idempotencyKey } });
   if (existing) {
     const metadata = existing.metadata ? parsePurchaseMetadata(existing.metadata) : {};
+    if (!idempotencyPayloadMatches(metadata, order)) {
+      throw new AppError(409, "Idempotency key was already used for a different payment request.", "IDEMPOTENCY_KEY_CONFLICT");
+    }
     return {
       provider: existing.provider,
       externalId: metadata.externalId ?? `placeholder_${input.idempotencyKey}`,
@@ -332,20 +387,22 @@ export async function createPurchasePlaceholder(
     };
   }
 
-  const intent = await paymentProvider.createPaymentIntent({ userId, ...input });
+  const intent = await paymentProvider.createPaymentIntent({ userId, ...input, amountCents: order.amountCents, currency: order.currency });
 
   try {
     await prisma.purchaseTransaction.create({
       data: {
         userId,
         provider: input.provider,
-        type: "currency",
+        type: order.type,
         status: "pending",
         idempotencyKey: input.idempotencyKey,
         metadata: JSON.stringify({
-          sku: input.sku,
-          amountCents: input.amountCents,
-          currency: input.currency,
+          sku: order.sku,
+          amountCents: order.amountCents,
+          productAmountCents: order.productAmountCents,
+          supportAmountCents: order.supportAmountCents,
+          currency: order.currency,
           externalId: intent.externalId
         })
       }
@@ -357,10 +414,13 @@ export async function createPurchasePlaceholder(
   return intent;
 }
 
-function parsePurchaseMetadata(metadata: string): { externalId?: string } {
+function parsePurchaseMetadata(metadata: string): Record<string, unknown> & { externalId?: string } {
   try {
-    const parsed = JSON.parse(metadata) as { externalId?: unknown };
-    return typeof parsed.externalId === "string" ? { externalId: parsed.externalId } : {};
+    const parsed = JSON.parse(metadata) as Record<string, unknown>;
+    return {
+      ...parsed,
+      externalId: typeof parsed.externalId === "string" ? parsed.externalId : undefined
+    };
   } catch {
     return {};
   }
@@ -593,6 +653,9 @@ export async function completeAdRewardSession(
       const provider = adReward.provider as AdProvider;
       if (input.provider && input.provider !== provider) {
         throw new AppError(400, "Ad provider mismatch.", "AD_PROVIDER_MISMATCH");
+      }
+      if (env.NODE_ENV === "production") {
+        throw new AppError(501, "Rewarded ad verification is not configured yet. Rewards must be confirmed by a server-side provider webhook.", "AD_VERIFICATION_REQUIRED");
       }
 
       const completed = await tx.adReward.updateMany({

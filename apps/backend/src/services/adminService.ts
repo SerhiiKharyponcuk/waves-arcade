@@ -258,13 +258,33 @@ export async function manuallyVerifyUserEmail(adminId: string, targetUserId: str
 }
 
 export async function flagSuspiciousRun(targetUserId: string, reason: string) {
-  await prisma.moderationAction.create({
-    data: {
+  const cleanReason = reason.trim() || "Suspicious gameplay rejected by server anti-cheat.";
+  const endsAt = new Date(Date.now() + 24 * 60 * 60_000);
+
+  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await tx.moderationAction.create({
+      data: {
+        targetUserId,
+        action: "CHEAT_FLAG",
+        reason: cleanReason,
+        message: "Suspicious run rejected by server anti-cheat. Gameplay access is temporarily restricted for 24 hours."
+      }
+    });
+    await tx.restriction.create({
+      data: {
+        userId: targetUserId,
+        type: "temporary_ban",
+        reason: `Server anti-cheat rejected suspicious gameplay: ${cleanReason}`,
+        notes: "Automatic 24-hour restriction after server-side gameplay tampering detection.",
+        endsAt
+      }
+    });
+    await writeAdminAuditLog({
+      actionType: "ban_user",
       targetUserId,
-      action: "CHEAT_FLAG",
-      reason,
-      message: "Suspicious run rejected by server anti-cheat."
-    }
+      reason: cleanReason,
+      metadata: { source: "server_anti_cheat", durationHours: 24, endsAt: endsAt.toISOString() }
+    }, tx);
   });
 }
 

@@ -121,7 +121,7 @@ export function PaymentPage() {
     try {
       const intent = await walletApi.purchasePlaceholder({
         sku: "premium_starter_pack",
-        amountCents: Math.round(totalAmount * 100),
+        supportAmountCents: Math.round(supportAmount * 100),
         currency: "EUR",
         provider: providerForMethod(selectedMethod),
         idempotencyKey
