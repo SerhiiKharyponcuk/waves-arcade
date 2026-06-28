@@ -1,5 +1,5 @@
 import { Suspense, lazy, useEffect, useState } from "react";
-import { BookOpen, Gamepad2, LifeBuoy, Lock, LogIn, LogOut, PackageOpen, Palette, Settings, ShieldCheck, ShoppingBag, Trophy, UserPlus, UserRound, WalletCards } from "lucide-react";
+import { BookOpen, CreditCard, Gamepad2, LifeBuoy, Lock, LogIn, LogOut, PackageOpen, Palette, Settings, ShieldCheck, ShoppingBag, Trophy, UserPlus, UserRound, WalletCards } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../../store/authStore";
 import { useGuestStore } from "../../store/guestStore";
@@ -18,6 +18,7 @@ const ShopPage = lazy(() => import("../../pages/ShopPage").then((module) => ({ d
 const InventoryPage = lazy(() => import("../../pages/InventoryPage").then((module) => ({ default: module.InventoryPage })));
 const ProfilePage = lazy(() => import("../../pages/ProfilePage").then((module) => ({ default: module.ProfilePage })));
 const PremiumPage = lazy(() => import("../../pages/PremiumPage").then((module) => ({ default: module.PremiumPage })));
+const PaymentPage = lazy(() => import("../../pages/PaymentPage").then((module) => ({ default: module.PaymentPage })));
 const SupportPage = lazy(() => import("../../pages/SupportPage").then((module) => ({ default: module.SupportPage })));
 const SettingsPage = lazy(() => import("../../pages/SettingsPage").then((module) => ({ default: module.SettingsPage })));
 const AdminPage = lazy(() => import("../../pages/AdminPage").then((module) => ({ default: module.AdminPage })));
@@ -30,13 +31,24 @@ const navItems: Array<{ view: AppView; icon: typeof Gamepad2; labelKey: string }
   { view: "inventory", icon: PackageOpen, labelKey: "nav.inventory" },
   { view: "themes", icon: Palette, labelKey: "nav.themes" },
   { view: "premium", icon: WalletCards, labelKey: "nav.premium" },
+  { view: "payment", icon: CreditCard, labelKey: "nav.payment" },
   { view: "profile", icon: Trophy, labelKey: "nav.profile" },
   { view: "support", icon: LifeBuoy, labelKey: "nav.support" },
   { view: "settings", icon: Settings, labelKey: "nav.settings" },
   { view: "rules", icon: BookOpen, labelKey: "nav.rules" }
 ];
 
-const guestLockedViews = new Set<AppView>(["inventory", "premium", "profile"]);
+const guestLockedViews = new Set<AppView>(["inventory", "premium", "payment", "profile"]);
+
+function syncPaymentPath(nextView: AppView) {
+  const paymentPath = "/payment";
+  if (nextView === "payment" && window.location.pathname !== paymentPath) {
+    window.history.pushState({}, "", paymentPath);
+  }
+  if (nextView !== "payment" && window.location.pathname === paymentPath) {
+    window.history.pushState({}, "", "/");
+  }
+}
 
 export function MainShell() {
   const { t } = useTranslation();
@@ -62,10 +74,34 @@ export function MainShell() {
   }, [guestSession?.guestId, user?.id]);
 
   useEffect(() => {
+    const applyPath = () => {
+      if (window.location.pathname === "/payment") {
+        setView("payment");
+        return;
+      }
+      if (useUiStore.getState().view === "payment") {
+        setView("play");
+      }
+    };
+
+    applyPath();
+    window.addEventListener("popstate", applyPath);
+    return () => window.removeEventListener("popstate", applyPath);
+  }, [setView]);
+
+  useEffect(() => {
     if (user?.mustChangePassword) {
       setView("settings");
     }
   }, [setView, user?.mustChangePassword]);
+
+  useEffect(() => {
+    if (isGuest && view === "payment") {
+      setAccountRequired(true);
+      syncPaymentPath("play");
+      setView("play");
+    }
+  }, [isGuest, setView, view]);
 
   async function transferGuestProgress() {
     if (!guestSession) return;
@@ -104,6 +140,7 @@ export function MainShell() {
     if (nextView === "rules" && view !== "rules") {
       setRulesReturnView(view);
     }
+    syncPaymentPath(nextView);
     setView(nextView);
   }
 
@@ -151,7 +188,7 @@ export function MainShell() {
           <UserMenu isGuest={isGuest} navigate={navigate} requestAuthentication={requestAuthentication} logout={() => void logout()} />
         </div>
 
-        <nav className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 pb-3 sm:grid sm:grid-cols-7 sm:overflow-visible lg:grid-cols-8">
+        <nav className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 pb-3 sm:grid sm:grid-cols-7 sm:overflow-visible lg:grid-cols-10">
           {visibleNavItems.map((item) => {
             const Icon = item.icon;
             const active = view === item.view;
@@ -204,6 +241,7 @@ export function MainShell() {
           {view === "inventory" ? <InventoryPage /> : null}
           {view === "themes" ? <ThemesPage /> : null}
           {view === "premium" ? <PremiumPage /> : null}
+          {view === "payment" ? <PaymentPage /> : null}
           {view === "profile" ? <ProfilePage /> : null}
           {view === "support" ? <SupportPage /> : null}
           {view === "settings" ? <SettingsPage /> : null}

@@ -6,6 +6,7 @@
     "inventory": "Inventory",
     "themes": "Themes",
     "premium": "Premium",
+    "payment": "Payment",
     "profile": "Profile",
     "support": "Support",
     "settings": "Settings",
@@ -175,6 +176,97 @@
     "enabled": "Enabled",
     "disabled": "Disabled",
     "loading": "Loading premium benefits..."
+  },
+  "payment": {
+    "title": "Payment",
+    "heading": "Complete your order",
+    "subtitle": "Choose a payment method and complete your order securely.",
+    "methods": {
+      "title": "Payment method",
+      "subtitle": "Pick the option that works best for you.",
+      "card": "Bank card",
+      "cardDescription": "Pay with Visa, Mastercard, or another supported card.",
+      "ideal": "iDEAL",
+      "idealDescription": "Fast bank payment for the Netherlands.",
+      "paypal": "PayPal",
+      "paypalDescription": "Continue with your PayPal wallet.",
+      "applePay": "Apple Pay",
+      "applePayDescription": "Quick payment on supported Apple devices.",
+      "googlePay": "Google Pay",
+      "googlePayDescription": "Pay with a saved Google Pay method.",
+      "bankTransfer": "SEPA / Bank transfer",
+      "bankTransferDescription": "Use a secure bank transfer flow.",
+      "revolut": "Revolut",
+      "revolutDescription": "Modern wallet payment prepared for launch.",
+      "crypto": "Crypto",
+      "cryptoDescription": "Crypto payments are planned for a later phase.",
+      "comingSoon": "Coming soon"
+    },
+    "details": {
+      "title": "Payment details",
+      "demoNotice": "Demo checkout only. A real provider will tokenize payment data before launch."
+    },
+    "card": {
+      "number": "Card number",
+      "expiry": "Expiry date",
+      "cvc": "CVC",
+      "name": "Name on card"
+    },
+    "ideal": {
+      "bank": "Choose your bank",
+      "chooseBank": "Select bank"
+    },
+    "providerBlocks": {
+      "paypal": "You will be redirected to PayPal after a real provider is connected. This demo does not charge your account.",
+      "applePay": "Apple Pay will open the native wallet sheet after production configuration.",
+      "googlePay": "Google Pay will use a secure payment sheet after provider setup.",
+      "bankTransfer": "Bank transfer orders will be generated server-side with a unique payment reference.",
+      "revolut": "Revolut checkout is prepared as a future wallet option."
+    },
+    "summary": {
+      "title": "Order summary",
+      "product": "Product",
+      "productName": "Premium starter pack",
+      "price": "Price",
+      "support": "Developer support",
+      "fees": "Fees",
+      "total": "Total"
+    },
+    "support": {
+      "title": "Support the developer",
+      "description": "If you like this project, you can add a small extra support amount. This is optional.",
+      "add": "Add support",
+      "customAmount": "Custom amount"
+    },
+    "actions": {
+      "payNow": "Pay now",
+      "processing": "Processing...",
+      "tryAgain": "Try again",
+      "continue": "Continue",
+      "continueIdeal": "Continue with iDEAL",
+      "openPayment": "Open payment page"
+    },
+    "success": {
+      "title": "Payment successful",
+      "description": "The demo checkout completed successfully. Real purchases will be confirmed by the payment provider."
+    },
+    "error": {
+      "title": "Check the details",
+      "description": "Some information is missing or invalid. Fix the highlighted fields and try again."
+    },
+    "security": {
+      "badge": "Secure payment",
+      "note": "Payments are processed securely. We never store sensitive card data.",
+      "sensitiveData": "This page does not save full card numbers, CVC codes, or payment form data."
+    },
+    "validation": {
+      "cardNumber": "Enter a valid card number.",
+      "expiry": "Enter a valid future expiry date.",
+      "cvc": "Enter a valid CVC.",
+      "cardName": "Enter the name on the card.",
+      "idealBank": "Choose a bank to continue with iDEAL.",
+      "supportAmount": "Enter a support amount between EUR 1 and EUR 250."
+    }
   },
   "settings": {
     "title": "Settings",

@@ -5,6 +5,7 @@
     "shop": "Winkel",
     "inventory": "Inventaris",
     "premium": "Premium",
+    "payment": "Betaling",
     "profile": "Profiel",
     "support": "Support",
     "settings": "Instellingen",
@@ -161,6 +162,97 @@
   },
   "premium": {
     "title": "Premium", "heading": "Meer beloningen, minder onderbrekingen", "subtitle": "Een productklare plek voor toekomstige abonnementen en premiumrechten.", "noAds": "Geen advertenties", "premiumBadge": "Premiumbadge", "premiumSkins": "Premiumskins", "extraDailySpins": "{{count}} extra dagelijkse draai(en)", "extraDailyGems": "{{count}} extra dagelijkse edelsteen/edelstenen", "extraLivesPerRun": "{{count}} extra leven(s) per ronde", "betterDailyRewards": "Verbeterde dagelijkse beloningen", "calloutTitle": "Betalingen zijn nog niet actief", "calloutText": "Deze voordelen komen van de backend. Een betalingsprovider kan later worden aangesloten zonder de spel- of winkelinterface opnieuw te bouwen.", "enabled": "Actief", "disabled": "Uit", "loading": "Laden"
+  },
+  "payment": {
+    "title": "Betaling",
+    "heading": "Rond je bestelling af",
+    "subtitle": "Kies een betaalmethode en rond je bestelling veilig af.",
+    "methods": {
+      "title": "Betaalmethode",
+      "subtitle": "Kies de optie die het beste bij je past.",
+      "card": "Bankkaart",
+      "cardDescription": "Betaal met Visa, Mastercard of een andere ondersteunde kaart.",
+      "ideal": "iDEAL",
+      "idealDescription": "Snelle bankbetaling voor Nederland.",
+      "paypal": "PayPal",
+      "paypalDescription": "Ga verder met je PayPal-wallet.",
+      "applePay": "Apple Pay",
+      "applePayDescription": "Snel betalen op ondersteunde Apple-apparaten.",
+      "googlePay": "Google Pay",
+      "googlePayDescription": "Betaal met een opgeslagen Google Pay-methode.",
+      "bankTransfer": "SEPA / bankoverschrijving",
+      "bankTransferDescription": "Gebruik een veilige bankoverschrijving.",
+      "revolut": "Revolut",
+      "revolutDescription": "Moderne walletbetaling voorbereid voor lancering.",
+      "crypto": "Crypto",
+      "cryptoDescription": "Cryptobetalingen zijn gepland voor een latere fase.",
+      "comingSoon": "Binnenkort"
+    },
+    "details": {
+      "title": "Betaalgegevens",
+      "demoNotice": "Alleen demo-checkout. Een echte provider zal betaalgegevens tokeniseren voor de lancering."
+    },
+    "card": {
+      "number": "Kaartnummer",
+      "expiry": "Vervaldatum",
+      "cvc": "CVC",
+      "name": "Naam op kaart"
+    },
+    "ideal": {
+      "bank": "Kies je bank",
+      "chooseBank": "Selecteer bank"
+    },
+    "providerBlocks": {
+      "paypal": "Je wordt naar PayPal doorgestuurd zodra een echte provider is gekoppeld. Deze demo brengt niets in rekening.",
+      "applePay": "Apple Pay opent de native wallet na productieconfiguratie.",
+      "googlePay": "Google Pay gebruikt een veilig betaalvenster na providerconfiguratie.",
+      "bankTransfer": "Bankoverschrijvingen worden server-side aangemaakt met een unieke betaalreferentie.",
+      "revolut": "Revolut-checkout is voorbereid als toekomstige walletoptie."
+    },
+    "summary": {
+      "title": "Besteloverzicht",
+      "product": "Product",
+      "productName": "Premium starterspakket",
+      "price": "Prijs",
+      "support": "Ontwikkelaar steunen",
+      "fees": "Kosten",
+      "total": "Totaal"
+    },
+    "support": {
+      "title": "Steun de ontwikkelaar",
+      "description": "Vind je dit project leuk, dan kun je vrijwillig een klein extra steunbedrag toevoegen.",
+      "add": "Steun toevoegen",
+      "customAmount": "Eigen bedrag"
+    },
+    "actions": {
+      "payNow": "Nu betalen",
+      "processing": "Verwerken...",
+      "tryAgain": "Opnieuw proberen",
+      "continue": "Doorgaan",
+      "continueIdeal": "Doorgaan met iDEAL",
+      "openPayment": "Betaalpagina openen"
+    },
+    "success": {
+      "title": "Betaling gelukt",
+      "description": "De demo-checkout is voltooid. Echte aankopen worden later door de betaalprovider bevestigd."
+    },
+    "error": {
+      "title": "Controleer de gegevens",
+      "description": "Er ontbreekt informatie of iets is ongeldig. Corrigeer de gemarkeerde velden en probeer opnieuw."
+    },
+    "security": {
+      "badge": "Veilige betaling",
+      "note": "Betalingen worden veilig verwerkt. We bewaren nooit gevoelige kaartgegevens.",
+      "sensitiveData": "Deze pagina bewaart geen volledige kaartnummers, CVC-codes of betaalformuliergegevens."
+    },
+    "validation": {
+      "cardNumber": "Voer een geldig kaartnummer in.",
+      "expiry": "Voer een geldige toekomstige vervaldatum in.",
+      "cvc": "Voer een geldige CVC in.",
+      "cardName": "Voer de naam op de kaart in.",
+      "idealBank": "Kies een bank om door te gaan met iDEAL.",
+      "supportAmount": "Voer een steunbedrag tussen EUR 1 en EUR 250 in."
+    }
   },
   "settings": {
     "title": "Instellingen",

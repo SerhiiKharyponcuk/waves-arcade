@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
-import { ShieldCheck, Sparkles, Star } from "lucide-react";
+import { CreditCard, ShieldCheck, Sparkles, Star } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useAuthStore } from "../store/authStore";
+import { useUiStore } from "../store/uiStore";
 import { walletApi } from "../services/walletApi";
 import { StatCard } from "../components/ui/StatCard";
+import { Button } from "../components/ui/Button";
 
 export function PremiumPage() {
   const { t } = useTranslation();
-  const { user } = useAuthStore();
+  const setView = useUiStore((state) => state.setView);
   const [benefits, setBenefits] = useState<null | { premiumOnlySkins: number; extraDailySpins: number; extraDailyGems: number; extraLivesPerRun: number; noAds: boolean; premiumBadge: string; betterDailyRewards: boolean }>(null);
   const [loading, setLoading] = useState(true);
 
@@ -53,6 +54,19 @@ export function PremiumPage() {
       <div className="rounded-lg border border-cyanGlow/20 bg-gradient-to-br from-white/5 to-white/10 p-6 text-slate-200">
         <h2 className="mb-3 text-xl font-black text-white">{t("premium.calloutTitle")}</h2>
         <p>{t("premium.calloutText")}</p>
+        <Button
+          type="button"
+          className="mt-5"
+          icon={<CreditCard size={18} />}
+          onClick={() => {
+            if (window.location.pathname !== "/payment") {
+              window.history.pushState({}, "", "/payment");
+            }
+            setView("payment");
+          }}
+        >
+          {t("payment.actions.openPayment")}
+        </Button>
       </div>
     </section>
   );

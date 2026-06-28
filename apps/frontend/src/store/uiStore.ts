@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-export type AppView = "play" | "shop" | "inventory" | "themes" | "premium" | "profile" | "support" | "settings" | "rules" | "about" | "privacy" | "cookies" | "admin";
+export type AppView = "play" | "shop" | "inventory" | "themes" | "premium" | "payment" | "profile" | "support" | "settings" | "rules" | "about" | "privacy" | "cookies" | "admin";
 
 interface UiState {
   view: AppView;
