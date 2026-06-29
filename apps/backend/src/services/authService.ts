@@ -8,6 +8,7 @@ import { prisma } from "../config/prisma.js";
 import { env } from "../config/env.js";
 import { sendEmailVerificationCode, sendPasswordResetEmail } from "./emailService.js";
 import { AppError } from "../utils/appError.js";
+import { getSafeStoredDisplayName, parseDisplayName } from "../utils/displayName.js";
 
 export interface AuthUser {
   userId: string;
@@ -137,7 +138,7 @@ function toAuthUserDto(user: UserWithAccount): AuthUserDto {
     trustStatus: user.trustStatus as AuthUserDto["trustStatus"],
     profile: {
       id: user.profile.id,
-      displayName: user.profile.displayName,
+      displayName: getSafeStoredDisplayName(user.profile.displayName, user.id),
       locale: user.profile.locale as SupportedLocale,
       avatarUrl: user.profile.avatarUrl,
       highScore: user.profile.highScore,
@@ -217,6 +218,8 @@ export async function registerAccount(input: {
     throw new AppError(409, "An account with this email already exists.", "EMAIL_EXISTS");
   }
 
+  const displayName = parseDisplayName(input.displayName, "displayName");
+
   const starterArrow = await prisma.skin.findUnique({ where: { slug: "cyber-green" } });
   const starterTrail = await prisma.skin.findUnique({ where: { slug: "neon-blue-trail" } });
 
@@ -235,7 +238,7 @@ export async function registerAccount(input: {
       emailVerifiedAt: env.EMAIL_VERIFICATION_REQUIRED ? undefined : new Date(),
       profile: {
         create: {
-          displayName: input.displayName,
+          displayName,
           locale: input.locale,
           selectedArrowSkinId: starterArrow.id,
           selectedTrailSkinId: starterTrail.id

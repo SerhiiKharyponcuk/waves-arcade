@@ -12,6 +12,7 @@ import { UserMenu } from "./UserMenu";
 import { PolicyPage } from "../../pages/PolicyPage";
 import { AboutPage } from "../../pages/AboutPage";
 import { AppLoader } from "../ui/AppLoader";
+import { paymentsEnabled } from "../../config/features";
 
 const GamePage = lazy(() => import("../../pages/GamePage").then((module) => ({ default: module.GamePage })));
 const ShopPage = lazy(() => import("../../pages/ShopPage").then((module) => ({ default: module.ShopPage })));
@@ -41,6 +42,12 @@ const guestLockedViews = new Set<AppView>(["inventory", "premium", "payment", "p
 
 function syncPaymentPath(nextView: AppView) {
   const paymentPath = "/payment";
+  if (!paymentsEnabled) {
+    if (window.location.pathname === paymentPath) {
+      window.history.replaceState({}, "", "/");
+    }
+    return;
+  }
   if (nextView === "payment" && window.location.pathname !== paymentPath) {
     window.history.pushState({}, "", paymentPath);
   }
@@ -75,6 +82,11 @@ export function MainShell() {
   useEffect(() => {
     const applyPath = () => {
       if (window.location.pathname === "/payment") {
+        if (!paymentsEnabled) {
+          window.history.replaceState({}, "", "/");
+          setView("settings");
+          return;
+        }
         setView("payment");
         return;
       }
@@ -240,7 +252,7 @@ export function MainShell() {
           {view === "inventory" ? <InventoryPage /> : null}
           {view === "themes" ? <ThemesPage /> : null}
           {view === "premium" ? <PremiumPage /> : null}
-          {view === "payment" ? <PaymentPage /> : null}
+          {paymentsEnabled && view === "payment" ? <PaymentPage /> : null}
           {view === "profile" ? <ProfilePage /> : null}
           {view === "support" ? <SupportPage /> : null}
           {view === "settings" ? <SettingsPage /> : null}

@@ -11,6 +11,7 @@ import type {
 } from "../types/api";
 import type { PaymentCurrency } from "@waves/shared";
 import { apiRequest } from "./apiClient";
+import { paymentsEnabled } from "../config/features";
 
 export type PaymentProviderId = "liqpay" | "stripe" | "mollie" | "paypal" | "adyen" | "google_play" | "apple_iap" | "placeholder";
 
@@ -72,6 +73,9 @@ export const walletApi = {
     provider: PaymentProviderId;
     idempotencyKey?: string;
   }) {
+    if (!paymentsEnabled) {
+      throw new Error("Payments are temporarily unavailable.");
+    }
     const idempotencyKey = payload.idempotencyKey ?? `wallet-${Date.now()}-${crypto.randomUUID?.() ?? Math.random().toString(36).slice(2)}`;
     return apiRequest<PaymentIntentDto>("/wallet/purchase-placeholder", {
       method: "POST",

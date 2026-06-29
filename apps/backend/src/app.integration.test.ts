@@ -11,6 +11,12 @@ async function request<T>(base: string, path: string, options: RequestInit = {})
   return body;
 }
 
+async function requestUnsafe<T>(base: string, path: string, options: RequestInit = {}) {
+  const response = await fetch(`${base}${path}`, { ...options, headers: { "content-type": "application/json", ...options.headers } });
+  const body = await response.json() as T;
+  return { response, body };
+}
+
 test("guest, registration, game, shop and admin API flows", async () => {
   const server = createApp().listen(0);
   await new Promise<void>((resolve) => server.once("listening", resolve));
@@ -57,6 +63,80 @@ test("guest, registration, game, shop and admin API flows", async () => {
     assert.ok(analytics.registeredUsers >= 1);
   } finally {
     await prisma.user.updateMany({ where: { email: "test@waves.local" }, data: { role: "PLAYER" } });
+    await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+    await prisma.$disconnect();
+  }
+});
+
+test("register and profile update reject invalid display names without leaking internals", async () => {
+  const server = createApp().listen(0);
+  await new Promise<void>((resolve) => server.once("listening", resolve));
+  const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}/api`;
+  const email = `validation-${Date.now()}@waves.local`;
+  const password = "Validation123!";
+  const invalidPayloads = [
+    "<script>alert(1)</script>",
+    "<img src=x onerror=alert(1)>",
+    "javascript:alert(1)",
+    "' OR '1'='1",
+    "admin'--",
+    "   "
+  ];
+
+  try {
+    for (const displayName of invalidPayloads) {
+      const { response, body } = await requestUnsafe<{ message: string; code?: string; fields?: Record<string, string[]> }>(
+        base,
+        "/auth/register",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            email: `${Date.now()}-${Math.random().toString(16).slice(2)}@waves.local`,
+            password,
+            displayName,
+            locale: "en",
+            termsAccepted: true,
+            website: "",
+            formStartedAt: Date.now() - 3_000
+          })
+        }
+      );
+
+      assert.equal(response.status, 400);
+      assert.equal(body.code, "VALIDATION_ERROR");
+      assert.match(body.message, /Invalid request data/i);
+      assert.ok(body.fields?.displayName?.[0]);
+      assert.equal(body.fields?.displayName?.[0], "Invalid nickname. Use 2-32 characters: letters, numbers, spaces, dots, underscores and dashes.");
+      assert.equal("stack" in body, false);
+    }
+
+    const auth = await request<{ accessToken: string }>(base, "/auth/register", {
+      method: "POST",
+      body: JSON.stringify({ email, password, displayName: "Safe Player", locale: "en", termsAccepted: true, website: "", formStartedAt: Date.now() - 3_000 })
+    });
+
+    const invalidProfile = await requestUnsafe<{ message: string; code?: string; fields?: Record<string, string[]> }>(
+      base,
+      "/user/profile",
+      {
+        method: "PATCH",
+        headers: { authorization: `Bearer ${auth.accessToken}` },
+        body: JSON.stringify({ displayName: "\"><script>alert(1)</script>" })
+      }
+    );
+
+    assert.equal(invalidProfile.response.status, 400);
+    assert.equal(invalidProfile.body.code, "VALIDATION_ERROR");
+
+    const invalidLeaderboard = await requestUnsafe<{ message: string; code?: string }>(
+      base,
+      "/game/leaderboard?limit=test';DROP TABLE users;--",
+      { headers: { authorization: `Bearer ${auth.accessToken}` } }
+    );
+
+    assert.equal(invalidLeaderboard.response.status, 400);
+    assert.equal(invalidLeaderboard.body.code, "VALIDATION_ERROR");
+  } finally {
     await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
     await prisma.$disconnect();
   }

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { displayNameSchema, INVALID_DISPLAY_NAME_MESSAGE } from "../utils/displayName.js";
 
 export const localeSchema = z.enum(["en", "nl", "ru", "uk"]);
 
@@ -19,7 +20,7 @@ function rejectFastBots(value: { website?: string; formStartedAt?: number }, con
 export const registerSchema = z.object({
   email: z.string().trim().email("Enter a valid email address.").max(160, "Email is too long."),
   password: z.string().min(8, "Password must be at least 8 characters.").max(128, "Password is too long."),
-  displayName: z.string().trim().min(3, "Display name must be at least 3 characters.").max(24, "Display name is too long."),
+  displayName: displayNameSchema,
   locale: localeSchema.catch("en"),
   termsAccepted: z.literal(true, {
     errorMap: () => ({ message: "Terms of use must be accepted." })
@@ -34,7 +35,7 @@ export const loginSchema = z.object({
 });
 
 export const updateProfileSchema = z.object({
-  displayName: z.string().trim().min(3, "Display name must be at least 3 characters.").max(24, "Display name is too long.").optional(),
+  displayName: displayNameSchema.optional(),
   locale: localeSchema.catch("en").optional(),
   avatarUrl: z.string().url().nullable().optional(),
   selectedThemeId: z.string().trim().min(2).max(60).optional(),
@@ -138,7 +139,7 @@ export const supportTicketSchema = z.object({
 
 export const publicSupportTicketSchema = z.object({
   email: z.string().trim().email("Enter a valid email address.").max(160, "Email is too long."),
-  displayName: z.string().trim().max(60, "Name is too long.").optional().default(""),
+  displayName: z.union([displayNameSchema, z.literal("")]).optional(),
   category: z.enum(["BUG", "BAN_APPEAL", "APPEAL", "ACCOUNT", "SCORE", "PAYMENT", "SHOP", "OTHER"]).default("ACCOUNT"),
   relatedEntityId: z.string().trim().max(100).optional(),
   subject: z.string().trim().min(3, "Subject must be at least 3 characters.").max(120, "Subject is too long."),
@@ -195,3 +196,22 @@ export const deleteAccountSchema = z.object({
   password: z.string().min(1).max(128),
   confirmation: z.literal("DELETE")
 });
+
+export const leaderboardQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(50).optional().default(10)
+});
+
+export const adminUserSearchQuerySchema = z.object({
+  q: z.string().trim().max(80, "Search query is too long.").optional().default("")
+});
+
+export const adminScoreQuerySchema = z.object({
+  status: z.enum(["all", "valid", "suspicious", "pending_review", "rejected", "hidden"]).optional().default("pending_review")
+});
+
+export const adminSupportTicketsQuerySchema = z.object({
+  status: z.enum(["ALL", "OPEN", "ANSWERED", "CLOSED"]).optional().default("ALL"),
+  source: z.enum(["ALL", "ACCOUNT", "GUEST"]).optional().default("ALL")
+});
+
+export { INVALID_DISPLAY_NAME_MESSAGE };

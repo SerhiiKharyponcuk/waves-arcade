@@ -15,6 +15,7 @@ import { defaultGameSettings, type GameSettings } from "../types/settings";
 import { useConsentStore } from "../store/consentStore";
 import { useTranslation } from "react-i18next";
 import { playAudioPreview } from "../game/audio/GameAudioManager";
+import { paymentsEnabled } from "../config/features";
 
 function mergeSettings(value: Record<string, unknown> | undefined): GameSettings {
   return { ...defaultGameSettings, ...(value ?? {}) } as GameSettings;
@@ -193,19 +194,23 @@ export function SettingsPage() {
             <SettingSection title={t("settings.ads")}><ToggleSetting label={t("settingsDetails.allowRewardedAds")} checked={settings.rewardedAdsPermission} onChange={(value) => patchSetting("rewardedAdsPermission", value)} /><p className="text-xs leading-5 text-slate-400">{t("settingsDetails.rewardedAdsHelp")}</p></SettingSection>
             <SettingSection title={t("settings.payments")}>
               <p className="text-sm leading-6 text-slate-400">{t("settings.paymentsNote")}</p>
-              <div className="rounded-md border border-cyanGlow/20 bg-cyanGlow/10 p-3 text-sm leading-6 text-slate-200">{t("payment.settingsEntry.description")}</div>
-              <Button
-                type="button"
-                onClick={() => {
-                  if (window.location.pathname !== "/payment") {
-                    window.history.pushState({}, "", "/payment");
-                  }
-                  setView("payment");
-                }}
-                icon={<CreditCard size={18} />}
-              >
-                {t("payment.settingsEntry.open")}
-              </Button>
+              <div className="rounded-md border border-cyanGlow/20 bg-cyanGlow/10 p-3 text-sm leading-6 text-slate-200">
+                {paymentsEnabled ? t("payment.settingsEntry.description") : t("payment.settingsEntry.disabled")}
+              </div>
+              {paymentsEnabled ? (
+                <Button
+                  type="button"
+                  onClick={() => {
+                    if (window.location.pathname !== "/payment") {
+                      window.history.pushState({}, "", "/payment");
+                    }
+                    setView("payment");
+                  }}
+                  icon={<CreditCard size={18} />}
+                >
+                  {t("payment.settingsEntry.open")}
+                </Button>
+              ) : null}
             </SettingSection>
           </>
         ) : (

@@ -292,6 +292,7 @@
     "settingsEntry": {
       "description": "Open the secure payment center to create provider-backed orders. Real charges stay disabled until production keys are configured.",
       "open": "Open payment center",
+      "disabled": "Payments are temporarily unavailable while business billing and payout details are being prepared. Coins, premium and paid skins cannot be purchased right now.",
       "guestLocked": "Create an account to access payments, invoices, premium purchases, and future billing history."
     },
     "success": {

@@ -11,3 +11,14 @@ export function validateBody<T>(schema: ZodSchema<T>) {
     }
   };
 }
+
+export function validateQuery<T>(schema: ZodSchema<T>) {
+  return (request: Request, _response: Response, next: NextFunction) => {
+    try {
+      request.query = schema.parse(request.query) as Request["query"];
+      next();
+    } catch (error) {
+      next(error);
+    }
+  };
+}

@@ -21,7 +21,7 @@ import { AppError } from "../utils/appError.js";
 import { getAdminAnalytics } from "../services/analyticsService.js";
 
 export async function adminUsers(request: Request, response: Response) {
-  response.json(await listAdminUsers(String(request.query.q ?? "")));
+  response.json(await listAdminUsers(typeof request.query.q === "string" ? request.query.q : ""));
 }
 
 function getTargetUserId(request: Request) {
@@ -58,7 +58,11 @@ export async function adminResetPassword(request: Request, response: Response) {
 }
 
 export async function adminScores(request: Request, response: Response) {
-  response.json(await listScoresForReview((request.query.status ?? "pending_review") as Parameters<typeof listScoresForReview>[0]));
+  response.json(
+    await listScoresForReview(
+      (typeof request.query.status === "string" ? request.query.status : "pending_review") as Parameters<typeof listScoresForReview>[0]
+    )
+  );
 }
 
 export async function adminModerateScore(request: Request, response: Response) {

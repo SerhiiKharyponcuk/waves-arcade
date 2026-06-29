@@ -12,6 +12,7 @@ import {
   wallet
 } from "../controllers/walletController.js";
 import { requireAuth } from "../middleware/auth.js";
+import { requirePaymentsEnabled } from "../middleware/features.js";
 import { economyMutationRateLimit, paymentRateLimit } from "../middleware/security.js";
 import { validateBody } from "../middleware/validate.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -31,6 +32,7 @@ walletRoutes.post("/ad/reward/complete", requireAuth, economyMutationRateLimit, 
 walletRoutes.post(
   "/purchase-placeholder",
   requireAuth,
+  requirePaymentsEnabled,
   paymentRateLimit,
   validateBody(purchasePlaceholderSchema),
   asyncHandler(purchasePlaceholder)

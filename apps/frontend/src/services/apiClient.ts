@@ -1,4 +1,5 @@
 import type { ApiErrorDto } from "@waves/shared";
+import { i18n } from "../i18n";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000/api";
 const GET_CACHE_TTL_MS = 12_000;
@@ -18,22 +19,26 @@ export class ApiRequestError extends Error {
   }
 }
 
-const fieldLabels: Record<string, string> = {
-  email: "Email",
-  password: "Password",
-  displayName: "Display name",
-  locale: "Language",
-  termsAccepted: "Terms",
-  website: "Security check",
-  formStartedAt: "Security check",
-  subject: "Subject",
-  message: "Message",
-  token: "Reset token"
-};
+function fieldLabel(field: string) {
+  const labels: Record<string, string> = {
+    email: i18n.t("auth.email", { defaultValue: "Email" }),
+    password: i18n.t("auth.password", { defaultValue: "Password" }),
+    displayName: i18n.t("auth.displayName", { defaultValue: "Display name" }),
+    locale: i18n.t("settings.language", { defaultValue: "Language" }),
+    termsAccepted: i18n.t("terms.title", { defaultValue: "Terms" }),
+    website: i18n.t("auth.securityVerification", { defaultValue: "Security check" }),
+    formStartedAt: i18n.t("auth.securityVerification", { defaultValue: "Security check" }),
+    subject: i18n.t("support.subject", { defaultValue: "Subject" }),
+    message: i18n.t("support.message", { defaultValue: "Message" }),
+    token: i18n.t("auth.verificationCode", { defaultValue: "Reset token" })
+  };
+
+  return labels[field] ?? field;
+}
 
 function formatApiError(error: ApiErrorDto) {
   const fieldMessages = Object.entries(error.fields ?? {})
-    .flatMap(([field, messages]) => messages.map((message) => `${fieldLabels[field] ?? field}: ${message}`))
+    .flatMap(([field, messages]) => messages.map((message) => `${fieldLabel(field)}: ${message}`))
     .join(" ");
 
   return fieldMessages || error.message;
@@ -81,7 +86,7 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
 
     if (!response.ok) {
       const error = (await response.json().catch(() => ({
-        message: "Request failed",
+        message: i18n.t("common.error", { defaultValue: "Request failed" }),
         code: "REQUEST_FAILED"
       }))) as ApiErrorDto;
       throw new ApiRequestError(formatApiError(error), response.status, error.code);

@@ -18,9 +18,9 @@ export async function submitScore(request: Request, response: Response) {
 }
 
 export async function leaderboard(request: Request, response: Response) {
-  const limit = Number(request.query.limit ?? 10);
+  const limit = typeof request.query.limit === "number" ? request.query.limit : Number(request.query.limit ?? 10);
   response.json({
-    global: await getLeaderboard(Number.isFinite(limit) ? Math.min(50, Math.max(1, limit)) : 10),
+    global: await getLeaderboard(Number.isFinite(limit) ? limit : 10),
     weeklyPlaceholder: [],
     myBest: request.auth ? await getMyBestScore(request.auth.userId) : null
   });

@@ -5,6 +5,7 @@ import { useUiStore } from "../store/uiStore";
 import { walletApi } from "../services/walletApi";
 import { StatCard } from "../components/ui/StatCard";
 import { Button } from "../components/ui/Button";
+import { paymentsEnabled } from "../config/features";
 
 export function PremiumPage() {
   const { t } = useTranslation();
@@ -54,19 +55,25 @@ export function PremiumPage() {
       <div className="rounded-lg border border-cyanGlow/20 bg-gradient-to-br from-white/5 to-white/10 p-6 text-slate-200">
         <h2 className="mb-3 text-xl font-black text-white">{t("premium.calloutTitle")}</h2>
         <p>{t("premium.calloutText")}</p>
-        <Button
-          type="button"
-          className="mt-5"
-          icon={<CreditCard size={18} />}
-          onClick={() => {
-            if (window.location.pathname !== "/payment") {
-              window.history.pushState({}, "", "/payment");
-            }
-            setView("payment");
-          }}
-        >
-          {t("payment.actions.openPayment")}
-        </Button>
+        {paymentsEnabled ? (
+          <Button
+            type="button"
+            className="mt-5"
+            icon={<CreditCard size={18} />}
+            onClick={() => {
+              if (window.location.pathname !== "/payment") {
+                window.history.pushState({}, "", "/payment");
+              }
+              setView("payment");
+            }}
+          >
+            {t("payment.actions.openPayment")}
+          </Button>
+        ) : (
+          <div className="mt-5 rounded-md border border-goldGlow/25 bg-goldGlow/10 p-3 text-sm leading-6 text-slate-200">
+            {t("payment.settingsEntry.disabled")}
+          </div>
+        )}
       </div>
     </section>
   );

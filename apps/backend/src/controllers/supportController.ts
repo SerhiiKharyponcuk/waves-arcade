@@ -23,8 +23,8 @@ export async function myTickets(request: Request, response: Response) {
 export async function adminTickets(request: Request, response: Response) {
   response.json(
     await listAdminSupportTickets(
-      String(request.query.status ?? "ALL"),
-      String(request.query.source ?? "ALL")
+      typeof request.query.status === "string" ? request.query.status : "ALL",
+      typeof request.query.source === "string" ? request.query.source : "ALL"
     )
   );
 }

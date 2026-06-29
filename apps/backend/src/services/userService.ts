@@ -3,6 +3,7 @@ import { prisma } from "../config/prisma.js";
 import { AppError } from "../utils/appError.js";
 import bcrypt from "bcryptjs";
 import { randomBytes } from "node:crypto";
+import { getSafeStoredDisplayName, parseDisplayName } from "../utils/displayName.js";
 
 function parseRecord(value: string): Record<string, unknown> {
   try {
@@ -16,7 +17,7 @@ function parseRecord(value: string): Record<string, unknown> {
 function toProfileDto(profile: Awaited<ReturnType<typeof prisma.userProfile.findUniqueOrThrow>>): UserProfileDto {
   return {
     id: profile.id,
-    displayName: profile.displayName,
+    displayName: getSafeStoredDisplayName(profile.displayName, profile.userId),
     locale: profile.locale as SupportedLocale,
     avatarUrl: profile.avatarUrl,
     highScore: profile.highScore,
@@ -54,10 +55,14 @@ export async function updateUserProfile(
   }
 ): Promise<UserProfileDto> {
   const { customization, gameSettings, ...plainInput } = input;
+  const safeDisplayName = typeof plainInput.displayName === "string"
+    ? parseDisplayName(plainInput.displayName, "displayName")
+    : undefined;
   const profile = await prisma.userProfile.update({
     where: { userId },
     data: {
       ...plainInput,
+      displayName: safeDisplayName,
       customizationJson: customization ? JSON.stringify(customization) : undefined,
       gameSettingsJson: gameSettings ? JSON.stringify(gameSettings) : undefined
     }

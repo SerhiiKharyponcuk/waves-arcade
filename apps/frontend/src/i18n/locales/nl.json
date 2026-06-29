@@ -277,7 +277,8 @@
     },
     "settingsEntry": {
       "description": "Open het veilige betaalcentrum om provider-ondersteunde orders te maken. Echte betalingen blijven uit totdat productiesleutels zijn ingesteld.",
-      "open": "Betaalcentrum openen",
+        "open": "Betaalcentrum openen",
+        "disabled": "Betalingen zijn tijdelijk niet beschikbaar terwijl zakelijke uitbetalingsgegevens en facturatie worden voorbereid. Munten, Premium en betaalde skins kunnen nu niet worden gekocht.",
       "guestLocked": "Maak een account om betalingen, facturen, premiumaankopen en toekomstige factuurgeschiedenis te gebruiken."
     },
     "success": {

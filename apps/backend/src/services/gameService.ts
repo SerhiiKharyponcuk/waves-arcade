@@ -14,6 +14,7 @@ import { AppError } from "../utils/appError.js";
 import { validateCheckpointProgress, validateScoreSubmission } from "./antiCheatService.js";
 import { recordProgressForValidRun } from "./progressionService.js";
 import { assertNoActiveRestriction } from "./restrictionService.js";
+import { getSafeStoredDisplayName } from "../utils/displayName.js";
 
 type LeaderboardScoreRow = {
   id: string;
@@ -212,7 +213,7 @@ export async function getLeaderboard(limit = 10): Promise<LeaderboardEntryDto[]>
   return scores.map((score: LeaderboardScoreRow, index: number) => ({
     scoreId: score.id,
     userId: score.userId,
-    displayName: score.user.profile?.displayName ?? "Player",
+    displayName: score.user.profile ? getSafeStoredDisplayName(score.user.profile.displayName, score.userId) : `User-${score.userId.slice(0, 6)}`,
     score: score.score,
     rank: index + 1,
     achievedAt: score.createdAt.toISOString()

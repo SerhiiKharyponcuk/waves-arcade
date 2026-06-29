@@ -6,6 +6,7 @@ import { AppError } from "../utils/appError.js";
 import { issueEmailVerificationCode } from "./authService.js";
 import { writeAdminAuditLog } from "./auditService.js";
 import { generateTemporaryPassword } from "./passwordService.js";
+import { getSafeStoredDisplayName } from "../utils/displayName.js";
 
 type AdminUserRow = Awaited<ReturnType<typeof getAdminUserOrThrow>>;
 
@@ -26,7 +27,7 @@ function toAdminUserDto(user: AdminUserRow): AdminUserDto {
     email: user.email,
     role: user.role as AdminUserDto["role"],
     status: user.status as AdminUserDto["status"],
-    displayName: user.profile?.displayName ?? "Player",
+    displayName: user.profile ? getSafeStoredDisplayName(user.profile.displayName, user.id) : `User-${user.id.slice(0, 6)}`,
     highScore: user.profile?.highScore ?? 0,
     coins: user.wallet?.coins ?? 0,
     createdAt: user.createdAt.toISOString(),
@@ -330,7 +331,7 @@ export async function listScoresForReview(status: ScoreStatus | "all" = "pending
     return {
       id: score.id,
       userId: score.userId,
-      displayName: score.user.profile?.displayName ?? "Player",
+      displayName: score.user.profile ? getSafeStoredDisplayName(score.user.profile.displayName, score.userId) : `User-${score.userId.slice(0, 6)}`,
       sessionId: score.sessionId,
       score: score.score,
       distance: score.distance,
@@ -449,7 +450,7 @@ export async function listFinancialTransactions(): Promise<FinancialTransactionD
       id: row.id,
       userId: row.userId,
       userEmail: row.user.email,
-      displayName: row.user.profile?.displayName ?? "Player",
+      displayName: row.user.profile ? getSafeStoredDisplayName(row.user.profile.displayName, row.userId) : `User-${row.userId.slice(0, 6)}`,
       type: row.type,
       status: row.status,
       provider: row.provider,

@@ -3,6 +3,7 @@ import type { SupportTicketCategory, SupportTicketDto, SupportTicketStatus } fro
 import { prisma } from "../config/prisma.js";
 import { AppError } from "../utils/appError.js";
 import { writeAdminAuditLog } from "./auditService.js";
+import { getSafeStoredDisplayName, parseOptionalDisplayName } from "../utils/displayName.js";
 
 const blockedSupportTerms = [
   "fuck",
@@ -40,7 +41,11 @@ function toSupportTicketDto(ticket: SupportTicketRow): SupportTicketDto {
     id: ticket.id,
     userId: ticket.userId,
     userEmail: ticket.user?.email ?? ticket.contactEmail ?? undefined,
-    displayName: ticket.user?.profile?.displayName ?? ticket.contactName ?? "Guest",
+    displayName: ticket.user?.profile
+      ? getSafeStoredDisplayName(ticket.user.profile.displayName, ticket.userId ?? ticket.id)
+      : ticket.contactName
+        ? getSafeStoredDisplayName(ticket.contactName, ticket.id, "Guest")
+        : "Guest",
     source: ticket.userId ? "ACCOUNT" : "GUEST",
     adminEmail: ticket.admin?.email ?? null,
     category: ticket.category as SupportTicketCategory,
@@ -107,11 +112,12 @@ export async function createPublicSupportTicket(input: {
   relatedEntityId?: string;
 }): Promise<SupportTicketDto> {
   validateSupportMessage(input.subject, input.message);
+  const contactName = parseOptionalDisplayName(input.displayName, "contactName") ?? "Guest";
 
   const ticket = await prisma.supportTicket.create({
     data: {
       contactEmail: input.email.toLowerCase(),
-      contactName: input.displayName?.trim() || "Guest",
+      contactName,
       category: input.category,
       subject: input.subject,
       message: input.message,
