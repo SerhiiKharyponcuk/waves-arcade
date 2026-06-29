@@ -110,6 +110,10 @@ export function noStoreApiMiddleware(_request: Request, response: Response, next
 }
 
 export function strictJsonContentType(request: Request, response: Response, next: NextFunction) {
+  if (request.path === "/api/payments/liqpay/webhook") {
+    next();
+    return;
+  }
   const hasBody = Number(request.header("content-length") ?? "0") > 0;
   const mutates = ["POST", "PUT", "PATCH", "DELETE"].includes(request.method);
   if (mutates && hasBody && !request.is("application/json")) {

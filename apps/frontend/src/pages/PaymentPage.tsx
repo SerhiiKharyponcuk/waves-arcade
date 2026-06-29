@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
   BadgeEuro,
@@ -75,6 +75,14 @@ export function PaymentPage() {
   const [paymentIntent, setPaymentIntent] = useState<PaymentIntentDto | null>(null);
   const [idempotencyKey, setIdempotencyKey] = useState(createPaymentKey);
   const selectedProduct = paymentProducts.find((product) => product.sku === selectedSku) ?? paymentProducts[0]!;
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const checkoutStatus = params.get("status");
+    if (checkoutStatus === "success") {
+      setStatus("checkout_ready");
+    }
+  }, []);
 
   const paymentMethods = [
     { id: "ideal" as const, provider: "mollie" as const, icon: Landmark, title: t("payment.methods.ideal"), description: t("payment.methods.idealDescription"), recommended: true },

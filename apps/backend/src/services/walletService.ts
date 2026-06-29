@@ -4,7 +4,8 @@ import { prisma } from "../config/prisma.js";
 import { env } from "../config/env.js";
 import { AppError } from "../utils/appError.js";
 import { assertNoActiveRestriction } from "./restrictionService.js";
-import { paymentProvider, type PaymentProviderId } from "./paymentProvider.js";
+import { createLiqPayCheckoutForm, decodeLiqPayData, verifyLiqPaySignature, type LiqPayCallbackPayload } from "./liqpayProvider.js";
+import { getPaymentProvider, type PaymentProviderId } from "./paymentProvider.js";
 import { mapSkinDto } from "./skinCatalogService.js";
 
 type RouletteOutcome = {
@@ -34,6 +35,22 @@ type PurchasePlaceholderInput = {
   currency: PaymentCurrency;
   provider: PaymentProviderId;
   idempotencyKey: string;
+};
+
+type PurchaseGrants = {
+  coins: number;
+  premiumDays: number;
+  skinSlug: string | null;
+};
+
+type PurchaseMetadata = Record<string, unknown> & {
+  sku?: string;
+  amountCents?: number;
+  productAmountCents?: number;
+  supportAmountCents?: number;
+  currency?: PaymentCurrency;
+  grants?: PurchaseGrants;
+  externalId?: string;
 };
 
 function isKnownPrismaError(error: unknown, code: string): error is KnownPrismaError {
@@ -381,6 +398,15 @@ export async function createPurchasePlaceholder(
     if (!idempotencyPayloadMatches(metadata, order)) {
       throw new AppError(409, "Idempotency key was already used for a different payment request.", "IDEMPOTENCY_KEY_CONFLICT");
     }
+    if (existing.provider === "liqpay" && env.PAYMENT_PROVIDER === "liqpay") {
+      return {
+        provider: existing.provider,
+        externalId: metadata.externalId ?? existing.idempotencyKey ?? input.idempotencyKey,
+        status: "pending" as const,
+        message: "LiqPay checkout session created.",
+        checkoutUrl: `${new URL(env.LIQPAY_SERVER_URL!).origin}/api/payments/liqpay/checkout/${encodeURIComponent(existing.idempotencyKey ?? input.idempotencyKey)}`
+      };
+    }
     return {
       provider: existing.provider,
       externalId: metadata.externalId ?? `placeholder_${input.idempotencyKey}`,
@@ -389,7 +415,7 @@ export async function createPurchasePlaceholder(
     };
   }
 
-  const intent = await paymentProvider.createPaymentIntent({ userId, ...input, amountCents: order.amountCents, currency: order.currency });
+  const intent = await getPaymentProvider(input.provider).createPaymentIntent({ userId, ...input, amountCents: order.amountCents, currency: order.currency });
 
   try {
     await prisma.purchaseTransaction.create({
@@ -417,15 +443,228 @@ export async function createPurchasePlaceholder(
   return intent;
 }
 
-function parsePurchaseMetadata(metadata: string): Record<string, unknown> & { externalId?: string } {
+function parsePurchaseMetadata(metadata: string): PurchaseMetadata {
   try {
     const parsed = JSON.parse(metadata) as Record<string, unknown>;
+    const grants = parsed.grants && typeof parsed.grants === "object" && !Array.isArray(parsed.grants)
+      ? parsed.grants as Record<string, unknown>
+      : {};
     return {
       ...parsed,
-      externalId: typeof parsed.externalId === "string" ? parsed.externalId : undefined
+      externalId: typeof parsed.externalId === "string" ? parsed.externalId : undefined,
+      sku: typeof parsed.sku === "string" ? parsed.sku : undefined,
+      amountCents: typeof parsed.amountCents === "number" ? parsed.amountCents : undefined,
+      productAmountCents: typeof parsed.productAmountCents === "number" ? parsed.productAmountCents : undefined,
+      supportAmountCents: typeof parsed.supportAmountCents === "number" ? parsed.supportAmountCents : undefined,
+      currency: parsed.currency === "UAH" || parsed.currency === "EUR" || parsed.currency === "USD" ? parsed.currency : undefined,
+      grants: {
+        coins: typeof grants.coins === "number" ? grants.coins : 0,
+        premiumDays: typeof grants.premiumDays === "number" ? grants.premiumDays : 0,
+        skinSlug: typeof grants.skinSlug === "string" ? grants.skinSlug : null
+      }
     };
   } catch {
     return {};
+  }
+}
+
+function purchaseStatusIsPaid(status: string | undefined) {
+  return status === "success" || status === "sandbox";
+}
+
+async function activatePremiumSubscription(tx: Prisma.TransactionClient, userId: string, premiumDays: number, provider: string) {
+  if (premiumDays <= 0) return;
+
+  const current = await tx.subscription.findUnique({ where: { userId } });
+  const now = new Date();
+  const startBase = current?.endDate && current.endDate.getTime() > now.getTime() ? current.endDate : now;
+  const endDate = new Date(startBase.getTime() + premiumDays * 86_400_000);
+
+  await tx.subscription.upsert({
+    where: { userId },
+    update: {
+      status: "premium_active",
+      plan: premiumDays >= 90 ? "vip" : "premium",
+      provider,
+      startDate: current?.startDate ?? now,
+      endDate,
+      cancelAtPeriodEnd: false
+    },
+    create: {
+      userId,
+      status: "premium_active",
+      plan: premiumDays >= 90 ? "vip" : "premium",
+      provider,
+      startDate: now,
+      endDate,
+      cancelAtPeriodEnd: false
+    }
+  });
+}
+
+async function grantPaidPurchase(
+  tx: Prisma.TransactionClient,
+  purchase: { id: string; userId: string; metadata: string | null; type: string },
+  metadata: PurchaseMetadata,
+  providerStatus: string,
+  callbackPayload: LiqPayCallbackPayload
+) {
+  const grants = metadata.grants ?? { coins: 0, premiumDays: 0, skinSlug: null };
+  let grantedSkinId: string | null = null;
+
+  if (grants.coins > 0) {
+    await updateWalletBalance(
+      tx,
+      purchase.userId,
+      { coins: grants.coins, lifetimeCoins: grants.coins },
+      "liqpay",
+      "PURCHASE_PAYMENT",
+      { purchaseId: purchase.id, sku: metadata.sku, providerStatus, transactionId: callbackPayload.transaction_id ?? null }
+    );
+  }
+
+  if (grants.premiumDays > 0) {
+    await activatePremiumSubscription(tx, purchase.userId, grants.premiumDays, "liqpay");
+  }
+
+  if (grants.skinSlug) {
+    const skin = await tx.skin.findUnique({ where: { slug: grants.skinSlug } });
+    if (!skin) {
+      throw new AppError(500, "Configured paid skin was not found.", "PAID_SKIN_NOT_FOUND");
+    }
+    grantedSkinId = skin.id;
+    await tx.ownedSkin.upsert({
+      where: { userId_skinId: { userId: purchase.userId, skinId: skin.id } },
+      update: {},
+      create: { userId: purchase.userId, skinId: skin.id }
+    });
+  }
+
+  await tx.purchaseTransaction.update({
+    where: { id: purchase.id },
+    data: {
+      status: "completed",
+      provider: "liqpay",
+      skinId: grantedSkinId,
+      amountCoins: grants.coins,
+      metadata: JSON.stringify({
+        ...metadata,
+        completedAt: new Date().toISOString(),
+        providerStatus,
+        transactionId: callbackPayload.transaction_id ?? null,
+        senderPhone: callbackPayload.sender_phone ?? null,
+        errCode: callbackPayload.err_code ?? null,
+        errDescription: callbackPayload.err_description ?? null
+      })
+    }
+  });
+}
+
+export async function getLiqPayCheckoutSession(orderId: string) {
+  const purchase = await prisma.purchaseTransaction.findUnique({ where: { idempotencyKey: orderId } });
+  if (!purchase || purchase.provider !== "liqpay") {
+    throw new AppError(404, "Payment order not found.", "PAYMENT_ORDER_NOT_FOUND");
+  }
+  if (purchase.status !== "pending") {
+    throw new AppError(409, "This payment order is no longer payable.", "PAYMENT_ORDER_NOT_PENDING");
+  }
+
+  const metadata = purchase.metadata ? parsePurchaseMetadata(purchase.metadata) : {};
+  if (!metadata.amountCents || !metadata.currency || !metadata.sku) {
+    throw new AppError(500, "Payment order metadata is incomplete.", "PAYMENT_ORDER_INVALID");
+  }
+
+  return createLiqPayCheckoutForm({
+    orderId,
+    amountCents: metadata.amountCents,
+    currency: metadata.currency,
+    description: `Waves Arcade order ${metadata.sku}`
+  });
+}
+
+export async function completeLiqPayPurchase(input: {
+  data: string;
+  signature: string;
+}) {
+  if (!env.LIQPAY_PRIVATE_KEY) {
+    throw new AppError(503, "LiqPay is not configured.", "LIQPAY_NOT_CONFIGURED");
+  }
+
+  if (!verifyLiqPaySignature(input.data, input.signature, env.LIQPAY_PRIVATE_KEY)) {
+    throw new AppError(401, "Invalid LiqPay signature.", "LIQPAY_SIGNATURE_INVALID");
+  }
+
+  const payload = decodeLiqPayData(input.data);
+  const orderId = payload.order_id;
+  if (!orderId) {
+    throw new AppError(400, "Missing LiqPay order ID.", "LIQPAY_ORDER_ID_MISSING");
+  }
+
+  const purchase = await prisma.purchaseTransaction.findUnique({ where: { idempotencyKey: orderId } });
+  if (!purchase) {
+    return { status: "ignored", orderId, providerStatus: payload.status ?? "unknown" } as const;
+  }
+
+  const metadata = purchase.metadata ? parsePurchaseMetadata(purchase.metadata) : {};
+  const paidAmountCents = typeof payload.amount === "string"
+    ? Math.round(Number(payload.amount) * 100)
+    : typeof payload.amount === "number"
+      ? Math.round(payload.amount * 100)
+      : null;
+
+  if (
+    metadata.amountCents !== undefined &&
+    paidAmountCents !== null &&
+    paidAmountCents !== metadata.amountCents
+  ) {
+    throw new AppError(409, "Paid amount does not match the order.", "PAYMENT_AMOUNT_MISMATCH");
+  }
+
+  if (metadata.currency && payload.currency && metadata.currency !== payload.currency) {
+    throw new AppError(409, "Paid currency does not match the order.", "PAYMENT_CURRENCY_MISMATCH");
+  }
+
+  if (!purchaseStatusIsPaid(payload.status)) {
+    if (purchase.status === "pending") {
+      await prisma.purchaseTransaction.update({
+        where: { id: purchase.id },
+        data: {
+          status: "failed",
+          metadata: JSON.stringify({
+            ...metadata,
+            failedAt: new Date().toISOString(),
+            providerStatus: payload.status ?? "unknown",
+            errCode: payload.err_code ?? null,
+            errDescription: payload.err_description ?? null
+          })
+        }
+      });
+    }
+    return { status: "failed", orderId, providerStatus: payload.status ?? "unknown" } as const;
+  }
+
+  try {
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      const claimed = await tx.purchaseTransaction.updateMany({
+        where: { id: purchase.id, status: "pending" },
+        data: { status: "processing" }
+      });
+
+      if (claimed.count !== 1) {
+        const current = await tx.purchaseTransaction.findUniqueOrThrow({ where: { id: purchase.id } });
+        if (current.status === "completed") {
+          return { status: "already_processed" as const };
+        }
+        throw new AppError(409, "Payment order is already being processed.", "PAYMENT_ALREADY_PROCESSING");
+      }
+
+      await grantPaidPurchase(tx, purchase, metadata, payload.status ?? "success", payload);
+      return { status: "completed" as const };
+    });
+
+    return { ...result, orderId, providerStatus: payload.status ?? "success" } as const;
+  } catch (error) {
+    rethrowSafeWalletMutationError(error);
   }
 }
 
