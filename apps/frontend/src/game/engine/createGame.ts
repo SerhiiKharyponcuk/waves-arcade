@@ -6,6 +6,8 @@ export function createWavesGame(parent: HTMLElement, options: WavesSceneOptions)
     type: Phaser.AUTO,
     parent,
     backgroundColor: options.theme.backgroundStyle,
+    antialias: !options.performance.lowPerformanceMode,
+    pixelArt: options.performance.animationQuality === "low",
     scale: {
       mode: Phaser.Scale.RESIZE,
       autoCenter: Phaser.Scale.CENTER_BOTH,

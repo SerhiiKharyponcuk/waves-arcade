@@ -421,6 +421,11 @@ export interface AdminAnalyticsDto {
   completedAdViews30Days: number;
   guestUsers30Days: number;
   returningPlayers7Days: number;
+  suspiciousUsers: number;
+  unverifiedUsers: number;
+  openSupportTickets: number;
+  pendingScores: number;
+  financialEvents30Days: number;
   activityTimeline: AdminActivityDayDto[];
   generatedAt: string;
 }

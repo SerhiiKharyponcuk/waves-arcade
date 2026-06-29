@@ -2,7 +2,7 @@ import Phaser from "phaser";
 import type { GameSkinBundle } from "../skins/skinResolver";
 import { ObstacleManager } from "../obstacles/ObstacleManager";
 import { ParticleBurst } from "../effects/ParticleBurst";
-import { PlayerController } from "../player/PlayerController";
+import { PlayerController, type PlayerRenderSettings } from "../player/PlayerController";
 import type { GameThemeDto } from "@waves/shared";
 import { GameAudioManager, type GameAudioSettings } from "../audio/GameAudioManager";
 
@@ -19,6 +19,7 @@ export interface WavesSceneOptions {
   skins: GameSkinBundle;
   theme: GameThemeDto;
   audio: GameAudioSettings;
+  performance: PlayerRenderSettings & { particles: boolean; screenShake: boolean };
   onStats: (stats: GameStats) => void;
   onGameOver: (stats: GameStats) => void | Promise<void>;
 }
@@ -54,13 +55,18 @@ export class WavesScene extends Phaser.Scene {
     this.cursors = this.input.keyboard?.createCursorKeys();
     this.wasd = this.input.keyboard?.addKeys("W,A,S,D,SPACE") as Record<string, Phaser.Input.Keyboard.Key>;
     this.input.keyboard?.on("keydown", this.handleKeyboardAudio);
-    this.player = new PlayerController(this, this.options.skins.arrow, this.options.skins.trail);
+    this.player = new PlayerController(this, this.options.skins.arrow, this.options.skins.trail, this.options.performance);
     this.obstacles = new ObstacleManager(this, {
       obstacleColor: this.options.theme.obstacleStyle,
       accentColor: this.options.theme.uiAccentColor,
-      backgroundColor: this.options.theme.backgroundStyle
+      backgroundColor: this.options.theme.backgroundStyle,
+      animationQuality: this.options.performance.animationQuality,
+      lowPerformanceMode: this.options.performance.lowPerformanceMode
     });
-    this.particles = new ParticleBurst(this);
+    this.particles = new ParticleBurst(this, {
+      enabled: this.options.performance.particles,
+      intensity: this.options.performance.lowPerformanceMode ? 0.55 : this.options.performance.animationQuality === "low" ? 0.72 : this.options.performance.animationQuality === "medium" ? 0.88 : 1
+    });
     this.audio = new GameAudioManager(this.options.audio);
     this.startedAt = performance.now();
 
@@ -216,6 +222,9 @@ export class WavesScene extends Phaser.Scene {
       this.particles?.emit(this.player.x, this.player.y, this.options.skins.arrow, 24);
     }
     this.physics.pause();
+    if (this.options.performance.screenShake && !this.options.performance.reduceMotion) {
+      this.cameras.main.shake(this.options.performance.lowPerformanceMode ? 140 : 220, this.options.performance.lowPerformanceMode ? 0.003 : 0.006);
+    }
     this.options.onStats(stats);
     this.options.onGameOver(stats);
   }

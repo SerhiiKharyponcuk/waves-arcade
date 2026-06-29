@@ -5,6 +5,8 @@ interface ObstacleTheme {
   obstacleColor: string;
   accentColor: string;
   backgroundColor: string;
+  animationQuality?: "low" | "medium" | "high";
+  lowPerformanceMode?: boolean;
 }
 
 type CleanupObject = Phaser.GameObjects.GameObject & { x?: number; width?: number; destroy: () => void };
@@ -23,6 +25,7 @@ export class ObstacleManager {
   private readonly wallColor: number;
   private readonly outlineColor: number;
   private readonly themedSectorColors: number[];
+  private readonly rotationStep: number;
 
   constructor(scene: Phaser.Scene, theme: ObstacleTheme) {
     this.scene = scene;
@@ -33,6 +36,7 @@ export class ObstacleManager {
       Phaser.Display.Color.HexStringToColor(theme.obstacleColor).color,
       ...sectorColors.slice(0, 3)
     ];
+    this.rotationStep = theme.lowPerformanceMode ? 0.02 : theme.animationQuality === "low" ? 0.028 : theme.animationQuality === "medium" ? 0.04 : 0.052;
     this.obstacleGroup = scene.physics.add.staticGroup();
     this.coinGroup = scene.physics.add.group({ allowGravity: false, immovable: true });
     this.bottomY = scene.scale.height - 86;
@@ -44,7 +48,7 @@ export class ObstacleManager {
     }
 
     for (const hazard of this.rotatingHazards) {
-      hazard.rotation += 0.052;
+      hazard.rotation += this.rotationStep;
     }
 
     this.cleanupBehindCamera();

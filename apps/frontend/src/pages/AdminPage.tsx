@@ -180,6 +180,9 @@ export function AdminPage() {
   const [scoreStatusFilter, setScoreStatusFilter] = useState<"review" | "all" | "valid" | "suspicious" | "pending_review" | "rejected" | "hidden">("review");
   const [supportQuery, setSupportQuery] = useState("");
   const [activityQuery, setActivityQuery] = useState("");
+  const [sectionBusy, setSectionBusy] = useState<Partial<Record<AdminSection, boolean>>>({});
+  const [sectionLoaded, setSectionLoaded] = useState<Partial<Record<AdminSection, boolean>>>({});
+  const [sectionUpdatedAt, setSectionUpdatedAt] = useState<Partial<Record<AdminSection, string>>>({});
 
   const actionTitle = useMemo(() => {
     if (!action) {
@@ -230,42 +233,94 @@ export function AdminPage() {
     );
   }, [activityQuery, auditLogs]);
 
-  const pendingScoreCount = scores.filter((score) => score.status === "suspicious" || score.status === "pending_review").length;
-  const openTicketCount = supportTickets.filter((ticket) => ticket.status === "OPEN").length;
-  const suspiciousUserCount = users.filter((user) => user.trustStatus === "SUSPICIOUS").length;
-  const unverifiedUserCount = users.filter((user) => !user.emailVerifiedAt).length;
+  const pendingScoreCount = analytics?.pendingScores ?? scores.filter((score) => score.status === "suspicious" || score.status === "pending_review").length;
+  const openTicketCount = analytics?.openSupportTickets ?? supportTickets.filter((ticket) => ticket.status === "OPEN").length;
+  const suspiciousUserCount = analytics?.suspiciousUsers ?? users.filter((user) => user.trustStatus === "SUSPICIOUS").length;
+  const unverifiedUserCount = analytics?.unverifiedUsers ?? users.filter((user) => !user.emailVerifiedAt).length;
+  const financialEventCount = analytics?.financialEvents30Days ?? financialTransactions.length;
 
-  async function loadUsers(search = query) {
-    setBusy(true);
+  function markSectionLoaded(section: AdminSection) {
+    setSectionLoaded((current) => ({ ...current, [section]: true }));
+    setSectionUpdatedAt((current) => ({ ...current, [section]: new Date().toISOString() }));
+  }
+
+  async function runSectionLoad(section: AdminSection, loader: () => Promise<void>) {
+    setSectionBusy((current) => ({ ...current, [section]: true }));
     setError("");
     try {
-      setUsers(await adminApi.users(search));
+      await loader();
+      markSectionLoaded(section);
     } catch (error) {
       setError(error instanceof Error ? error.message : t("common.error"));
     } finally {
-      setBusy(false);
+      setSectionBusy((current) => ({ ...current, [section]: false }));
     }
+  }
+
+  async function loadUsers(search = query) {
+    await runSectionLoad("users", async () => {
+      setUsers(await adminApi.users(search));
+    });
   }
 
   async function loadSupportTickets(_status = supportStatus, _source = supportSource) {
-    try {
+    await runSectionLoad("support", async () => {
       setSupportTickets(await supportApi.adminTickets("ALL", "ALL"));
-    } catch (error) {
-      setError(error instanceof Error ? error.message : t("common.error"));
-    }
+    });
   }
 
-  async function loadModerationData() {
-    try {
-      const [scoreRows, logs, transfers, analyticsSummary, financialRows] = await Promise.all([adminApi.scores("all"), adminApi.auditLogs(), adminApi.guestTransfers(), adminApi.analytics(), adminApi.financialTransactions()]);
+  async function loadOverview() {
+    await runSectionLoad("overview", async () => {
+      setAnalytics(await adminApi.analytics());
+    });
+  }
+
+  async function loadScores() {
+    await runSectionLoad("scores", async () => {
+      const [scoreRows, userRows] = await Promise.all([adminApi.scores("all"), users.length ? Promise.resolve(users) : adminApi.users("")]);
       setScores(scoreRows);
+      if (!users.length) {
+        setUsers(userRows);
+      }
+    });
+  }
+
+  async function loadFinance() {
+    await runSectionLoad("finance", async () => {
+      setFinancialTransactions(await adminApi.financialTransactions());
+    });
+  }
+
+  async function loadActivity() {
+    await runSectionLoad("activity", async () => {
+      const [logs, transfers] = await Promise.all([adminApi.auditLogs(), adminApi.guestTransfers()]);
       setAuditLogs(logs);
       setGuestTransfers(transfers);
-      setAnalytics(analyticsSummary);
-      setFinancialTransactions(financialRows);
-    } catch (error) {
-      setError(error instanceof Error ? error.message : t("common.error"));
+    });
+  }
+
+  async function refreshActiveSection(section: AdminSection = activeSection) {
+    if (section === "overview") {
+      await loadOverview();
+      return;
     }
+    if (section === "users") {
+      await loadUsers(query);
+      return;
+    }
+    if (section === "scores") {
+      await loadScores();
+      return;
+    }
+    if (section === "support") {
+      await loadSupportTickets(supportStatus, supportSource);
+      return;
+    }
+    if (section === "finance") {
+      await loadFinance();
+      return;
+    }
+    await loadActivity();
   }
 
   async function copySupportEmail(email?: string) {
@@ -281,10 +336,29 @@ export function AdminPage() {
   }
 
   useEffect(() => {
-    void loadUsers("");
-    void loadSupportTickets();
-    void loadModerationData();
+    void loadOverview();
   }, []);
+
+  useEffect(() => {
+    if (activeSection === "overview" && !sectionLoaded.overview && !sectionBusy.overview) {
+      void loadOverview();
+    }
+    if (activeSection === "users" && !sectionLoaded.users && !sectionBusy.users) {
+      void loadUsers("");
+    }
+    if (activeSection === "scores" && !sectionLoaded.scores && !sectionBusy.scores) {
+      void loadScores();
+    }
+    if (activeSection === "support" && !sectionLoaded.support && !sectionBusy.support) {
+      void loadSupportTickets();
+    }
+    if (activeSection === "finance" && !sectionLoaded.finance && !sectionBusy.finance) {
+      void loadFinance();
+    }
+    if (activeSection === "activity" && !sectionLoaded.activity && !sectionBusy.activity) {
+      void loadActivity();
+    }
+  }, [activeSection, sectionBusy.activity, sectionBusy.finance, sectionBusy.overview, sectionBusy.scores, sectionBusy.support, sectionBusy.users, sectionLoaded.activity, sectionLoaded.finance, sectionLoaded.overview, sectionLoaded.scores, sectionLoaded.support, sectionLoaded.users]);
 
   function openAction(type: AdminAction, user: AdminUserDto) {
     setAction({ type, user });
@@ -338,7 +412,8 @@ export function AdminPage() {
       const result = await adminApi.resetPassword(user.id);
       setTemporaryPassword({ user: result.user, value: result.temporaryPassword });
       setUsers((current) => current.map((item) => item.id === result.user.id ? result.user : item));
-      await loadModerationData();
+      await loadOverview();
+      await loadActivity();
     } catch (error) {
       setError(error instanceof Error ? error.message : t("common.error"));
     } finally {
@@ -351,7 +426,8 @@ export function AdminPage() {
     try {
       const updated = await adminApi.setTrust(user.id, trusted ? "TRUSTED" : "SUSPICIOUS", trusted ? t("adminExtra.trustedReason") : t("adminExtra.suspiciousReason"));
       setUsers((current) => current.map((item) => item.id === updated.id ? updated : item));
-      await loadModerationData();
+      await loadOverview();
+      await loadActivity();
     } catch (error) {
       setError(error instanceof Error ? error.message : t("common.error"));
     } finally {
@@ -366,7 +442,8 @@ export function AdminPage() {
       const updated = await adminApi.moderateScore(scoreAction.score.id, scoreAction.status, scoreReason.trim());
       setScores((current) => current.map((score) => score.id === updated.id ? updated : score));
       setScoreAction(null);
-      await loadModerationData();
+      await loadOverview();
+      await loadActivity();
     } catch (error) {
       setError(error instanceof Error ? error.message : t("common.error"));
     } finally {
@@ -381,7 +458,8 @@ export function AdminPage() {
       const restriction = await adminApi.createRestriction(restrictionUser.id, { type: restrictionType, reason: restrictionReason.trim() });
       setUsers((current) => current.map((user) => user.id === restrictionUser.id ? { ...user, activeRestrictions: [restriction, ...user.activeRestrictions] } : user));
       setRestrictionUser(null);
-      await loadModerationData();
+      await loadOverview();
+      await loadActivity();
     } catch (error) {
       setError(error instanceof Error ? error.message : t("common.error"));
     } finally {
@@ -395,7 +473,8 @@ export function AdminPage() {
       await adminApi.removeRestriction(restrictionId, t("adminExtra.restrictionRemovedReason"));
       setUsers((current) => current.map((item) => item.id === user.id ? { ...item, activeRestrictions: item.activeRestrictions.filter((restriction) => restriction.id !== restrictionId) } : item));
       setSelectedUser((current) => current?.id === user.id ? { ...current, activeRestrictions: current.activeRestrictions.filter((restriction) => restriction.id !== restrictionId) } : current);
-      await loadModerationData();
+      await loadOverview();
+      await loadActivity();
     } catch (error) {
       setError(error instanceof Error ? error.message : t("common.error"));
     } finally {
@@ -469,7 +548,7 @@ export function AdminPage() {
     { id: "users" as const, label: t("adminWorkspace.tabs.users"), icon: Users, count: suspiciousUserCount, urgent: suspiciousUserCount > 0 },
     { id: "scores" as const, label: t("adminWorkspace.tabs.scores"), icon: Trophy, count: pendingScoreCount, urgent: pendingScoreCount > 0 },
     { id: "support" as const, label: t("adminWorkspace.tabs.support"), icon: Inbox, count: openTicketCount, urgent: openTicketCount > 0 },
-    { id: "finance" as const, label: t("adminWorkspace.tabs.finance"), icon: BadgeDollarSign, count: financialTransactions.length },
+    { id: "finance" as const, label: t("adminWorkspace.tabs.finance"), icon: BadgeDollarSign, count: financialEventCount },
     { id: "activity" as const, label: t("adminWorkspace.tabs.activity"), icon: Activity, count: auditLogs.length }
   ];
 
@@ -533,15 +612,21 @@ export function AdminPage() {
         <Button
           type="button"
           variant="secondary"
-          disabled={busy}
-          icon={<RefreshCw size={17} className={busy ? "animate-spin" : ""} />}
-          onClick={() => void Promise.all([loadUsers(query), loadSupportTickets(supportStatus, supportSource), loadModerationData()])}
+          disabled={busy || sectionBusy[activeSection]}
+          icon={<RefreshCw size={17} className={busy || sectionBusy[activeSection] ? "animate-spin" : ""} />}
+          onClick={() => void refreshActiveSection()}
         >
-          {t("adminWorkspace.refreshAll")}
+          {t("adminWorkspace.refreshCurrent")}
         </Button>
       </div>
 
       <AdminNavigation active={activeSection} items={navigationItems} onChange={setActiveSection} />
+
+      <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+        <span className="rounded-full border border-white/10 px-2.5 py-1">{t("adminWorkspace.activeSectionLabel", { section: t(`adminWorkspace.tabs.${activeSection}`) })}</span>
+        {sectionBusy[activeSection] ? <span className="rounded-full border border-cyanGlow/20 px-2.5 py-1 text-cyanGlow">{t("common.loading")}</span> : null}
+        {sectionUpdatedAt[activeSection] ? <span>{t("adminWorkspace.generatedAt", { date: new Date(sectionUpdatedAt[activeSection]!).toLocaleString() })}</span> : null}
+      </div>
 
       {error ? <div role="alert" className="rounded-md border border-magentaGlow/40 bg-magentaGlow/10 p-3 text-sm text-pink-200">{error}</div> : null}
       {notice ? <div role="status" className="rounded-md border border-cyanGlow/30 bg-cyanGlow/10 p-3 text-sm text-cyanGlow">{notice}</div> : null}
@@ -558,8 +643,25 @@ export function AdminPage() {
               <AdminMetricCard label={t("adminWorkspace.overview.openTickets")} value={openTicketCount} detail={t("adminWorkspace.overview.requiresAttention")} icon={Inbox} tone={openTicketCount ? "danger" : "cyan"} onClick={() => setActiveSection("support")} />
               <AdminMetricCard label={t("adminWorkspace.overview.scoresToReview")} value={pendingScoreCount} detail={t("adminWorkspace.overview.antiCheatQueue")} icon={ShieldAlert} tone={pendingScoreCount ? "danger" : "cyan"} onClick={() => setActiveSection("scores")} />
               <AdminMetricCard label={t("adminWorkspace.overview.suspiciousUsers")} value={suspiciousUserCount} detail={t("adminWorkspace.overview.flaggedAccounts")} icon={CircleAlert} tone={suspiciousUserCount ? "gold" : "cyan"} onClick={() => { setUserTrustFilter("SUSPICIOUS"); setActiveSection("users"); }} />
-              <AdminMetricCard label={t("adminWorkspace.overview.financialEvents")} value={financialTransactions.length} detail={t("adminWorkspace.overview.financialJournal")} icon={BadgeDollarSign} tone="gold" onClick={() => setActiveSection("finance")} />
+              <AdminMetricCard label={t("adminWorkspace.overview.financialEvents")} value={financialEventCount} detail={t("adminWorkspace.overview.financialJournal")} icon={BadgeDollarSign} tone="gold" onClick={() => setActiveSection("finance")} />
               <AdminMetricCard label={t("adminWorkspace.overview.unverifiedUsers")} value={unverifiedUserCount} detail={t("adminWorkspace.overview.emailQueue")} icon={MailCheck} tone="neutral" onClick={() => setActiveSection("users")} />
+            </div>
+            <div className="mt-5 grid gap-3 lg:grid-cols-3">
+              <button type="button" onClick={() => { setScoreStatusFilter("review"); setActiveSection("scores"); }} className="rounded-lg border border-white/10 bg-white/5 p-4 text-left transition hover:border-cyanGlow hover:bg-white/10">
+                <div className="text-xs font-black uppercase text-slate-500">{t("adminWorkspace.overview.scoreDesk")}</div>
+                <div className="mt-2 text-base font-black text-white">{t("adminWorkspace.overview.reviewSuspiciousScores")}</div>
+                <p className="mt-1 text-sm leading-6 text-slate-400">{t("adminWorkspace.overview.scoreDeskBody")}</p>
+              </button>
+              <button type="button" onClick={() => { setSupportStatus("OPEN"); setActiveSection("support"); }} className="rounded-lg border border-white/10 bg-white/5 p-4 text-left transition hover:border-goldGlow hover:bg-white/10">
+                <div className="text-xs font-black uppercase text-slate-500">{t("adminWorkspace.overview.supportDesk")}</div>
+                <div className="mt-2 text-base font-black text-white">{t("adminWorkspace.overview.replyToPlayers")}</div>
+                <p className="mt-1 text-sm leading-6 text-slate-400">{t("adminWorkspace.overview.supportDeskBody")}</p>
+              </button>
+              <button type="button" onClick={() => { setUserStatusFilter("ACTIVE"); setUserTrustFilter("SUSPICIOUS"); setActiveSection("users"); }} className="rounded-lg border border-white/10 bg-white/5 p-4 text-left transition hover:border-magentaGlow hover:bg-white/10">
+                <div className="text-xs font-black uppercase text-slate-500">{t("adminWorkspace.overview.riskDesk")}</div>
+                <div className="mt-2 text-base font-black text-white">{t("adminWorkspace.overview.reviewRiskAccounts")}</div>
+                <p className="mt-1 text-sm leading-6 text-slate-400">{t("adminWorkspace.overview.riskDeskBody")}</p>
+              </button>
             </div>
           </section>
 
@@ -593,7 +695,7 @@ export function AdminPage() {
       {activeSection === "users" ? (
       <section className="grid gap-4">
         <div className="arcade-border rounded-lg p-4 sm:p-5">
-          <AdminSectionHeader title={t("adminWorkspace.users.title")} description={t("adminWorkspace.users.description")} icon={Users} />
+          <AdminSectionHeader title={t("adminWorkspace.users.title")} description={t("adminWorkspace.users.description")} icon={Users} action={<Button type="button" variant="ghost" disabled={sectionBusy.users} icon={<RefreshCw size={16} className={sectionBusy.users ? "animate-spin" : ""} />} onClick={() => void loadUsers(query)}>{t("admin.refresh")}</Button>} />
 
       <form
         className="mt-4 grid gap-3 lg:grid-cols-[minmax(16rem,1fr)_auto_auto_auto] lg:items-end"
@@ -620,7 +722,7 @@ export function AdminPage() {
             <option value="SUSPICIOUS">{t("adminExtra.trustStatuses.SUSPICIOUS")}</option>
           </select>
         </label>
-        <Button type="submit" disabled={busy} icon={<Search size={18} />}>
+        <Button type="submit" disabled={busy || sectionBusy.users} icon={<Search size={18} />}>
           {t("admin.searchButton")}
         </Button>
       </form>
@@ -720,7 +822,7 @@ export function AdminPage() {
           title={t("adminExtra.scoreModeration")}
           description={t("adminWorkspace.scores.description")}
           icon={Trophy}
-          action={<Button type="button" variant="ghost" icon={<RefreshCw size={16} />} onClick={() => void loadModerationData()}>{t("admin.refresh")}</Button>}
+          action={<Button type="button" variant="ghost" disabled={sectionBusy.scores} icon={<RefreshCw size={16} className={sectionBusy.scores ? "animate-spin" : ""} />} onClick={() => void loadScores()}>{t("admin.refresh")}</Button>}
         />
         <div className="my-4 flex gap-2 overflow-x-auto pb-1">
           {(["review", "all", "valid", "suspicious", "pending_review", "rejected", "hidden"] as const).map((status) => (
@@ -762,9 +864,9 @@ export function AdminPage() {
           title={t("adminExtra.finance.title")}
           description={t("adminWorkspace.finance.description")}
           icon={BadgeDollarSign}
-          action={<Button type="button" variant="ghost" icon={<RefreshCw size={16} />} onClick={() => void loadModerationData()}>{t("admin.refresh")}</Button>}
+          action={<Button type="button" variant="ghost" disabled={sectionBusy.finance} icon={<RefreshCw size={16} className={sectionBusy.finance ? "animate-spin" : ""} />} onClick={() => void loadFinance()}>{t("admin.refresh")}</Button>}
         />
-        <div className="mt-4 overflow-x-auto">
+        <div className="mt-4 overflow-x-auto md:block hidden">
           <table className="w-full min-w-[62rem] text-left text-sm">
             <thead className="text-slate-400">
               <tr className="border-b border-white/10">
@@ -810,13 +912,33 @@ export function AdminPage() {
             </tbody>
           </table>
         </div>
+        <div className="mt-4 grid gap-3 md:hidden">
+          {financialTransactions.map((transaction) => (
+            <article key={transaction.id} className="rounded-lg border border-white/10 bg-white/5 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="font-black text-white">{transaction.productLabel}</div>
+                  <div className="mt-1 text-xs text-slate-500">{transaction.provider}</div>
+                </div>
+                <span className={`rounded-md px-2 py-1 text-[11px] font-black ${transaction.status === "completed" ? "bg-cyanGlow/15 text-cyanGlow" : transaction.status === "pending" ? "bg-goldGlow/15 text-goldGlow" : "bg-magentaGlow/15 text-pink-200"}`}>{transaction.status}</span>
+              </div>
+              <div className="mt-3 rounded-md bg-ink/60 p-3 text-sm">
+                <div className="font-bold text-white">{transaction.displayName}</div>
+                <div className="mt-1 break-all text-xs text-slate-500">{transaction.userEmail}</div>
+                <div className="mt-3 text-goldGlow">{formatFinancialAmount(transaction)}</div>
+              </div>
+              <div className="mt-3 text-xs text-slate-500">{new Date(transaction.createdAt).toLocaleString()}</div>
+            </article>
+          ))}
+          {!financialTransactions.length ? <AdminEmptyState icon={BadgeDollarSign} title={t("adminExtra.finance.empty")} /> : null}
+        </div>
       </div>
       ) : null}
 
       {activeSection === "activity" ? (
       <div className="grid gap-5 xl:grid-cols-2">
         <div className="arcade-border rounded-lg p-4 sm:p-5">
-          <AdminSectionHeader title={t("adminExtra.auditLog")} description={t("adminWorkspace.activity.auditDescription")} icon={History} />
+          <AdminSectionHeader title={t("adminExtra.auditLog")} description={t("adminWorkspace.activity.auditDescription")} icon={History} action={<Button type="button" variant="ghost" disabled={sectionBusy.activity} icon={<RefreshCw size={16} className={sectionBusy.activity ? "animate-spin" : ""} />} onClick={() => void loadActivity()}>{t("admin.refresh")}</Button>} />
           <div className="mt-4"><Input label={t("adminWorkspace.activity.search")} value={activityQuery} onChange={(event) => setActivityQuery(event.target.value)} placeholder={t("adminWorkspace.activity.searchPlaceholder")} /></div>
           <div className="mt-4 grid max-h-[32rem] gap-2 overflow-y-auto pr-2">
             {visibleAuditLogs.map((log) => <div key={log.id} className="rounded-md border border-white/10 bg-white/5 p-3 text-xs leading-5 text-slate-300"><strong className="text-white">{t(`adminExtra.auditActions.${log.actionType}`, log.actionType)}</strong><div>{log.reason || t("adminExtra.noReason")}</div><div className="text-slate-500">{new Date(log.createdAt).toLocaleString()} | {log.adminEmail || t("adminExtra.system")}</div></div>)}
@@ -839,7 +961,7 @@ export function AdminPage() {
           title={t("admin.supportInbox")}
           description={t("adminWorkspace.support.description")}
           icon={Inbox}
-          action={<Button type="button" variant="ghost" icon={<RefreshCw size={16} />} onClick={() => void loadSupportTickets(supportStatus, supportSource)}>{t("admin.refresh")}</Button>}
+          action={<Button type="button" variant="ghost" disabled={sectionBusy.support} icon={<RefreshCw size={16} className={sectionBusy.support ? "animate-spin" : ""} />} onClick={() => void loadSupportTickets(supportStatus, supportSource)}>{t("admin.refresh")}</Button>}
         />
         <div className="mt-4"><Input label={t("adminWorkspace.support.search")} value={supportQuery} onChange={(event) => setSupportQuery(event.target.value)} placeholder={t("adminWorkspace.support.searchPlaceholder")} /></div>
         <div className="mb-4 mt-4 flex flex-wrap gap-2">

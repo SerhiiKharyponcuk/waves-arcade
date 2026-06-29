@@ -652,10 +652,12 @@
   },
   "adminWorkspace": {
     "refreshAll": "Alle gegevens vernieuwen",
+    "refreshCurrent": "Huidige sectie vernieuwen",
     "moreActions": "Meer acties",
     "yes": "Ja",
     "no": "Nee",
     "analyticsDescription": "Huidige activiteit van spelers, sessies en inkomsten.",
+    "activeSectionLabel": "Actieve sectie: {{section}}",
     "generatedAt": "Bijgewerkt op {{date}}",
     "tabs": {
       "overview": "Overzicht",
@@ -677,7 +679,16 @@
       "antiCheatQueue": "Wachtrij voor anti-cheatcontrole",
       "flaggedAccounts": "Accounts gemarkeerd voor controle",
       "financialJournal": "Wallet- en aankooplogboek",
-      "emailQueue": "Spelers zonder bevestiging"
+      "emailQueue": "Spelers zonder bevestiging",
+      "scoreDesk": "Reviewdesk",
+      "reviewSuspiciousScores": "Verdachte scores beoordelen",
+      "scoreDeskBody": "Ga direct naar anti-cheatbeslissingen en houd het klassement schoon.",
+      "supportDesk": "Supportdesk",
+      "replyToPlayers": "Sneller spelers beantwoorden",
+      "supportDeskBody": "Open onbeantwoorde tickets, beroepszaken en accountproblemen op één plek.",
+      "riskDesk": "Risicodesk",
+      "reviewRiskAccounts": "Risicoaccounts beoordelen",
+      "riskDeskBody": "Focus op verdachte of recent beperkte spelers zonder de hele lijst door te nemen."
     },
     "users": {
       "title": "Spelersbeheer",
@@ -751,7 +762,15 @@
   },
   "loader": {
     "title": "Arena voorbereiden",
-    "subtitle": "Beveiligd account, wallet en gamesystemen laden..."
+    "subtitle": "Beveiligd account, wallet en gamesystemen laden...",
+    "runtimeTitle": "Game-engine starten",
+    "runtimeSubtitle": "Besturing, effecten en fair-playcontroles voor deze run voorbereiden...",
+    "runtimeHint": "De volledige game-engine wordt alleen geladen wanneer dat nodig is, zodat het menu sneller opent op mobiel en tragere netwerken.",
+    "status": {
+      "security": "Beveiliging",
+      "sync": "Synchronisatie",
+      "render": "Render"
+    }
   },
   "skins": {
     "neonBlueTrail": {

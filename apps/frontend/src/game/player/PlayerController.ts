@@ -5,6 +5,13 @@ export interface PlayerInputState {
   pressed: boolean;
 }
 
+export interface PlayerRenderSettings {
+  trailEffects: boolean;
+  reduceMotion: boolean;
+  animationQuality: "low" | "medium" | "high";
+  lowPerformanceMode: boolean;
+}
+
 export class PlayerController {
   public readonly collider: Phaser.GameObjects.Arc;
   public x: number;
@@ -14,19 +21,23 @@ export class PlayerController {
   private readonly scene: Phaser.Scene;
   private readonly arrowVisual: SkinVisualConfig;
   private readonly trailVisual: SkinVisualConfig;
+  private readonly renderSettings: PlayerRenderSettings;
   private readonly trailGraphics: Phaser.GameObjects.Graphics;
   private readonly arrowGraphics: Phaser.GameObjects.Graphics;
   private readonly trailPoints: Phaser.Math.Vector2[] = [];
+  private readonly trailPointLimit: number;
   private readonly speedX = 335;
   private readonly verticalSpeed = 335;
   private direction = 1;
   private currentAngle = 0.76;
   private turnPulse = 0;
 
-  constructor(scene: Phaser.Scene, arrowVisual: SkinVisualConfig, trailVisual: SkinVisualConfig) {
+  constructor(scene: Phaser.Scene, arrowVisual: SkinVisualConfig, trailVisual: SkinVisualConfig, renderSettings: PlayerRenderSettings) {
     this.scene = scene;
     this.arrowVisual = arrowVisual;
     this.trailVisual = trailVisual;
+    this.renderSettings = renderSettings;
+    this.trailPointLimit = renderSettings.lowPerformanceMode ? 56 : renderSettings.animationQuality === "low" ? 84 : renderSettings.animationQuality === "medium" ? 108 : 126;
     this.x = 140;
     this.y = scene.scale.height / 2;
     this.trailGraphics = scene.add.graphics();
@@ -42,13 +53,13 @@ export class PlayerController {
     const dt = deltaMs / 1000;
     const nextDirection = input.pressed ? -1 : 1;
     if (nextDirection !== this.direction) {
-      this.turnPulse = 1;
+      this.turnPulse = this.renderSettings.reduceMotion ? 0.28 : 1;
     }
     this.direction = nextDirection;
     const targetAngle = this.direction < 0 ? -0.76 : 0.76;
-    const angleEase = 1 - Math.exp(-18 * dt);
+    const angleEase = this.renderSettings.reduceMotion ? 1 : 1 - Math.exp(-18 * dt);
     this.currentAngle = Phaser.Math.Linear(this.currentAngle, targetAngle, angleEase);
-    this.turnPulse = Math.max(0, this.turnPulse - dt * 4.8);
+    this.turnPulse = Math.max(0, this.turnPulse - dt * (this.renderSettings.reduceMotion ? 7.2 : 4.8));
 
     this.x += this.speedX * dt;
     this.y += this.direction * this.verticalSpeed * dt;
@@ -66,8 +77,13 @@ export class PlayerController {
   }
 
   private pushTrailPoint() {
+    if (!this.renderSettings.trailEffects) {
+      this.trailPoints.length = 0;
+      return;
+    }
+
     this.trailPoints.push(new Phaser.Math.Vector2(this.x - 9, this.y));
-    while (this.trailPoints.length > 126) {
+    while (this.trailPoints.length > this.trailPointLimit) {
       this.trailPoints.shift();
     }
   }
@@ -81,26 +97,34 @@ export class PlayerController {
     const trailParticle = Phaser.Display.Color.HexStringToColor(this.trailVisual.particleColor).color;
 
     this.trailGraphics.clear();
-    for (let index = 1; index < this.trailPoints.length; index += 1) {
-      const previous = this.trailPoints[index - 1];
-      const current = this.trailPoints[index];
-      if (!previous || !current) {
-        continue;
-      }
-      if (index % 2 === 0) {
-        continue;
-      }
-      const alpha = index / this.trailPoints.length;
-      const segmentColor = this.resolveTrailSegmentColor(index, trailColor, trailSecondary, trailGlow, trailParticle);
-      const glowWidth = this.trailVisual.trailTexture === "shadow" ? 5 + alpha * 7 : 4 + alpha * 9;
-      this.trailGraphics.lineStyle(glowWidth, trailGlow, alpha * 0.12);
-      this.trailGraphics.lineBetween(previous.x, previous.y, current.x, current.y);
-      this.trailGraphics.lineStyle(2 + alpha * 3, segmentColor, alpha * (this.trailVisual.trailTexture === "shadow" ? 0.62 : 0.9));
-      this.trailGraphics.lineBetween(previous.x, previous.y, current.x, current.y);
+    if (this.renderSettings.trailEffects) {
+      const pointStep = this.renderSettings.lowPerformanceMode ? 4 : this.renderSettings.animationQuality === "low" ? 3 : 2;
+      for (let index = 1; index < this.trailPoints.length; index += 1) {
+        const previous = this.trailPoints[index - 1];
+        const current = this.trailPoints[index];
+        if (!previous || !current || index % pointStep !== 1) {
+          continue;
+        }
+        const alpha = index / this.trailPoints.length;
+        const segmentColor = this.resolveTrailSegmentColor(index, trailColor, trailSecondary, trailGlow, trailParticle);
 
-      if (this.trailVisual.trailTexture === "diamond" && index % 9 === 1) {
-        this.trailGraphics.fillStyle(trailParticle, alpha * 0.65);
-        this.trailGraphics.fillCircle(current.x, current.y, 1.5 + alpha * 1.8);
+        if (!this.renderSettings.lowPerformanceMode) {
+          const glowWidth = this.trailVisual.trailTexture === "shadow" ? 5 + alpha * 7 : 4 + alpha * 9;
+          this.trailGraphics.lineStyle(glowWidth, trailGlow, alpha * 0.12);
+          this.trailGraphics.lineBetween(previous.x, previous.y, current.x, current.y);
+        }
+
+        this.trailGraphics.lineStyle(
+          this.renderSettings.lowPerformanceMode ? 2 + alpha * 2 : 2 + alpha * 3,
+          segmentColor,
+          alpha * (this.trailVisual.trailTexture === "shadow" ? 0.62 : 0.9)
+        );
+        this.trailGraphics.lineBetween(previous.x, previous.y, current.x, current.y);
+
+        if (!this.renderSettings.lowPerformanceMode && this.trailVisual.trailTexture === "diamond" && index % 9 === 1) {
+          this.trailGraphics.fillStyle(trailParticle, alpha * 0.65);
+          this.trailGraphics.fillCircle(current.x, current.y, 1.5 + alpha * 1.8);
+        }
       }
     }
 
@@ -113,14 +137,16 @@ export class PlayerController {
     const backB = this.rotatePoint(this.x - 18, this.y + 14 + pulse * 3, angle);
     const notch = this.rotatePoint(this.x - 7 - pulse * 2, this.y, angle);
 
-    if (pulse > 0) {
+    if (pulse > 0 && !this.renderSettings.reduceMotion) {
       const flareBack = this.rotatePoint(this.x - 34 - pulse * 12, this.y, angle);
       const flareTop = this.rotatePoint(this.x - 12, this.y - 18 - pulse * 10, angle);
       const flareBottom = this.rotatePoint(this.x - 12, this.y + 18 + pulse * 10, angle);
-      this.arrowGraphics.lineStyle(2 + pulse * 4, secondary, 0.18 * pulse);
-      this.arrowGraphics.strokeTriangle(flareBack.x, flareBack.y, flareTop.x, flareTop.y, flareBottom.x, flareBottom.y);
-      this.arrowGraphics.lineStyle(1 + pulse * 3, primary, 0.2 * pulse);
-      this.arrowGraphics.strokeCircle(this.x, this.y, 16 + pulse * 16);
+      if (!this.renderSettings.lowPerformanceMode) {
+        this.arrowGraphics.lineStyle(2 + pulse * 4, secondary, 0.18 * pulse);
+        this.arrowGraphics.strokeTriangle(flareBack.x, flareBack.y, flareTop.x, flareTop.y, flareBottom.x, flareBottom.y);
+        this.arrowGraphics.lineStyle(1 + pulse * 3, primary, 0.2 * pulse);
+        this.arrowGraphics.strokeCircle(this.x, this.y, 16 + pulse * 16);
+      }
     }
 
     this.arrowGraphics.lineStyle(5 + pulse * 2, secondary, 0.38 + pulse * 0.16);

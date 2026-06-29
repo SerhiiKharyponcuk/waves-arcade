@@ -593,10 +593,12 @@
   },
   "adminWorkspace": {
     "refreshAll": "Refresh all data",
+    "refreshCurrent": "Refresh current section",
     "moreActions": "More actions",
     "yes": "Yes",
     "no": "No",
     "analyticsDescription": "Current player, session and monetization activity.",
+    "activeSectionLabel": "Active section: {{section}}",
     "generatedAt": "Updated {{date}}",
     "tabs": {
       "overview": "Overview",
@@ -618,7 +620,16 @@
       "antiCheatQueue": "Anti-cheat moderation queue",
       "flaggedAccounts": "Accounts marked for review",
       "financialJournal": "Wallet and purchase ledger",
-      "emailQueue": "Players without verification"
+      "emailQueue": "Players without verification",
+      "scoreDesk": "Review desk",
+      "reviewSuspiciousScores": "Review suspicious scores",
+      "scoreDeskBody": "Jump directly into anti-cheat decisions and keep the leaderboard clean.",
+      "supportDesk": "Support desk",
+      "replyToPlayers": "Reply to players faster",
+      "supportDeskBody": "Open unanswered tickets, ban appeals and account recovery requests in one place.",
+      "riskDesk": "Risk desk",
+      "reviewRiskAccounts": "Review risky accounts",
+      "riskDeskBody": "Focus on suspicious or recently restricted players without scanning the whole list."
     },
     "users": {
       "title": "Player management",
@@ -697,7 +708,15 @@
   },
   "loader": {
     "title": "Preparing arena",
-    "subtitle": "Loading secure account, wallet and game systems..."
+    "subtitle": "Loading secure account, wallet and game systems...",
+    "runtimeTitle": "Starting game engine",
+    "runtimeSubtitle": "Preparing controls, effects and fair-play checks for this run...",
+    "runtimeHint": "The full game engine is loaded only when needed, so the menu opens faster on mobile and slower networks.",
+    "status": {
+      "security": "Security",
+      "sync": "Sync",
+      "render": "Render"
+    }
   },
   "skins": {
     "neonBlueTrail": {

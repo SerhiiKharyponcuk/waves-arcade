@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Coins, Gift, Pause, Play, RotateCcw, Zap } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { GoogleAdSlot } from "../components/ads/GoogleAdSlot";
 import { AccountRequiredModal } from "../components/auth/AccountRequiredModal";
-import { GameCanvas } from "../components/game/GameCanvas";
 import { RouletteWheel } from "../components/game/RouletteWheel";
+import { AppLoader } from "../components/ui/AppLoader";
 import { Button } from "../components/ui/Button";
 import { Modal } from "../components/ui/Modal";
 import { StatCard } from "../components/ui/StatCard";
@@ -24,6 +24,27 @@ import type { GameAudioSettings } from "../game/audio/GameAudioManager";
 import { defaultGameSettings, type GameSettings } from "../types/settings";
 
 type RunState = "idle" | "running" | "paused" | "over";
+
+const GameCanvas = lazy(() => import("../components/game/GameCanvas").then((module) => ({ default: module.GameCanvas })));
+
+let gameRuntimePreload: Promise<unknown> | null = null;
+
+function preloadGameRuntime() {
+  if (!gameRuntimePreload) {
+    gameRuntimePreload = import("../components/game/GameCanvas");
+  }
+  return gameRuntimePreload;
+}
+
+function settingsValue<K extends keyof GameSettings>(
+  profileSettings: Record<string, unknown> | undefined,
+  guestSettings: Record<string, unknown> | undefined,
+  key: K,
+  fallback: GameSettings[K]
+) {
+  const value = guestSettings?.[key as string] ?? profileSettings?.[key as string];
+  return (value as GameSettings[K] | undefined) ?? fallback;
+}
 
 const emptyStats: GameStats = {
   score: 0,
@@ -53,6 +74,7 @@ export function GamePage() {
   const [error, setError] = useState("");
   const [accountRequiredMessage, setAccountRequiredMessage] = useState("");
   const [showGuestAd, setShowGuestAd] = useState(false);
+  const [runtimeReady, setRuntimeReady] = useState(false);
   const latestStatsRef = useRef<GameStats>(emptyStats);
   const checkpointSequenceRef = useRef(0);
   const checkpointPendingRef = useRef(false);
@@ -102,10 +124,54 @@ export function GamePage() {
     };
   }, [guestSession?.temporarySettings.masterVolume, guestSession?.temporarySettings.muted, isGuest, user?.profile.gameSettings]);
 
+  const runtimeSettings = useMemo(
+    () => ({
+      trailEffects: settingsValue(user?.profile.gameSettings, guestSession?.temporarySettings as Record<string, unknown> | undefined, "trailEffects", defaultGameSettings.trailEffects),
+      reduceMotion: settingsValue(user?.profile.gameSettings, guestSession?.temporarySettings as Record<string, unknown> | undefined, "reduceMotion", defaultGameSettings.reduceMotion),
+      animationQuality: settingsValue(user?.profile.gameSettings, guestSession?.temporarySettings as Record<string, unknown> | undefined, "animationQuality", defaultGameSettings.animationQuality),
+      lowPerformanceMode: settingsValue(user?.profile.gameSettings, guestSession?.temporarySettings as Record<string, unknown> | undefined, "lowPerformanceMode", defaultGameSettings.lowPerformanceMode),
+      particles: settingsValue(user?.profile.gameSettings, guestSession?.temporarySettings as Record<string, unknown> | undefined, "particles", defaultGameSettings.particles),
+      screenShake: settingsValue(user?.profile.gameSettings, guestSession?.temporarySettings as Record<string, unknown> | undefined, "screenShake", defaultGameSettings.screenShake)
+    }),
+    [guestSession?.temporarySettings, user?.profile.gameSettings]
+  );
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const connection = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+    if (connection?.saveData || connection?.effectiveType === "slow-2g" || connection?.effectiveType === "2g") {
+      return;
+    }
+
+    const prewarm = () => {
+      void preloadGameRuntime()
+        .then(() => setRuntimeReady(true))
+        .catch(() => undefined);
+    };
+
+    const idleWindow = window as Window & typeof globalThis & {
+      requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+
+    if (idleWindow.requestIdleCallback) {
+      const idleId = idleWindow.requestIdleCallback(prewarm, { timeout: 1800 });
+      return () => idleWindow.cancelIdleCallback?.(idleId);
+    }
+
+    const timer = window.setTimeout(prewarm, 900);
+    return () => window.clearTimeout(timer);
+  }, []);
+
   async function startRun() {
     setBusy(true);
     setError("");
     try {
+      await preloadGameRuntime();
+      setRuntimeReady(true);
       if (isGuest) {
         setSessionId("");
         setStats(emptyStats);
@@ -312,14 +378,17 @@ export function GamePage() {
           </div>
         </div>
 
-        <GameCanvas
-          skins={gameSkins}
-          theme={selectedTheme}
-          audio={audioSettings}
-          paused={runState === "paused" || runState === "over"}
-          onStats={handleStats}
-          onGameOver={handleGameOver}
-        />
+        <Suspense fallback={<AppLoader label={t("loader.runtimeTitle")} subtitle={t("loader.runtimeSubtitle")} compact />}>
+          <GameCanvas
+            skins={gameSkins}
+            theme={selectedTheme}
+            audio={audioSettings}
+            settings={runtimeSettings}
+            paused={runState === "paused" || runState === "over"}
+            onStats={handleStats}
+            onGameOver={handleGameOver}
+          />
+        </Suspense>
 
         {runState === "over" ? (
           <Modal title={t("game.gameOver")} closeLabel={t("common.close")} onClose={() => setRunState("idle")}>
@@ -391,7 +460,14 @@ export function GamePage() {
         </h1>
         <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-300">{t("menu.subtitle")}</p>
         <div className="mt-8 flex flex-wrap gap-3">
-          <Button type="button" disabled={busy} onClick={() => void startRun()} icon={<Play size={18} />}>
+          <Button
+            type="button"
+            disabled={busy}
+            onMouseEnter={() => void preloadGameRuntime().then(() => setRuntimeReady(true))}
+            onFocus={() => void preloadGameRuntime().then(() => setRuntimeReady(true))}
+            onClick={() => void startRun()}
+            icon={<Play size={18} />}
+          >
             {t("menu.playNow")}
           </Button>
           <Button type="button" variant="secondary" disabled>
@@ -402,6 +478,11 @@ export function GamePage() {
       </div>
 
       <aside className="grid gap-4">
+        {!runtimeReady ? (
+          <div className="rounded-lg border border-cyanGlow/20 bg-cyanGlow/10 p-4 text-sm leading-6 text-slate-200">
+            {t("loader.runtimeHint")}
+          </div>
+        ) : null}
         <div className="arcade-border rounded-lg p-5">
           <div className="mb-4 flex items-center justify-between gap-3">
             <h2 className="text-xl font-black text-white">{t("menu.dailyReward")}</h2>

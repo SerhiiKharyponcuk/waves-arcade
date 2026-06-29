@@ -6,17 +6,19 @@ import type { GameStats } from "../../game/engine/WavesScene";
 import { VirtualJoystick } from "./VirtualJoystick";
 import type { GameThemeDto } from "@waves/shared";
 import type { GameAudioSettings } from "../../game/audio/GameAudioManager";
+import type { GameSettings } from "../../types/settings";
 
 interface GameCanvasProps {
   skins: GameSkinBundle;
   theme: GameThemeDto;
   audio: GameAudioSettings;
+  settings: Pick<GameSettings, "trailEffects" | "reduceMotion" | "animationQuality" | "lowPerformanceMode" | "particles" | "screenShake">;
   paused: boolean;
   onStats: (stats: GameStats) => void;
   onGameOver: (stats: GameStats) => void | Promise<void>;
 }
 
-export function GameCanvas({ skins, theme, audio, paused, onStats, onGameOver }: GameCanvasProps) {
+export function GameCanvas({ skins, theme, audio, settings, paused, onStats, onGameOver }: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
 
@@ -29,6 +31,14 @@ export function GameCanvas({ skins, theme, audio, paused, onStats, onGameOver }:
       skins,
       theme,
       audio,
+      performance: {
+        trailEffects: settings.trailEffects,
+        reduceMotion: settings.reduceMotion,
+        animationQuality: settings.animationQuality,
+        lowPerformanceMode: settings.lowPerformanceMode,
+        particles: settings.particles,
+        screenShake: settings.screenShake
+      },
       onStats,
       onGameOver
     });
@@ -38,7 +48,7 @@ export function GameCanvas({ skins, theme, audio, paused, onStats, onGameOver }:
       gameRef.current?.destroy(true);
       gameRef.current = null;
     };
-  }, [audio, onGameOver, onStats, skins, theme]);
+  }, [audio, onGameOver, onStats, settings.animationQuality, settings.lowPerformanceMode, settings.particles, settings.reduceMotion, settings.screenShake, settings.trailEffects, skins, theme]);
 
   useEffect(() => {
     window.dispatchEvent(new CustomEvent("waves:pause", { detail: { paused } }));

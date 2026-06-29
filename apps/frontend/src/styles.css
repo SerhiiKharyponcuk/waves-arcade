@@ -102,6 +102,11 @@ button {
   .support-heart {
     animation: support-heart-beat 1.9s ease-in-out infinite;
   }
+
+  .loader-bar {
+    animation: loader-wave 1.1s ease-in-out infinite;
+    box-shadow: 0 0 14px rgba(33, 212, 253, 0.24);
+  }
 }
 
 @keyframes payment-page-in {
@@ -173,13 +178,28 @@ button {
   }
 }
 
+@keyframes loader-wave {
+  0%,
+  100% {
+    transform: scaleX(0.58);
+    opacity: 0.28;
+    background: rgba(255, 255, 255, 0.16);
+  }
+  50% {
+    transform: scaleX(1);
+    opacity: 1;
+    background: rgba(33, 212, 253, 0.95);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .payment-page-enter,
   .payment-orbit,
   .payment-method-selected,
   .payment-error-shake,
   .payment-success-check,
-  .support-heart {
+  .support-heart,
+  .loader-bar {
     animation: none !important;
   }
 
