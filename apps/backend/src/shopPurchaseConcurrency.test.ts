@@ -7,6 +7,7 @@ import { createApp } from "./app.js";
 import { prisma } from "./config/prisma.js";
 import { env } from "./config/env.js";
 import { errorHandler } from "./middleware/errorHandler.js";
+import { LiqPayPaymentProvider } from "./services/paymentProvider.js";
 import { signLiqPayData } from "./services/liqpayProvider.js";
 
 type ApiResponse<T> = {
@@ -326,6 +327,131 @@ test("payment placeholder validates server-side pricing and idempotency payloads
   }
 });
 
+test("parallel payment intent creation reuses one backend order and one provider call", async () => {
+  const server = createApp().listen(0);
+  await new Promise<void>((resolve) => server.once("listening", resolve));
+  const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}/api`;
+  const originalEnv = {
+    PAYMENT_PROVIDER: env.PAYMENT_PROVIDER,
+    LIQPAY_MODE: env.LIQPAY_MODE,
+    LIQPAY_PUBLIC_KEY: env.LIQPAY_PUBLIC_KEY,
+    LIQPAY_PRIVATE_KEY: env.LIQPAY_PRIVATE_KEY,
+    LIQPAY_RESULT_URL: env.LIQPAY_RESULT_URL,
+    LIQPAY_SERVER_URL: env.LIQPAY_SERVER_URL
+  };
+  const originalCreatePaymentIntent = LiqPayPaymentProvider.prototype.createPaymentIntent;
+  let userId = "";
+  let providerCalls = 0;
+
+  try {
+    env.PAYMENT_PROVIDER = "liqpay";
+    env.LIQPAY_MODE = "sandbox";
+    env.LIQPAY_PUBLIC_KEY = "sandbox_test_public";
+    env.LIQPAY_PRIVATE_KEY = "sandbox_test_private";
+    env.LIQPAY_RESULT_URL = "https://waves-arcade.vercel.app/payment?status=success";
+    env.LIQPAY_SERVER_URL = `${base}/payments/liqpay/webhook`;
+
+    LiqPayPaymentProvider.prototype.createPaymentIntent = async function (request) {
+      providerCalls += 1;
+      await new Promise((resolve) => setTimeout(resolve, 40));
+      return originalCreatePaymentIntent.call(this, request);
+    };
+
+    const user = await registerTestAccount(base, "Parallel Payment Pilot");
+    userId = user.userId;
+    const idempotencyKey = `wallet-${Date.now()}-${randomUUID()}`;
+    const responses = await Promise.all(
+      Array.from({ length: 20 }, () =>
+        rawRequest<{ code?: string; status?: string }>(base, "/wallet/purchase-placeholder", {
+          method: "POST",
+          headers: user.headers,
+          body: JSON.stringify({
+            sku: "coins_1000",
+            supportAmountCents: 0,
+            currency: "UAH",
+            provider: "liqpay",
+            idempotencyKey
+          })
+        })
+      )
+    );
+
+    const pendingResponses = responses.filter((response) => response.status === 202 && response.body.status === "pending");
+    const safeConflicts = responses.filter(
+      (response) => response.status === 409 && response.body.code === "PAYMENT_ALREADY_PROCESSING"
+    );
+
+    assert.ok(pendingResponses.length >= 1);
+    assert.ok(pendingResponses.length + safeConflicts.length === 20);
+    assert.equal(responses.some((response) => response.status >= 500), false);
+    assert.equal(providerCalls, 1);
+
+    const purchases = await prisma.purchaseTransaction.findMany({ where: { userId, idempotencyKey } });
+    assert.equal(purchases.length, 1);
+    assert.equal(purchases[0]?.status, "pending");
+  } finally {
+    LiqPayPaymentProvider.prototype.createPaymentIntent = originalCreatePaymentIntent;
+    env.PAYMENT_PROVIDER = originalEnv.PAYMENT_PROVIDER;
+    env.LIQPAY_MODE = originalEnv.LIQPAY_MODE;
+    env.LIQPAY_PUBLIC_KEY = originalEnv.LIQPAY_PUBLIC_KEY;
+    env.LIQPAY_PRIVATE_KEY = originalEnv.LIQPAY_PRIVATE_KEY;
+    env.LIQPAY_RESULT_URL = originalEnv.LIQPAY_RESULT_URL;
+    env.LIQPAY_SERVER_URL = originalEnv.LIQPAY_SERVER_URL;
+    if (userId) await prisma.user.deleteMany({ where: { id: userId } });
+    await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+  }
+});
+
+test("email verification invalid attempts are counted and lock the issued code", async () => {
+  const server = createApp().listen(0);
+  await new Promise<void>((resolve) => server.once("listening", resolve));
+  const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}/api`;
+  const originalFlag = env.EMAIL_VERIFICATION_REQUIRED;
+  let userId = "";
+
+  try {
+    env.EMAIL_VERIFICATION_REQUIRED = true;
+    const email = `verify-${Date.now()}-${Math.random().toString(16).slice(2)}@waves.local`;
+    const registerResponse = await rawRequest<{ emailVerificationRequired?: boolean }>(base, "/auth/register", {
+      method: "POST",
+      body: JSON.stringify({
+        email,
+        password: "Verify12345!",
+        displayName: "Verify Pilot",
+        locale: "en",
+        termsAccepted: true,
+        website: "",
+        formStartedAt: Date.now() - 3_000
+      })
+    });
+    assert.equal(registerResponse.status, 201);
+    assert.equal(registerResponse.body.emailVerificationRequired, true);
+
+    const user = await prisma.user.findUniqueOrThrow({ where: { email } });
+    userId = user.id;
+
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const invalid = await rawRequest<{ code?: string }>(base, "/auth/verify-email", {
+        method: "POST",
+        body: JSON.stringify({ email, code: "000000" })
+      });
+      assert.equal(invalid.status, 400);
+      assert.equal(invalid.body.code, "EMAIL_CODE_INVALID");
+    }
+
+    const verification = await prisma.emailVerificationCode.findFirstOrThrow({
+      where: { userId },
+      orderBy: { createdAt: "desc" }
+    });
+    assert.equal(verification.attempts, 5);
+    assert.ok(verification.usedAt);
+  } finally {
+    env.EMAIL_VERIFICATION_REQUIRED = originalFlag;
+    if (userId) await prisma.user.deleteMany({ where: { id: userId } });
+    await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+  }
+});
+
 test("server-side anti-cheat restriction blocks gameplay after suspicious checkpoints", async () => {
   const server = createApp().listen(0);
   await new Promise<void>((resolve) => server.once("listening", resolve));
@@ -497,7 +623,7 @@ test("unexpected server errors are logged and returned without stack traces", ()
 
     assert.equal(responseState.statusCode, 500);
     assert.deepEqual(responseState.body, {
-      message: "Error: synthetic purchase failure",
+      message: "Unexpected server error.",
       code: "INTERNAL_SERVER_ERROR"
     });
     assert.equal(JSON.stringify(responseState.body).includes("stack"), false);

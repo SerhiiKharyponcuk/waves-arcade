@@ -2,7 +2,6 @@ import type { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
 import type { ApiErrorDto } from "@waves/shared";
 import { AppError } from "../utils/appError.js";
-import { env } from "../config/env.js";
 import { captureServerError } from "../services/errorTrackingService.js";
 
 type KnownPrismaError = {
@@ -66,7 +65,7 @@ export function errorHandler(error: unknown, request: Request, response: Respons
   }
 
   const body: ApiErrorDto = {
-    message: env.NODE_ENV === "production" ? "Unexpected server error." : String(error),
+    message: "Unexpected server error.",
     code: "INTERNAL_SERVER_ERROR"
   };
   captureServerError(error, { method: request.method, path: request.path, requestId: request.header("x-request-id") });

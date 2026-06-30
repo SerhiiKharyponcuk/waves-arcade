@@ -1,5 +1,5 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Coins, Gift, Pause, Play, RotateCcw, Zap } from "lucide-react";
+import { Bomb, Coins, Gift, Infinity, Pause, Play, RotateCcw, ShieldAlert, Sparkles, TimerReset, Zap } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { GoogleAdSlot } from "../components/ads/GoogleAdSlot";
 import { AccountRequiredModal } from "../components/auth/AccountRequiredModal";
@@ -22,6 +22,7 @@ import { gameThemes } from "@waves/shared";
 import { trackEvent } from "../services/analytics";
 import type { GameAudioSettings } from "../game/audio/GameAudioManager";
 import { defaultGameSettings, type GameSettings } from "../types/settings";
+import { gameModeDefinitions, getGameModeDefinition, type GameModeId } from "../game/engine/gameModes";
 
 type RunState = "idle" | "running" | "paused" | "over";
 
@@ -52,8 +53,41 @@ const emptyStats: GameStats = {
   distance: 0,
   durationMs: 0,
   obstacleHits: 0,
-  inputTransitions: 0
+  inputTransitions: 0,
+  modeId: "classic"
 };
+
+const modeIconMap = {
+  classic: Zap,
+  endless: Infinity,
+  time_attack: TimerReset,
+  hardcore: ShieldAlert,
+  zen: Sparkles,
+  boss: Bomb
+} satisfies Record<GameModeId, typeof Zap>;
+
+const modeStorageKey = "waves_selected_mode_v1";
+
+function loadStoredMode(): GameModeId {
+  if (typeof window === "undefined") {
+    return "classic";
+  }
+
+  const raw = window.localStorage.getItem(modeStorageKey);
+  if (raw && gameModeDefinitions.some((mode) => mode.id === raw)) {
+    return raw as GameModeId;
+  }
+  return "classic";
+}
+
+function formatCountdown(ms: number) {
+  const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
+  const minutes = Math.floor(totalSeconds / 60)
+    .toString()
+    .padStart(2, "0");
+  const seconds = (totalSeconds % 60).toString().padStart(2, "0");
+  return `${minutes}:${seconds}`;
+}
 
 export function GamePage() {
   const { t } = useTranslation();
@@ -75,6 +109,7 @@ export function GamePage() {
   const [accountRequiredMessage, setAccountRequiredMessage] = useState("");
   const [showGuestAd, setShowGuestAd] = useState(false);
   const [runtimeReady, setRuntimeReady] = useState(false);
+  const [selectedMode, setSelectedMode] = useState<GameModeId>(() => loadStoredMode());
   const latestStatsRef = useRef<GameStats>(emptyStats);
   const checkpointSequenceRef = useRef(0);
   const checkpointPendingRef = useRef(false);
@@ -135,6 +170,8 @@ export function GamePage() {
     }),
     [guestSession?.temporarySettings, user?.profile.gameSettings]
   );
+  const selectedModeDefinition = useMemo(() => getGameModeDefinition(selectedMode), [selectedMode]);
+  const SelectedModeIcon = modeIconMap[selectedMode];
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -166,6 +203,12 @@ export function GamePage() {
     return () => window.clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(modeStorageKey, selectedMode);
+    }
+  }, [selectedMode]);
+
   async function startRun() {
     setBusy(true);
     setError("");
@@ -174,22 +217,22 @@ export function GamePage() {
       setRuntimeReady(true);
       if (isGuest) {
         setSessionId("");
-        setStats(emptyStats);
+        setStats({ ...emptyStats, modeId: selectedMode });
         setResult(null);
         setShowGuestAd(false);
         setRunState("running");
-        trackEvent("game_start", { mode: "guest" });
-        latestStatsRef.current = emptyStats;
+        trackEvent("game_start", { mode: "guest", gameMode: selectedMode });
+        latestStatsRef.current = { ...emptyStats, modeId: selectedMode };
         checkpointSequenceRef.current = 0;
         return;
       }
       const session = await gameApi.startSession();
       setSessionId(session.sessionId);
-      setStats(emptyStats);
+      setStats({ ...emptyStats, modeId: selectedMode });
       setResult(null);
       setRunState("running");
-      trackEvent("game_start", { mode: "account" });
-      latestStatsRef.current = emptyStats;
+      trackEvent("game_start", { mode: "account", gameMode: selectedMode });
+      latestStatsRef.current = { ...emptyStats, modeId: selectedMode };
       checkpointSequenceRef.current = 0;
     } catch {
       setError(t("common.error"));
@@ -304,7 +347,7 @@ export function GamePage() {
     async (finalStats: GameStats) => {
       setRunState("over");
       setStats(finalStats);
-      trackEvent("game_complete", { mode: isGuest ? "guest" : "account", score: finalStats.score, durationMs: finalStats.durationMs });
+      trackEvent("game_complete", { mode: isGuest ? "guest" : "account", gameMode: selectedMode, score: finalStats.score, durationMs: finalStats.durationMs });
 
       if (isGuest) {
         recordGame(finalStats.score);
@@ -337,7 +380,7 @@ export function GamePage() {
         setError(t("common.error"));
       }
     },
-    [isGuest, patchWallet, recordGame, sendCheckpoint, sessionId, t, updateSession]
+    [isGuest, patchWallet, recordGame, selectedMode, sendCheckpoint, sessionId, t, updateSession]
   );
 
   function openGuestSavePrompt() {
@@ -352,7 +395,14 @@ export function GamePage() {
     return (
       <section className="grid gap-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="grid grid-cols-3 gap-2 text-sm font-bold">
+          <div className="grid grid-cols-2 gap-2 text-sm font-bold md:grid-cols-5">
+            <div className="rounded-md border border-white/10 bg-white/5 px-3 py-2">
+              {t("gameModes.active")}: {t(`gameModes.modes.${selectedMode}.name`)}
+            </div>
+            <div className="rounded-md border border-white/10 bg-white/5 px-3 py-2">
+              {stats.timeLeftMs !== undefined ? t("gameModes.timeLeft") : t("gameModes.statusLabel")}:{" "}
+              {stats.timeLeftMs !== undefined ? formatCountdown(stats.timeLeftMs) : t(stats.modeStatusKey ?? selectedModeDefinition.statusKey)}
+            </div>
             <div className="rounded-md border border-white/10 bg-white/5 px-3 py-2">
               {t("game.score")}: {stats.score}
             </div>
@@ -380,6 +430,7 @@ export function GamePage() {
 
         <Suspense fallback={<AppLoader label={t("loader.runtimeTitle")} subtitle={t("loader.runtimeSubtitle")} compact />}>
           <GameCanvas
+            modeId={selectedMode}
             skins={gameSkins}
             theme={selectedTheme}
             audio={audioSettings}
@@ -393,6 +444,13 @@ export function GamePage() {
         {runState === "over" ? (
           <Modal title={t("game.gameOver")} closeLabel={t("common.close")} onClose={() => setRunState("idle")}>
             <div className="grid gap-4">
+              <div className="flex items-center gap-3 rounded-md border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200">
+                <SelectedModeIcon size={18} className="text-cyanGlow" />
+                <div>
+                  <div className="font-bold text-white">{t(`gameModes.modes.${selectedMode}.name`)}</div>
+                  <div>{t(`gameModes.modes.${selectedMode}.description`)}</div>
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <StatCard icon={<Zap size={20} />} label={t("game.score")} value={result?.score ?? stats.score} />
                 <StatCard icon={<Coins size={20} />} label={isGuest ? t("guest.localBest") : t("game.coinsEarned")} value={isGuest ? guestSession?.bestGuestScore ?? stats.score : result?.coinsAwarded ?? 0} />
@@ -459,6 +517,50 @@ export function GamePage() {
           {t("menu.title")}
         </h1>
         <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-300">{t("menu.subtitle")}</p>
+        <div className="mt-8">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-black text-white">{t("gameModes.title")}</h2>
+              <p className="text-sm leading-6 text-slate-300">{t("gameModes.subtitle")}</p>
+            </div>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {gameModeDefinitions.map((mode) => {
+              const selected = mode.id === selectedMode;
+              const ModeIcon = modeIconMap[mode.id];
+              return (
+                <button
+                  key={mode.id}
+                  type="button"
+                  onClick={() => setSelectedMode(mode.id)}
+                  className={`text-left transition duration-200 ${selected ? "scale-[1.01]" : "hover:-translate-y-0.5 hover:border-white/20"} rounded-lg border p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyanGlow/70`}
+                  style={{
+                    borderColor: selected ? mode.accent : "rgba(255,255,255,0.1)",
+                    background: selected ? `linear-gradient(180deg, ${mode.glow}, rgba(8,17,22,0.9))` : "rgba(255,255,255,0.04)",
+                    boxShadow: selected ? `0 0 0 1px ${mode.accent} inset, 0 18px 48px ${mode.glow}` : "none"
+                  }}
+                  aria-pressed={selected}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="inline-flex rounded-md border border-white/10 bg-white/5 p-2">
+                      <ModeIcon size={18} style={{ color: mode.accent }} />
+                    </div>
+                    {selected ? (
+                      <span className="rounded-full border border-white/10 bg-white/10 px-2 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-white">
+                        {t("gameModes.selected")}
+                      </span>
+                    ) : null}
+                  </div>
+                  <div className="mt-4 text-lg font-black text-white">{t(`gameModes.modes.${mode.id}.name`)}</div>
+                  <div className="mt-2 text-sm leading-6 text-slate-300">{t(`gameModes.modes.${mode.id}.description`)}</div>
+                  <div className="mt-3 text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+                    {t(mode.timeLimitMs ? "gameModes.timeAttackTag" : `gameModes.tags.${mode.id}`)}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
         <div className="mt-8 flex flex-wrap gap-3">
           <Button
             type="button"
@@ -470,9 +572,14 @@ export function GamePage() {
           >
             {t("menu.playNow")}
           </Button>
-          <Button type="button" variant="secondary" disabled>
-            {t("game.tapToControl")}
+          <Button type="button" variant="secondary" disabled icon={<SelectedModeIcon size={18} />}>
+            {t(`gameModes.modes.${selectedMode}.name`)}
           </Button>
+        </div>
+        <div className="mt-4 rounded-lg border border-white/10 bg-white/5 p-4 text-sm leading-6 text-slate-300">
+          <div className="font-bold text-white">{t("gameModes.focusTitle")}</div>
+          <div className="mt-1">{t(`gameModes.modes.${selectedMode}.focus`)}</div>
+          <div className="mt-3 text-xs uppercase tracking-[0.18em] text-slate-400">{t("game.tapToControl")}</div>
         </div>
         {error ? <div className="mt-5 rounded-md border border-magentaGlow/40 bg-magentaGlow/10 p-3 text-sm text-pink-200">{error}</div> : null}
       </div>

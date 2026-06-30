@@ -161,7 +161,21 @@
     "emptyLeaderboard": "Nog geen scores."
   },
   "premium": {
-    "title": "Premium", "heading": "Meer beloningen, minder onderbrekingen", "subtitle": "Een productklare plek voor toekomstige abonnementen en premiumrechten.", "noAds": "Geen advertenties", "premiumBadge": "Premiumbadge", "premiumSkins": "Premiumskins", "extraDailySpins": "{{count}} extra dagelijkse draai(en)", "extraDailyGems": "{{count}} extra dagelijkse edelsteen/edelstenen", "extraLivesPerRun": "{{count}} extra leven(s) per ronde", "betterDailyRewards": "Verbeterde dagelijkse beloningen", "calloutTitle": "Betalingen zijn nog niet actief", "calloutText": "Deze voordelen komen van de backend. Een betalingsprovider kan later worden aangesloten zonder de spel- of winkelinterface opnieuw te bouwen.", "enabled": "Actief", "disabled": "Uit", "loading": "Laden"
+    "title": "Premium",
+    "heading": "Meer beloningen, minder onderbrekingen",
+    "subtitle": "Een productklare plek voor toekomstige abonnementen en premiumrechten.",
+    "noAds": "Geen advertenties",
+    "premiumBadge": "Premiumbadge",
+    "premiumSkins": "Premiumskins",
+    "extraDailySpins": "{{count}} extra dagelijkse draai(en)",
+    "extraDailyGems": "{{count}} extra dagelijkse edelsteen/edelstenen",
+    "extraLivesPerRun": "{{count}} extra leven(s) per ronde",
+    "betterDailyRewards": "Verbeterde dagelijkse beloningen",
+    "calloutTitle": "Betalingen zijn nog niet actief",
+    "calloutText": "Deze voordelen komen van de backend. Een betalingsprovider kan later worden aangesloten zonder de spel- of winkelinterface opnieuw te bouwen.",
+    "enabled": "Actief",
+    "disabled": "Uit",
+    "loading": "Laden"
   },
   "payment": {
     "title": "Betaling",
@@ -173,12 +187,30 @@
       "serverPriced": "Serverprijs",
       "featured": "Populair",
       "bestValue": "Beste waarde",
-      "coins1000": { "name": "1.000 munten", "description": "Een sterk muntenpakket voor skins, thema's en unlocks." },
-      "coins2500": { "name": "2.500 munten", "description": "Meer ruimte om zeldzame cosmetica vrij te spelen zonder lang grinden." },
-      "coins5500": { "name": "5.500 munten", "description": "Het beste muntenpakket voor serieuze personalisatie." },
-      "premium30": { "name": "Premium 30 dagen", "description": "Premiumstatus, bonussen en toekomstige premiumfuncties voor een maand." },
-      "premium90": { "name": "Premium 90 dagen", "description": "Drie maanden premiumtoegang voor een betere prijs." },
-      "skinGalaxyVip": { "name": "Galaxy VIP-skin", "description": "Een premium galaxy-cosmetic voorbereid voor betaalde unlocks." }
+      "coins1000": {
+        "name": "1.000 munten",
+        "description": "Een sterk muntenpakket voor skins, thema's en unlocks."
+      },
+      "coins2500": {
+        "name": "2.500 munten",
+        "description": "Meer ruimte om zeldzame cosmetica vrij te spelen zonder lang grinden."
+      },
+      "coins5500": {
+        "name": "5.500 munten",
+        "description": "Het beste muntenpakket voor serieuze personalisatie."
+      },
+      "premium30": {
+        "name": "Premium 30 dagen",
+        "description": "Premiumstatus, bonussen en toekomstige premiumfuncties voor een maand."
+      },
+      "premium90": {
+        "name": "Premium 90 dagen",
+        "description": "Drie maanden premiumtoegang voor een betere prijs."
+      },
+      "skinGalaxyVip": {
+        "name": "Galaxy VIP-skin",
+        "description": "Een premium galaxy-cosmetic voorbereid voor betaalde unlocks."
+      }
     },
     "methods": {
       "title": "Betaalmethode",
@@ -277,8 +309,8 @@
     },
     "settingsEntry": {
       "description": "Open het veilige betaalcentrum om provider-ondersteunde orders te maken. Echte betalingen blijven uit totdat productiesleutels zijn ingesteld.",
-        "open": "Betaalcentrum openen",
-        "disabled": "Betalingen zijn tijdelijk niet beschikbaar terwijl zakelijke uitbetalingsgegevens en facturatie worden voorbereid. Munten, Premium en betaalde skins kunnen nu niet worden gekocht.",
+      "open": "Betaalcentrum openen",
+      "disabled": "Betalingen zijn tijdelijk niet beschikbaar terwijl zakelijke uitbetalingsgegevens en facturatie worden voorbereid. Munten, Premium en betaalde skins kunnen nu niet worden gekocht.",
       "guestLocked": "Maak een account om betalingen, facturen, premiumaankopen en toekomstige factuurgeschiedenis te gebruiken."
     },
     "success": {
@@ -438,7 +470,20 @@
     "intro": "Deze regels gelden voor gasten, accounts, scores, aankopen, advertenties, support en beheerdersbesluiten.",
     "securityTitle": "Beveiligingsherinnering",
     "securityBody": "Deel nooit je wachtwoord. Support en beheerders zullen er nooit om vragen.",
-    "categories": { "general": "Algemene spelregels", "guest": "Regels voor gasten", "account": "Accountregels", "password": "Wachtwoord- en beveiligingsregels", "score": "Score- en ranglijstregels", "antiCheat": "Anti-cheatregels", "shop": "Regels voor skins, winkel en beloningen", "ads": "Regels voor advertenties en beloonde advertenties", "support": "Support- en bezwaarregels", "bans": "Ban- en beperkingsregels", "privacy": "Privacy- en gegevensregels", "admin": "Beheerders- en handhavingsregels" }
+    "categories": {
+      "general": "Algemene spelregels",
+      "guest": "Regels voor gasten",
+      "account": "Accountregels",
+      "password": "Wachtwoord- en beveiligingsregels",
+      "score": "Score- en ranglijstregels",
+      "antiCheat": "Anti-cheatregels",
+      "shop": "Regels voor skins, winkel en beloningen",
+      "ads": "Regels voor advertenties en beloonde advertenties",
+      "support": "Support- en bezwaarregels",
+      "bans": "Ban- en beperkingsregels",
+      "privacy": "Privacy- en gegevensregels",
+      "admin": "Beheerders- en handhavingsregels"
+    }
   },
   "ruleTexts": {
     "general": [
@@ -592,30 +637,269 @@
     "save": "Keuzes opslaan"
   },
   "guest": {
-    "access": "Gasttoegang", "deviceOnly": "Scores en voortgang blijven op dit apparaat.", "limitedAccess": "Gast - beperkte toegang", "accountRequired": "Account vereist", "accountRequiredMessage": "Je hebt een account nodig voor deze functie.", "createAccount": "Account maken", "continue": "Doorgaan als gast", "footerLocal": "Gastvoortgang wordt alleen op dit apparaat opgeslagen.", "footerCloud": "Accountvoortgang wordt veilig opgeslagen.", "transferTitle": "Gastvoortgang opslaan", "transferQuestion": "Wil je je gastvoortgang in dit account opslaan?", "transferHelp": "Alleen aannemelijke scores en basisinstellingen worden overgezet. Lokale munten, premiumitems en niet-geverifieerde beloningen worden genegeerd.", "transferError": "Gastvoortgang kon niet worden overgezet.", "localBest": "Lokaal record", "games": "Spellen", "saveProgress": "Voortgang opslaan", "notNow": "Niet nu"
+    "access": "Gasttoegang",
+    "deviceOnly": "Scores en voortgang blijven op dit apparaat.",
+    "limitedAccess": "Gast - beperkte toegang",
+    "accountRequired": "Account vereist",
+    "accountRequiredMessage": "Je hebt een account nodig voor deze functie.",
+    "createAccount": "Account maken",
+    "continue": "Doorgaan als gast",
+    "footerLocal": "Gastvoortgang wordt alleen op dit apparaat opgeslagen.",
+    "footerCloud": "Accountvoortgang wordt veilig opgeslagen.",
+    "transferTitle": "Gastvoortgang opslaan",
+    "transferQuestion": "Wil je je gastvoortgang in dit account opslaan?",
+    "transferHelp": "Alleen aannemelijke scores en basisinstellingen worden overgezet. Lokale munten, premiumitems en niet-geverifieerde beloningen worden genegeerd.",
+    "transferError": "Gastvoortgang kon niet worden overgezet.",
+    "localBest": "Lokaal record",
+    "games": "Spellen",
+    "saveProgress": "Voortgang opslaan",
+    "notNow": "Niet nu"
   },
-  "userMenu": { "title": "Gebruikersmenu", "mySkins": "Mijn skins", "myThemes": "Mijn thema's", "myScores": "Mijn scores", "limitedSettings": "Beperkte instellingen" },
-  "gameExtra": { "accountForRewards": "Je hebt een account nodig om beloningen te claimen.", "accountForRewardedItems": "Je hebt een account nodig om beloonde items te ontvangen.", "loginToSave": "Log in of maak een account om je score op te slaan.", "scoreUnderReview": "Je score wordt beoordeeld.", "scoreRejected": "Deze score is door de servervalidatie afgewezen.", "guestGameOver": "Maak een account om je score op te slaan, skins vrij te spelen en je voortgang te behouden.", "saveScore": "Score opslaan" },
+  "userMenu": {
+    "title": "Gebruikersmenu",
+    "mySkins": "Mijn skins",
+    "myThemes": "Mijn thema's",
+    "myScores": "Mijn scores",
+    "limitedSettings": "Beperkte instellingen"
+  },
+  "gameExtra": {
+    "accountForRewards": "Je hebt een account nodig om beloningen te claimen.",
+    "accountForRewardedItems": "Je hebt een account nodig om beloonde items te ontvangen.",
+    "loginToSave": "Log in of maak een account om je score op te slaan.",
+    "scoreUnderReview": "Je score wordt beoordeeld.",
+    "scoreRejected": "Deze score is door de servervalidatie afgewezen.",
+    "guestGameOver": "Maak een account om je score op te slaan, skins vrij te spelen en je voortgang te behouden.",
+    "saveScore": "Score opslaan"
+  },
   "restrictions": {
-    "temporaryUntil": "Tijdelijk tot {{date}}", "noEnd": "Geen automatische einddatum", "appealAvailable": "Je kunt contact opnemen met Support om bezwaar te maken.", "noAppeal": "Bezwaar is niet mogelijk.",
-    "types": { "warning": "Waarschuwing", "temporary_restriction": "Tijdelijke beperking", "support_restriction": "Supportbeperking", "shop_restriction": "Winkelbeperking", "leaderboard_restriction": "Ranglijstbeperking", "score_reset": "Score gereset", "score_hidden": "Score verborgen", "rewards_removed": "Beloningen verwijderd", "temporary_ban": "Tijdelijke ban", "permanent_ban": "Permanente ban" }
+    "temporaryUntil": "Tijdelijk tot {{date}}",
+    "noEnd": "Geen automatische einddatum",
+    "appealAvailable": "Je kunt contact opnemen met Support om bezwaar te maken.",
+    "noAppeal": "Bezwaar is niet mogelijk.",
+    "types": {
+      "warning": "Waarschuwing",
+      "temporary_restriction": "Tijdelijke beperking",
+      "support_restriction": "Supportbeperking",
+      "shop_restriction": "Winkelbeperking",
+      "leaderboard_restriction": "Ranglijstbeperking",
+      "score_reset": "Score gereset",
+      "score_hidden": "Score verborgen",
+      "rewards_removed": "Beloningen verwijderd",
+      "temporary_ban": "Tijdelijke ban",
+      "permanent_ban": "Permanente ban"
+    }
   },
   "settingsDetails": {
-    "saved": "Instellingen opgeslagen.", "saveError": "Instellingen konden niet worden opgeslagen.", "passwordChanged": "Wachtwoord succesvol gewijzigd.", "passwordError": "Wachtwoord kon niet worden gewijzigd.", "deleteError": "Account kon niet worden verwijderd.", "temporaryPasswordWarning": "Je tijdelijke wachtwoord is geaccepteerd. Kies een nieuw wachtwoord voordat je andere accountfuncties gebruikt.",
-    "username": "Gebruikersnaam", "email": "E-mail", "status": "Status", "created": "Aangemaakt", "guestAccountLimit": "Een gast heeft geen cloudprofiel, ranglijstidentiteit, aankopen, prestaties of voortgang tussen apparaten.", "unlockAccountSettings": "Accountinstellingen ontgrendelen",
-    "difficulty": "Moeilijkheid", "controlSensitivity": "Besturingsgevoeligheid", "movementType": "Bewegingstype", "vibration": "Trillen", "autoPause": "Automatisch pauzeren", "showScore": "Score tijdens het spel tonen", "showTutorial": "Tutorial tonen", "reduceMotion": "Minder beweging", "keyboardControls": "Toetsenbordbesturing", "touchControls": "Touchbesturing", "mouseControls": "Muisbesturing", "virtualJoystick": "Virtuele joystick", "controlSize": "Grootte besturing", "resetControls": "Besturing herstellen",
-    "masterVolume": "Hoofdvolume", "musicVolume": "Muziekvolume", "effectsVolume": "Volume geluidseffecten", "testAudio": "Game-audio testen", "muteAll": "Alles dempen", "particles": "Deeltjes", "screenShake": "Schermschudden", "trailEffects": "Spooreffecten", "animationQuality": "Animatiekwaliteit", "lowPerformance": "Energiezuinige modus", "highContrast": "Hoog contrast",
-    "showLeaderboardName": "Gebruikersnaam in ranglijst tonen", "hideProfile": "Profiel verbergen", "allowRewardedAds": "Beloonde advertenties toestaan", "rewardedAdsHelp": "Beloonde advertenties zijn optioneel. Gasten kunnen meer advertenties zien omdat accountfuncties en aankoopgeschiedenis niet beschikbaar zijn.", "openSupport": "Supportticket openen", "supportRules": "Supportregels", "securityPassword": "Beveiliging / Wachtwoord", "lastPasswordChange": "Laatste wachtwoordwijziging: {{date}}. Deel je wachtwoord nooit.", "currentPassword": "Huidig wachtwoord", "newPassword": "Nieuw wachtwoord", "confirmPassword": "Nieuw wachtwoord bevestigen", "passwordHelp": "Gebruik minimaal 10 tekens met hoofdletters, kleine letters en een cijfer. Hergebruik je huidige wachtwoord niet.", "changePassword": "Wachtwoord wijzigen",
-    "deleteAccount": "Account verwijderen", "deleteAccountHelp": "Dit anonimiseert je identiteit, verbergt scores, verwijdert toegang en wist besteedbare saldi. Financiële gegevens kunnen waar wettelijk vereist gepseudonimiseerd worden bewaard.", "deleteMyAccount": "Mijn account verwijderen", "deletePermanently": "Account permanent verwijderen", "deleteConfirmationHelp": "Voer je wachtwoord in en typ DELETE. Dit kan niet ongedaan worden gemaakt.", "typeDelete": "Typ DELETE", "deleteForever": "Account permanent verwijderen",
-    "accountStatuses": { "ACTIVE": "Actief", "BANNED": "Geblokkeerd", "DELETED": "Verwijderd" }, "options": { "adaptive": "Adaptief", "normal": "Normaal", "hard": "Moeilijk", "click": "Muis / klik", "keyboard": "Toetsenbord", "touch": "Aanraken", "low": "Laag", "medium": "Gemiddeld", "high": "Hoog" }
+    "saved": "Instellingen opgeslagen.",
+    "saveError": "Instellingen konden niet worden opgeslagen.",
+    "passwordChanged": "Wachtwoord succesvol gewijzigd.",
+    "passwordError": "Wachtwoord kon niet worden gewijzigd.",
+    "deleteError": "Account kon niet worden verwijderd.",
+    "temporaryPasswordWarning": "Je tijdelijke wachtwoord is geaccepteerd. Kies een nieuw wachtwoord voordat je andere accountfuncties gebruikt.",
+    "username": "Gebruikersnaam",
+    "email": "E-mail",
+    "status": "Status",
+    "created": "Aangemaakt",
+    "guestAccountLimit": "Een gast heeft geen cloudprofiel, ranglijstidentiteit, aankopen, prestaties of voortgang tussen apparaten.",
+    "unlockAccountSettings": "Accountinstellingen ontgrendelen",
+    "difficulty": "Moeilijkheid",
+    "controlSensitivity": "Besturingsgevoeligheid",
+    "movementType": "Bewegingstype",
+    "vibration": "Trillen",
+    "autoPause": "Automatisch pauzeren",
+    "showScore": "Score tijdens het spel tonen",
+    "showTutorial": "Tutorial tonen",
+    "reduceMotion": "Minder beweging",
+    "keyboardControls": "Toetsenbordbesturing",
+    "touchControls": "Touchbesturing",
+    "mouseControls": "Muisbesturing",
+    "virtualJoystick": "Virtuele joystick",
+    "controlSize": "Grootte besturing",
+    "resetControls": "Besturing herstellen",
+    "masterVolume": "Hoofdvolume",
+    "musicVolume": "Muziekvolume",
+    "effectsVolume": "Volume geluidseffecten",
+    "testAudio": "Game-audio testen",
+    "muteAll": "Alles dempen",
+    "particles": "Deeltjes",
+    "screenShake": "Schermschudden",
+    "trailEffects": "Spooreffecten",
+    "animationQuality": "Animatiekwaliteit",
+    "lowPerformance": "Energiezuinige modus",
+    "highContrast": "Hoog contrast",
+    "showLeaderboardName": "Gebruikersnaam in ranglijst tonen",
+    "hideProfile": "Profiel verbergen",
+    "allowRewardedAds": "Beloonde advertenties toestaan",
+    "rewardedAdsHelp": "Beloonde advertenties zijn optioneel. Gasten kunnen meer advertenties zien omdat accountfuncties en aankoopgeschiedenis niet beschikbaar zijn.",
+    "openSupport": "Supportticket openen",
+    "supportRules": "Supportregels",
+    "securityPassword": "Beveiliging / Wachtwoord",
+    "lastPasswordChange": "Laatste wachtwoordwijziging: {{date}}. Deel je wachtwoord nooit.",
+    "currentPassword": "Huidig wachtwoord",
+    "newPassword": "Nieuw wachtwoord",
+    "confirmPassword": "Nieuw wachtwoord bevestigen",
+    "passwordHelp": "Gebruik minimaal 10 tekens met hoofdletters, kleine letters en een cijfer. Hergebruik je huidige wachtwoord niet.",
+    "changePassword": "Wachtwoord wijzigen",
+    "deleteAccount": "Account verwijderen",
+    "deleteAccountHelp": "Dit anonimiseert je identiteit, verbergt scores, verwijdert toegang en wist besteedbare saldi. Financiële gegevens kunnen waar wettelijk vereist gepseudonimiseerd worden bewaard.",
+    "deleteMyAccount": "Mijn account verwijderen",
+    "deletePermanently": "Account permanent verwijderen",
+    "deleteConfirmationHelp": "Voer je wachtwoord in en typ DELETE. Dit kan niet ongedaan worden gemaakt.",
+    "typeDelete": "Typ DELETE",
+    "deleteForever": "Account permanent verwijderen",
+    "accountStatuses": {
+      "ACTIVE": "Actief",
+      "BANNED": "Geblokkeerd",
+      "DELETED": "Verwijderd"
+    },
+    "options": {
+      "adaptive": "Adaptief",
+      "normal": "Normaal",
+      "hard": "Moeilijk",
+      "click": "Muis / klik",
+      "keyboard": "Toetsenbord",
+      "touch": "Aanraken",
+      "low": "Laag",
+      "medium": "Gemiddeld",
+      "high": "Hoog"
+    }
   },
   "progression": {
-    "achievements": "Prestaties", "dailyMissions": "Dagelijkse missies", "completed": "Voltooid", "season": "Seizoen: {{name}}", "level": "Niveau {{level}}", "xp": "XP", "seasons": { "season-1": "Neonbegin" },
-    "items": { "first-flight": { "title": "Eerste vlucht", "description": "Voltooi één geldige ronde" }, "neon-sprinter": { "title": "Neonsprinter", "description": "Behaal 10.000 punten" }, "arena-master": { "title": "Arenameester", "description": "Behaal 50.000 punten" }, "daily-runs": { "title": "Voltooi 3 geldige rondes" }, "daily-score": { "title": "Behaal 10.000 punten" }, "daily-coins": { "title": "Verzamel 10 energiemunten" } }
+    "achievements": "Prestaties",
+    "dailyMissions": "Dagelijkse missies",
+    "completed": "Voltooid",
+    "season": "Seizoen: {{name}}",
+    "level": "Niveau {{level}}",
+    "xp": "XP",
+    "seasons": {
+      "season-1": "Neonbegin"
+    },
+    "items": {
+      "first-flight": {
+        "title": "Eerste vlucht",
+        "description": "Voltooi één geldige ronde"
+      },
+      "neon-sprinter": {
+        "title": "Neonsprinter",
+        "description": "Behaal 10.000 punten"
+      },
+      "arena-master": {
+        "title": "Arenameester",
+        "description": "Behaal 50.000 punten"
+      },
+      "daily-runs": {
+        "title": "Voltooi 3 geldige rondes"
+      },
+      "daily-score": {
+        "title": "Behaal 10.000 punten"
+      },
+      "daily-coins": {
+        "title": "Verzamel 10 energiemunten"
+      }
+    }
   },
   "themesPage": {
-    "title": "Thema's", "heading": "Bouw de sfeer van je arena", "subtitle": "Thema's veranderen de achtergrond, het spoorpalet, obstakels, interfaceaccent en deeltjes.", "guestNotice": "Maak een account om meer thema's vrij te spelen. Gasten kunnen de eerste drie basisthema's gebruiken.", "loadError": "Thema's konden niet worden geladen.", "selectError": "Thema kon niet worden geselecteerd.", "accountRequired": "Maak een account om meer thema's vrij te spelen.", "equipped": "Actief", "equip": "Gebruiken", "unlock": "Ontgrendelen", "coinsOrScore": "{{coins}} munten / score", "availableEveryone": "Voor iedereen beschikbaar", "premiumEntitlement": "Premiumrecht", "unlockCondition": "Behaal {{score}} punten of besteed {{coins}} munten", "types": { "free": "Gratis", "unlockable": "Vrijspeelbaar", "premium": "Premium" },
-    "items": { "classic-neon": { "name": "Klassiek neon", "particles": "Cyaan vonken" }, "dark-space": { "name": "Donkere ruimte", "particles": "Sterrenstof" }, "cyber-grid": { "name": "Cyberraster", "particles": "Digitale vierkanten" }, "ocean-blue": { "name": "Oceaanblauw", "particles": "Bellen" }, "sunset-run": { "name": "Zonsondergangrun", "particles": "Zonnevlammen" }, "lava-zone": { "name": "Lavazone", "particles": "Sintels" }, "ice-world": { "name": "IJswereld", "particles": "Sneeuwkristallen" }, "forest-glow": { "name": "Bosgloed", "particles": "Vuurvliegjes" }, "purple-night": { "name": "Paarse nacht", "particles": "Violette vonken" }, "retro-arcade": { "name": "Retro-arcade", "particles": "Pixeluitbarsting" }, "minimal-white": { "name": "Minimalistisch wit", "particles": "Inktstippen" }, "toxic-green": { "name": "Giftig groen", "particles": "Giftige mist" }, "gold-premium": { "name": "Goud premium", "particles": "Goudscherven" }, "rainbow-energy": { "name": "Regenboogenergie", "particles": "Regenboogvonken" }, "winter-frost": { "name": "Wintervorst", "particles": "Rijp" }, "desert-storm": { "name": "Woestijnstorm", "particles": "Zandkorrels" }, "candy-mode": { "name": "Snoepmodus", "particles": "Suikersterren" }, "galaxy-trail": { "name": "Melkwegspoor", "particles": "Nevelstof" }, "matrix-code": { "name": "Matrixcode", "particles": "Coderegen" }, "fire-line": { "name": "Vuurlijn", "particles": "Vlammen" } }
+    "title": "Thema's",
+    "heading": "Bouw de sfeer van je arena",
+    "subtitle": "Thema's veranderen de achtergrond, het spoorpalet, obstakels, interfaceaccent en deeltjes.",
+    "guestNotice": "Maak een account om meer thema's vrij te spelen. Gasten kunnen de eerste drie basisthema's gebruiken.",
+    "loadError": "Thema's konden niet worden geladen.",
+    "selectError": "Thema kon niet worden geselecteerd.",
+    "accountRequired": "Maak een account om meer thema's vrij te spelen.",
+    "equipped": "Actief",
+    "equip": "Gebruiken",
+    "unlock": "Ontgrendelen",
+    "coinsOrScore": "{{coins}} munten / score",
+    "availableEveryone": "Voor iedereen beschikbaar",
+    "premiumEntitlement": "Premiumrecht",
+    "unlockCondition": "Behaal {{score}} punten of besteed {{coins}} munten",
+    "types": {
+      "free": "Gratis",
+      "unlockable": "Vrijspeelbaar",
+      "premium": "Premium"
+    },
+    "items": {
+      "classic-neon": {
+        "name": "Klassiek neon",
+        "particles": "Cyaan vonken"
+      },
+      "dark-space": {
+        "name": "Donkere ruimte",
+        "particles": "Sterrenstof"
+      },
+      "cyber-grid": {
+        "name": "Cyberraster",
+        "particles": "Digitale vierkanten"
+      },
+      "ocean-blue": {
+        "name": "Oceaanblauw",
+        "particles": "Bellen"
+      },
+      "sunset-run": {
+        "name": "Zonsondergangrun",
+        "particles": "Zonnevlammen"
+      },
+      "lava-zone": {
+        "name": "Lavazone",
+        "particles": "Sintels"
+      },
+      "ice-world": {
+        "name": "IJswereld",
+        "particles": "Sneeuwkristallen"
+      },
+      "forest-glow": {
+        "name": "Bosgloed",
+        "particles": "Vuurvliegjes"
+      },
+      "purple-night": {
+        "name": "Paarse nacht",
+        "particles": "Violette vonken"
+      },
+      "retro-arcade": {
+        "name": "Retro-arcade",
+        "particles": "Pixeluitbarsting"
+      },
+      "minimal-white": {
+        "name": "Minimalistisch wit",
+        "particles": "Inktstippen"
+      },
+      "toxic-green": {
+        "name": "Giftig groen",
+        "particles": "Giftige mist"
+      },
+      "gold-premium": {
+        "name": "Goud premium",
+        "particles": "Goudscherven"
+      },
+      "rainbow-energy": {
+        "name": "Regenboogenergie",
+        "particles": "Regenboogvonken"
+      },
+      "winter-frost": {
+        "name": "Wintervorst",
+        "particles": "Rijp"
+      },
+      "desert-storm": {
+        "name": "Woestijnstorm",
+        "particles": "Zandkorrels"
+      },
+      "candy-mode": {
+        "name": "Snoepmodus",
+        "particles": "Suikersterren"
+      },
+      "galaxy-trail": {
+        "name": "Melkwegspoor",
+        "particles": "Nevelstof"
+      },
+      "matrix-code": {
+        "name": "Matrixcode",
+        "particles": "Coderegen"
+      },
+      "fire-line": {
+        "name": "Vuurlijn",
+        "particles": "Vlammen"
+      }
+    }
   },
   "aboutPage": {
     "title": "Over Waves Arcade",
@@ -631,24 +915,72 @@
   },
   "policies": {
     "effective": "Geldig vanaf: 20 juni 2026",
-    "privacy": { "title": "Privacybeleid", "sections": {
-      "data": { "title": "Gegevens die we verzamelen", "body": "Accountgegevens, spelsessies, geldige scores, aankopen, supportberichten, beveiligingsgebeurtenissen en toestemmingskeuzes. Gast-ID's voor analyses worden gehasht." },
-      "purpose": { "title": "Waarom we gegevens gebruiken", "body": "Om accounts en cloudvoortgang te leveren, het spel en de winkel te laten werken, eerlijk spel te beschermen, supportvragen te beantwoorden, betrouwbaarheid te meten en alleen na de vereiste keuze advertenties te tonen." },
-      "legal": { "title": "Rechtsgrond", "body": "Dienstgegevens worden verwerkt om het spel te leveren en de regels te handhaven. Optionele analyses en advertenties zijn gebaseerd op toestemming, die in Instellingen kan worden gewijzigd." },
-      "sharing": { "title": "Delen", "body": "Hosting-, database-, e-mail-, foutmonitoring-, betalings- en advertentieproviders ontvangen alleen gegevens die zij nodig hebben. We verkopen geen wachtwoorden of authenticatietokens." },
-      "retention": { "title": "Bewaren en verwijderen", "body": "Beveiligings- en financiële gegevens kunnen waar nodig worden bewaard. Verwijdering van een account anonimiseert de identiteit, verwijdert toegang, verbergt scores en wist besteedbare saldi." },
-      "choices": { "title": "Jouw keuzes", "body": "Je kunt privacyinstellingen aanpassen, optionele toestemming intrekken, Support benaderen, bezwaar maken tegen moderatie en vanuit Instellingen om accountverwijdering vragen." },
-      "security": { "title": "Beveiliging", "body": "Wachtwoorden worden als veilige hashes opgeslagen. Beheerders kunnen oude wachtwoorden niet zien. Stuur nooit een wachtwoord naar Support." },
-      "contact": { "title": "Contact", "body": "Gebruik de supportpagina in het spel voor privacyverzoeken. Vermeld het e-mailadres van het account, maar nooit een wachtwoord." }
-    } },
-    "cookies": { "title": "Cookiebeleid", "sections": {
-      "necessary": { "title": "Noodzakelijke opslag", "body": "Authenticatiestatus, gastsessie, taal, besturing, beveiliging en toestemmingskeuzes. Deze zijn nodig voor de kernfuncties." },
-      "analytics": { "title": "Analyse", "body": "Met toestemming meten anonieme gebeurtenissen sessies, retentie, geldige scores, advertentieweergaven en fouten. Gevoelige velden worden op de server gefilterd." },
-      "advertising": { "title": "Advertenties", "body": "Met toestemming kan Google Ad Manager cookies of soortgelijke opslag gebruiken voor banners en beloonde advertenties volgens het Google-beleid en je regio." },
-      "choices": { "title": "Keuzes beheren", "body": "Open Cookievoorkeuren op elk moment in Instellingen. Het weigeren van optionele opslag blokkeert gameplay niet, maar advertenties en analyses blijven uitgeschakeld." },
-      "thirdParties": { "title": "Derde partijen", "body": "Google en providers voor hosting, e-mail en monitoring kunnen hun eigen opslag toepassen wanneer hun geconfigureerde functie wordt gebruikt. Hun beleid is ook van toepassing." },
-      "changes": { "title": "Wijzigingen", "body": "Het beleid kan vóór de commerciële lancering of bij wijzigingen van providers worden aangepast. De ingangsdatum staat hierboven." }
-    } }
+    "privacy": {
+      "title": "Privacybeleid",
+      "sections": {
+        "data": {
+          "title": "Gegevens die we verzamelen",
+          "body": "Accountgegevens, spelsessies, geldige scores, aankopen, supportberichten, beveiligingsgebeurtenissen en toestemmingskeuzes. Gast-ID's voor analyses worden gehasht."
+        },
+        "purpose": {
+          "title": "Waarom we gegevens gebruiken",
+          "body": "Om accounts en cloudvoortgang te leveren, het spel en de winkel te laten werken, eerlijk spel te beschermen, supportvragen te beantwoorden, betrouwbaarheid te meten en alleen na de vereiste keuze advertenties te tonen."
+        },
+        "legal": {
+          "title": "Rechtsgrond",
+          "body": "Dienstgegevens worden verwerkt om het spel te leveren en de regels te handhaven. Optionele analyses en advertenties zijn gebaseerd op toestemming, die in Instellingen kan worden gewijzigd."
+        },
+        "sharing": {
+          "title": "Delen",
+          "body": "Hosting-, database-, e-mail-, foutmonitoring-, betalings- en advertentieproviders ontvangen alleen gegevens die zij nodig hebben. We verkopen geen wachtwoorden of authenticatietokens."
+        },
+        "retention": {
+          "title": "Bewaren en verwijderen",
+          "body": "Beveiligings- en financiële gegevens kunnen waar nodig worden bewaard. Verwijdering van een account anonimiseert de identiteit, verwijdert toegang, verbergt scores en wist besteedbare saldi."
+        },
+        "choices": {
+          "title": "Jouw keuzes",
+          "body": "Je kunt privacyinstellingen aanpassen, optionele toestemming intrekken, Support benaderen, bezwaar maken tegen moderatie en vanuit Instellingen om accountverwijdering vragen."
+        },
+        "security": {
+          "title": "Beveiliging",
+          "body": "Wachtwoorden worden als veilige hashes opgeslagen. Beheerders kunnen oude wachtwoorden niet zien. Stuur nooit een wachtwoord naar Support."
+        },
+        "contact": {
+          "title": "Contact",
+          "body": "Gebruik de supportpagina in het spel voor privacyverzoeken. Vermeld het e-mailadres van het account, maar nooit een wachtwoord."
+        }
+      }
+    },
+    "cookies": {
+      "title": "Cookiebeleid",
+      "sections": {
+        "necessary": {
+          "title": "Noodzakelijke opslag",
+          "body": "Authenticatiestatus, gastsessie, taal, besturing, beveiliging en toestemmingskeuzes. Deze zijn nodig voor de kernfuncties."
+        },
+        "analytics": {
+          "title": "Analyse",
+          "body": "Met toestemming meten anonieme gebeurtenissen sessies, retentie, geldige scores, advertentieweergaven en fouten. Gevoelige velden worden op de server gefilterd."
+        },
+        "advertising": {
+          "title": "Advertenties",
+          "body": "Met toestemming kan Google Ad Manager cookies of soortgelijke opslag gebruiken voor banners en beloonde advertenties volgens het Google-beleid en je regio."
+        },
+        "choices": {
+          "title": "Keuzes beheren",
+          "body": "Open Cookievoorkeuren op elk moment in Instellingen. Het weigeren van optionele opslag blokkeert gameplay niet, maar advertenties en analyses blijven uitgeschakeld."
+        },
+        "thirdParties": {
+          "title": "Derde partijen",
+          "body": "Google en providers voor hosting, e-mail en monitoring kunnen hun eigen opslag toepassen wanneer hun geconfigureerde functie wordt gebruikt. Hun beleid is ook van toepassing."
+        },
+        "changes": {
+          "title": "Wijzigingen",
+          "body": "Het beleid kan vóór de commerciële lancering of bij wijzigingen van providers worden aangepast. De ingangsdatum staat hierboven."
+        }
+      }
+    }
   },
   "adminWorkspace": {
     "refreshAll": "Alle gegevens vernieuwen",
@@ -688,7 +1020,17 @@
       "supportDeskBody": "Open onbeantwoorde tickets, beroepszaken en accountproblemen op één plek.",
       "riskDesk": "Risicodesk",
       "reviewRiskAccounts": "Risicoaccounts beoordelen",
-      "riskDeskBody": "Focus op verdachte of recent beperkte spelers zonder de hele lijst door te nemen."
+      "riskDeskBody": "Focus op verdachte of recent beperkte spelers zonder de hele lijst door te nemen.",
+      "priorityTitle": "Prioriteitenrij",
+      "priorityDescription": "Open het meest urgente werk zonder elke sectie af te zoeken.",
+      "priority": {
+        "scoreTitle": "Scorecontrole",
+        "scoreBody": "Verdachte en uitgestelde leaderboard-scores wachten op een beslissing.",
+        "supportTitle": "Support-inbox",
+        "supportBody": "Onbeantwoorde tickets, beroepen en verzoeken voor accountherstel.",
+        "userTitle": "Risicoaccounts",
+        "userBody": "Verdachte, beperkte of niet-geverifieerde spelers die aandacht nodig kunnen hebben."
+      }
     },
     "users": {
       "title": "Spelersbeheer",
@@ -710,6 +1052,13 @@
         "passwordChanged": "Laatste wachtwoordwijziging",
         "forcePasswordChange": "Moet wachtwoord wijzigen",
         "restrictions": "Actieve beperkingen"
+      },
+      "summary": {
+        "active": "Actieve spelers",
+        "banned": "Verbannen spelers",
+        "suspicious": "Verdachte vertrouwensstatus",
+        "trusted": "Vertrouwde spelers",
+        "restricted": "Beperkte spelers"
       }
     },
     "scores": {
@@ -723,35 +1072,167 @@
         "pending_review": "In behandeling",
         "rejected": "Afgewezen",
         "hidden": "Verborgen"
+      },
+      "summary": {
+        "review": "Controlewachtrij",
+        "valid": "Geldige scores",
+        "rejected": "Afgewezen scores",
+        "hidden": "Verborgen scores"
       }
     },
     "support": {
       "description": "Beantwoord spelers, behandel beroepen en sluit afgeronde tickets.",
       "search": "Tickets zoeken",
       "searchPlaceholder": "Onderwerp, e-mail, speler of bericht",
-      "emptyHint": "Geen tickets komen overeen met de gekozen filters."
+      "emptyHint": "Geen tickets komen overeen met de gekozen filters.",
+      "summary": {
+        "open": "Open tickets",
+        "answered": "Beantwoord",
+        "closed": "Gesloten",
+        "appeals": "Beroepen"
+      }
     },
     "finance": {
-      "description": "Bekijk wallet-aankopen, beloningen, providers, status en idempotency keys."
+      "description": "Bekijk wallet-aankopen, beloningen, providers, status en idempotency keys.",
+      "summary": {
+        "completed": "Voltooid",
+        "pending": "In behandeling",
+        "failed": "Mislukt",
+        "providers": "Providers",
+        "idempotent": "Idempotentiesleutels"
+      }
     },
     "activity": {
       "auditDescription": "Beveiligde geschiedenis van beheerdersacties.",
       "transferDescription": "Import van gastvoortgang en validatieresultaten.",
       "search": "Auditlog zoeken",
       "searchPlaceholder": "Actie, reden, beheerder of doel-ID",
-      "noAudit": "Geen auditgebeurtenissen gevonden"
+      "noAudit": "Geen auditgebeurtenissen gevonden",
+      "summary": {
+        "audit": "Auditgebeurtenissen",
+        "transfers": "Gastoverdrachten",
+        "errors": "Clientfouten"
+      }
     }
   },
   "adminExtra": {
-    "resetUserScores": "Gebruikersscores resetten", "defaultScoreResetReason": "Bevestigde scoremanipulatie of correctie door beheerder.", "trustedReason": "De beheerder heeft het account als betrouwbaar beoordeeld.", "suspiciousReason": "Het account vereist extra anti-cheatcontrole.", "restrictionRemovedReason": "Beperking verwijderd door beheerder.",
-    "analytics": { "title": "Productanalyse", "registered": "Geregistreerd", "new7d": "Nieuw 7d", "active7d": "Actief 7d", "returning7d": "Terugkerend 7d", "sessions30d": "Sessies 30d", "validScores30d": "Geldige scores 30d", "adViews30d": "Advertenties 30d", "guests30d": "Gasten 30d" },
-    "activityGraph": { "title": "Activiteitsgrafiek", "description": "Dagelijkse activiteit van de laatste 14 dagen, inclusief gameplay, scores, advertenties, gaststarts, registraties en clientfouten.", "sessions": "Sessies", "scores": "Scores", "ads": "Ads", "guests": "Gasten", "users": "Nieuwe users", "errors": "Fouten", "errorCount": "{{count}} clientfout(en)" },
-    "finance": { "title": "Financieel logboek", "empty": "Geen financiele transacties gevonden.", "user": "Gebruiker", "item": "Item", "status": "Status", "provider": "Provider", "amount": "Bedrag", "date": "Datum", "idempotencyKey": "Idempotency key", "noAmount": "Geen wallet-wijziging", "gems": "edelstenen", "tickets": "tickets", "lives": "levens" },
-    "userStatuses": { "ACTIVE": "Actief", "BANNED": "Geblokkeerd", "DELETED": "Verwijderd" }, "trustStatuses": { "NORMAL": "Normaal", "TRUSTED": "Betrouwbaar", "SUSPICIOUS": "Verdacht" }, "activeRestrictions": "{{count}} actieve beperking(en)", "removeRestriction": "{{type}} verwijderen", "resetPassword": "Wachtwoord resetten", "resetScores": "Scores resetten", "markSuspicious": "Als verdacht markeren", "markTrusted": "Als betrouwbaar markeren", "restrict": "Beperken",
-    "scoreModeration": "Scoremoderatie", "ms": "ms", "hits": "botsingen", "noReasonRecorded": "Geen reden vastgelegd", "noSessionFlags": "geen sessiemeldingen", "approve": "Goedkeuren", "reject": "Afwijzen", "hide": "Verbergen", "banForCheating": "Bannen wegens valsspelen", "noScoresToReview": "Geen scores om te beoordelen.", "validScoreHistory": "Geschiedenis geldige scores ({{count}})", "scoreApprovedReason": "Score door beheerder beoordeeld en goedgekeurd.", "scoreRejectedReason": "Score na beoordeling afgewezen.", "scoreHiddenReason": "Score door beheerder verborgen.", "cheatingReason": "Valsspelen: {{reason}}", "invalidScore": "ongeldige score-inzending",
-    "scoreStatuses": { "valid": "Geldig", "suspicious": "Verdacht", "pending_review": "Wacht op beoordeling", "rejected": "Afgewezen", "hidden": "Verborgen" }, "auditLog": "Beheerderslogboek", "noReason": "Geen reden", "system": "Systeem", "guestTransfers": "Pogingen tot overdracht van gastvoortgang", "localScore": "lokaal", "transferredScore": "overgezet", "passedValidation": "Validatie geslaagd", "noTransfers": "Geen overdrachtspogingen.",
-    "ticketStatuses": { "ALL": "Alle", "OPEN": "Open", "ANSWERED": "Beantwoord", "CLOSED": "Gesloten" }, "related": "Gerelateerd", "appeal": "Bezwaar", "appealDecision": "Beslissing over bezwaar", "internalNote": "Interne notitie (niet zichtbaar voor speler)", "appealStatuses": { "UNDER_REVIEW": "In beoordeling", "UPHELD": "Beperking behouden", "REMOVED": "Beperking verwijderen", "RESTORED": "Score herstellen", "REJECTED": "Bezwaar afwijzen" },
-    "temporaryPassword": "Tijdelijk wachtwoord", "closePermanently": "Definitief sluiten", "temporaryPasswordHelp": "Dit wachtwoord wordt slechts één keer getoond. Het wordt nooit als platte tekst opgeslagen of gelogd. De gebruiker moet het na het inloggen wijzigen.", "copyTemporaryPassword": "Tijdelijk wachtwoord kopiëren", "closeAndHide": "Sluiten en voorgoed verbergen", "scoreDecisionTitle": "Score: {{status}}", "confirmScoreDecision": "Scorebeslissing bevestigen", "addRestriction": "Beperking toevoegen", "restrictionType": "Type beperking", "applyRestriction": "Beperking toepassen"
+    "resetUserScores": "Gebruikersscores resetten",
+    "defaultScoreResetReason": "Bevestigde scoremanipulatie of correctie door beheerder.",
+    "trustedReason": "De beheerder heeft het account als betrouwbaar beoordeeld.",
+    "suspiciousReason": "Het account vereist extra anti-cheatcontrole.",
+    "restrictionRemovedReason": "Beperking verwijderd door beheerder.",
+    "analytics": {
+      "title": "Productanalyse",
+      "registered": "Geregistreerd",
+      "new7d": "Nieuw 7d",
+      "active7d": "Actief 7d",
+      "returning7d": "Terugkerend 7d",
+      "sessions30d": "Sessies 30d",
+      "validScores30d": "Geldige scores 30d",
+      "adViews30d": "Advertenties 30d",
+      "guests30d": "Gasten 30d"
+    },
+    "activityGraph": {
+      "title": "Activiteitsgrafiek",
+      "description": "Dagelijkse activiteit van de laatste 14 dagen, inclusief gameplay, scores, advertenties, gaststarts, registraties en clientfouten.",
+      "sessions": "Sessies",
+      "scores": "Scores",
+      "ads": "Ads",
+      "guests": "Gasten",
+      "users": "Nieuwe users",
+      "errors": "Fouten",
+      "errorCount": "{{count}} clientfout(en)"
+    },
+    "finance": {
+      "title": "Financieel logboek",
+      "empty": "Geen financiele transacties gevonden.",
+      "user": "Gebruiker",
+      "item": "Item",
+      "status": "Status",
+      "provider": "Provider",
+      "amount": "Bedrag",
+      "date": "Datum",
+      "idempotencyKey": "Idempotency key",
+      "noAmount": "Geen wallet-wijziging",
+      "gems": "edelstenen",
+      "tickets": "tickets",
+      "lives": "levens"
+    },
+    "userStatuses": {
+      "ACTIVE": "Actief",
+      "BANNED": "Geblokkeerd",
+      "DELETED": "Verwijderd"
+    },
+    "trustStatuses": {
+      "NORMAL": "Normaal",
+      "TRUSTED": "Betrouwbaar",
+      "SUSPICIOUS": "Verdacht"
+    },
+    "activeRestrictions": "{{count}} actieve beperking(en)",
+    "removeRestriction": "{{type}} verwijderen",
+    "resetPassword": "Wachtwoord resetten",
+    "resetScores": "Scores resetten",
+    "markSuspicious": "Als verdacht markeren",
+    "markTrusted": "Als betrouwbaar markeren",
+    "restrict": "Beperken",
+    "scoreModeration": "Scoremoderatie",
+    "ms": "ms",
+    "hits": "botsingen",
+    "noReasonRecorded": "Geen reden vastgelegd",
+    "noSessionFlags": "geen sessiemeldingen",
+    "approve": "Goedkeuren",
+    "reject": "Afwijzen",
+    "hide": "Verbergen",
+    "banForCheating": "Bannen wegens valsspelen",
+    "noScoresToReview": "Geen scores om te beoordelen.",
+    "validScoreHistory": "Geschiedenis geldige scores ({{count}})",
+    "scoreApprovedReason": "Score door beheerder beoordeeld en goedgekeurd.",
+    "scoreRejectedReason": "Score na beoordeling afgewezen.",
+    "scoreHiddenReason": "Score door beheerder verborgen.",
+    "cheatingReason": "Valsspelen: {{reason}}",
+    "invalidScore": "ongeldige score-inzending",
+    "scoreStatuses": {
+      "valid": "Geldig",
+      "suspicious": "Verdacht",
+      "pending_review": "Wacht op beoordeling",
+      "rejected": "Afgewezen",
+      "hidden": "Verborgen"
+    },
+    "auditLog": "Beheerderslogboek",
+    "noReason": "Geen reden",
+    "system": "Systeem",
+    "guestTransfers": "Pogingen tot overdracht van gastvoortgang",
+    "localScore": "lokaal",
+    "transferredScore": "overgezet",
+    "passedValidation": "Validatie geslaagd",
+    "noTransfers": "Geen overdrachtspogingen.",
+    "ticketStatuses": {
+      "ALL": "Alle",
+      "OPEN": "Open",
+      "ANSWERED": "Beantwoord",
+      "CLOSED": "Gesloten"
+    },
+    "related": "Gerelateerd",
+    "appeal": "Bezwaar",
+    "appealDecision": "Beslissing over bezwaar",
+    "internalNote": "Interne notitie (niet zichtbaar voor speler)",
+    "appealStatuses": {
+      "UNDER_REVIEW": "In beoordeling",
+      "UPHELD": "Beperking behouden",
+      "REMOVED": "Beperking verwijderen",
+      "RESTORED": "Score herstellen",
+      "REJECTED": "Bezwaar afwijzen"
+    },
+    "temporaryPassword": "Tijdelijk wachtwoord",
+    "closePermanently": "Definitief sluiten",
+    "temporaryPasswordHelp": "Dit wachtwoord wordt slechts één keer getoond. Het wordt nooit als platte tekst opgeslagen of gelogd. De gebruiker moet het na het inloggen wijzigen.",
+    "copyTemporaryPassword": "Tijdelijk wachtwoord kopiëren",
+    "closeAndHide": "Sluiten en voorgoed verbergen",
+    "scoreDecisionTitle": "Score: {{status}}",
+    "confirmScoreDecision": "Scorebeslissing bevestigen",
+    "addRestriction": "Beperking toevoegen",
+    "restrictionType": "Type beperking",
+    "applyRestriction": "Beperking toepassen"
   },
   "common": {
     "loading": "Laden",
@@ -881,14 +1362,38 @@
       "name": "Snoeppulsspoor",
       "description": "Een tijdelijk roze-cyaan eventspoor met speelse pulsen."
     },
-    "neonDeathBurst": { "name": "Neonexplosie", "description": "Een heldere cyaan-roze uitschakelanimatie." },
-    "plasmaHit": { "name": "Plasmainslag", "description": "Een violet inslageffect voor botsingen." },
-    "goldCoinPop": { "name": "Gouden muntflits", "description": "Een verzorgd gouden munteffect." },
-    "voidBackground": { "name": "Leegteachtergrond", "description": "Een diepe ruimteachtergrond." },
-    "pilotAvatar": { "name": "Pilootavatar", "description": "Een gratis profielavatar voor elke piloot." },
-    "championBadge": { "name": "Kampioensbadge", "description": "Een legendarische badge voor de ranglijst." },
-    "diamondFrame": { "name": "Diamanten kader", "description": "Een premium profiel- en ranglijstframe." },
-    "prismPlayer": { "name": "Prismaspeler", "description": "Een premium regenboogspelersvorm." }
+    "neonDeathBurst": {
+      "name": "Neonexplosie",
+      "description": "Een heldere cyaan-roze uitschakelanimatie."
+    },
+    "plasmaHit": {
+      "name": "Plasmainslag",
+      "description": "Een violet inslageffect voor botsingen."
+    },
+    "goldCoinPop": {
+      "name": "Gouden muntflits",
+      "description": "Een verzorgd gouden munteffect."
+    },
+    "voidBackground": {
+      "name": "Leegteachtergrond",
+      "description": "Een diepe ruimteachtergrond."
+    },
+    "pilotAvatar": {
+      "name": "Pilootavatar",
+      "description": "Een gratis profielavatar voor elke piloot."
+    },
+    "championBadge": {
+      "name": "Kampioensbadge",
+      "description": "Een legendarische badge voor de ranglijst."
+    },
+    "diamondFrame": {
+      "name": "Diamanten kader",
+      "description": "Een premium profiel- en ranglijstframe."
+    },
+    "prismPlayer": {
+      "name": "Prismaspeler",
+      "description": "Een premium regenboogspelersvorm."
+    }
   },
   "rarity": {
     "common": "Gewoon",
@@ -904,5 +1409,65 @@
     "nl": "Nederlands",
     "ru": "Russisch",
     "uk": "Oekraïens"
+  },
+  "gameModes": {
+    "title": "Kies je spelmodus",
+    "subtitle": "Elke modus verandert het ritme van de arena, de druk en het soort obstakels.",
+    "selected": "Gekozen",
+    "active": "Modus",
+    "timeLeft": "Tijd over",
+    "statusLabel": "Arena",
+    "focusTitle": "Wat je kunt verwachten",
+    "timeAttackTag": "Rush van 60 seconden",
+    "tags": {
+      "classic": "Gebalanceerde run",
+      "endless": "Eindeloze flow",
+      "hardcore": "Geen genade",
+      "zen": "Lage druk",
+      "boss": "Golven van druk"
+    },
+    "status": {
+      "steadyRun": "Stabiele baandruk",
+      "adaptiveArena": "Lange adaptieve flow",
+      "scoreRush": "Bouw score op voordat de klok stopt",
+      "finalSprint": "Laatste sprint",
+      "oneMistake": "E?n fout be?indigt de run",
+      "calmFlow": "Rustig venster",
+      "waveBuild": "Golf bouwt op",
+      "bossWave": "Bossgolf actief",
+      "waveRecover": "Herstelvenster"
+    },
+    "modes": {
+      "classic": {
+        "name": "Classic Mode",
+        "description": "De standaard competitieve run met gebalanceerde gevaren, munten en oplopende druk.",
+        "focus": "De beste plek om lijnen te leren, schonere runs te rijden en je score eerlijk te vergelijken."
+      },
+      "endless": {
+        "name": "Endless Mode",
+        "description": "Een langere run met soepelere schaalvergroting, meer ademruimte en minder plotselinge pieken.",
+        "focus": "Gemaakt voor flow. De arena blijft langer open en beloont stabiliteit meer dan paniek."
+      },
+      "time_attack": {
+        "name": "Time Attack",
+        "description": "Je hebt 60 seconden om zoveel mogelijk score te pakken voordat de timer de run sluit.",
+        "focus": "Pak elke veilige muntenlijn en houd het tempo hoog. De laatste 20 seconden worden duidelijk scherper."
+      },
+      "hardcore": {
+        "name": "Hardcore Mode",
+        "description": "Een strakkere, hardere arena met dichtere patronen en bijna geen veilige herstelsectoren.",
+        "focus": "Alleen voor zelfverzekerde spelers. Verwacht smalle gaten, meer gecombineerde gevaren en bijna geen genade."
+      },
+      "zen": {
+        "name": "Zen Mode",
+        "description": "Een rustigere run met bredere openingen, lichtere patronen en een vriendelijker ritme.",
+        "focus": "Handig voor een kalmere sessie, makkelijker lezen van het scherm en een minder stressvolle arena."
+      },
+      "boss": {
+        "name": "Boss Mode",
+        "description": "De arena valt in golven aan: zware druk wordt gevolgd door korte herstelmomenten.",
+        "focus": "Lees het golfritme. Overleef de piek, reset in het herstelvenster en bereid je voor op de volgende aanval."
+      }
+    }
   }
 }

@@ -9,6 +9,17 @@ interface ObstacleTheme {
   lowPerformanceMode?: boolean;
 }
 
+export interface ObstacleSpawnProfile {
+  gapOffset: number;
+  minimumGap: number;
+  driftRange: number;
+  eventChance: number;
+  safeLaneChance: number;
+  extraCoinChance: number;
+  multiHazardChance: number;
+  rotationMultiplier: number;
+}
+
 type CleanupObject = Phaser.GameObjects.GameObject & { x?: number; width?: number; destroy: () => void };
 
 export class ObstacleManager {
@@ -42,27 +53,27 @@ export class ObstacleManager {
     this.bottomY = scene.scale.height - 86;
   }
 
-  update(targetX: number, difficulty: number) {
+  update(targetX: number, difficulty: number, profile: ObstacleSpawnProfile) {
     while (this.nextSpawnX < targetX + 1300) {
-      this.spawnCorridorSector(this.nextSpawnX, difficulty);
+      this.spawnCorridorSector(this.nextSpawnX, difficulty, profile);
     }
 
     for (const hazard of this.rotatingHazards) {
-      hazard.rotation += this.rotationStep;
+      hazard.rotation += this.rotationStep * profile.rotationMultiplier;
     }
 
     this.cleanupBehindCamera();
   }
 
-  private spawnCorridorSector(x: number, difficulty: number) {
+  private spawnCorridorSector(x: number, difficulty: number, profile: ObstacleSpawnProfile) {
     const width = Phaser.Math.Between(260, 430);
     const color = this.themedSectorColors[this.sectorIndex % this.themedSectorColors.length] ?? 0x8bd600;
     this.sectorIndex += 1;
 
     const previousTop = this.topY;
     const previousBottom = this.bottomY;
-    const gap = Math.max(172, 390 - difficulty * 7);
-    const drift = Phaser.Math.Between(-84, 84);
+    const gap = Math.max(profile.minimumGap, 390 - difficulty * 7 + profile.gapOffset);
+    const drift = Phaser.Math.Between(-profile.driftRange, profile.driftRange);
     const center = Phaser.Math.Clamp((previousTop + previousBottom) / 2 + drift, 165, this.scene.scale.height - 165);
     this.topY = Phaser.Math.Clamp(center - gap / 2, 42, this.scene.scale.height - 240);
     this.bottomY = Phaser.Math.Clamp(center + gap / 2, this.topY + 165, this.scene.scale.height - 42);
@@ -74,12 +85,21 @@ export class ObstacleManager {
     this.addConnector(x, previousBottom, this.bottomY, false);
 
     if (x > 760) {
-      this.addEventPattern(x, width, difficulty);
+      if (Phaser.Math.FloatBetween(0, 1) <= profile.safeLaneChance) {
+        this.addSafeLaneReward(x, width, profile);
+      } else if (Phaser.Math.FloatBetween(0, 1) <= profile.eventChance) {
+        this.addEventPattern(x, width, difficulty, profile);
+      } else if (Phaser.Math.FloatBetween(0, 1) <= 0.58 + profile.extraCoinChance) {
+        this.addDiamond(
+          x + width * Phaser.Math.FloatBetween(0.52, 0.8),
+          Phaser.Math.Clamp((this.topY + this.bottomY) / 2 + Phaser.Math.Between(-70, 70), this.topY + 54, this.bottomY - 54)
+        );
+      }
     }
     this.nextSpawnX += width;
   }
 
-  private addEventPattern(x: number, width: number, difficulty: number) {
+  private addEventPattern(x: number, width: number, difficulty: number, profile: ObstacleSpawnProfile) {
     const roll = Phaser.Math.Between(0, 100);
     const midY = (this.topY + this.bottomY) / 2;
 
@@ -101,8 +121,20 @@ export class ObstacleManager {
       this.addFloatingBlock(x + width * 0.5, midY + Phaser.Math.Between(-70, 70));
     }
 
-    if (Phaser.Math.Between(0, 100) < 58) {
+    if (Phaser.Math.FloatBetween(0, 1) <= profile.multiHazardChance) {
+      this.addFloatingBlock(x + width * Phaser.Math.FloatBetween(0.62, 0.84), midY + Phaser.Math.Between(-92, 92));
+    }
+
+    if (Phaser.Math.FloatBetween(0, 1) <= 0.58 + profile.extraCoinChance) {
       this.addDiamond(x + width * 0.72, Phaser.Math.Clamp(midY + Phaser.Math.Between(-105, 105), this.topY + 54, this.bottomY - 54));
+    }
+  }
+
+  private addSafeLaneReward(x: number, width: number, profile: ObstacleSpawnProfile) {
+    const centerY = (this.topY + this.bottomY) / 2;
+    this.addDiamond(x + width * 0.46, centerY);
+    if (profile.extraCoinChance > 0.18) {
+      this.addDiamond(x + width * 0.68, Phaser.Math.Clamp(centerY + Phaser.Math.Between(-58, 58), this.topY + 54, this.bottomY - 54));
     }
   }
 

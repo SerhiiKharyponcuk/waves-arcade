@@ -2,6 +2,12 @@ import { z } from "zod";
 import { displayNameSchema, INVALID_DISPLAY_NAME_MESSAGE } from "../utils/displayName.js";
 
 export const localeSchema = z.enum(["en", "nl", "ru", "uk"]);
+export const idempotencyKeySchema = z
+  .string()
+  .trim()
+  .min(24, "Idempotency key is too short.")
+  .max(160, "Idempotency key is too long.")
+  .regex(/^[A-Za-z0-9:_-]+$/, "Idempotency key contains unsupported characters.");
 
 const botGuardSchema = {
   website: z.string().max(0, "Bot check failed.").optional().default(""),
@@ -85,7 +91,7 @@ export const purchasePlaceholderSchema = z.object({
   supportAmountCents: z.number().int().min(0).max(25_000).default(0),
   currency: z.enum(["UAH", "USD", "EUR"]),
   provider: z.enum(["liqpay", "stripe", "mollie", "paypal", "adyen", "google_play", "apple_iap", "placeholder"]).default("placeholder"),
-  idempotencyKey: z.string().trim().min(8).max(160)
+  idempotencyKey: idempotencyKeySchema
 });
 
 export const rouletteSpinSchema = z.object({

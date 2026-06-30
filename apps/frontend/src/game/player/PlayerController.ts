@@ -3,6 +3,7 @@ import type { SkinVisualConfig } from "@waves/shared";
 
 export interface PlayerInputState {
   pressed: boolean;
+  verticalSpeedScale?: number;
 }
 
 export interface PlayerRenderSettings {
@@ -62,7 +63,7 @@ export class PlayerController {
     this.turnPulse = Math.max(0, this.turnPulse - dt * (this.renderSettings.reduceMotion ? 7.2 : 4.8));
 
     this.x += this.speedX * dt;
-    this.y += this.direction * this.verticalSpeed * dt;
+    this.y += this.direction * this.verticalSpeed * (input.verticalSpeedScale ?? 1) * dt;
     this.distance = Math.max(this.distance, Math.floor(this.x - 140));
 
     this.collider.setPosition(this.x, this.y);

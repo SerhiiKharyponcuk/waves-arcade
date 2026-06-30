@@ -7,8 +7,10 @@ import { VirtualJoystick } from "./VirtualJoystick";
 import type { GameThemeDto } from "@waves/shared";
 import type { GameAudioSettings } from "../../game/audio/GameAudioManager";
 import type { GameSettings } from "../../types/settings";
+import type { GameModeId } from "../../game/engine/gameModes";
 
 interface GameCanvasProps {
+  modeId: GameModeId;
   skins: GameSkinBundle;
   theme: GameThemeDto;
   audio: GameAudioSettings;
@@ -18,7 +20,7 @@ interface GameCanvasProps {
   onGameOver: (stats: GameStats) => void | Promise<void>;
 }
 
-export function GameCanvas({ skins, theme, audio, settings, paused, onStats, onGameOver }: GameCanvasProps) {
+export function GameCanvas({ modeId, skins, theme, audio, settings, paused, onStats, onGameOver }: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
 
@@ -28,6 +30,7 @@ export function GameCanvas({ skins, theme, audio, settings, paused, onStats, onG
     }
 
     gameRef.current = createWavesGame(containerRef.current, {
+      modeId,
       skins,
       theme,
       audio,
@@ -48,7 +51,7 @@ export function GameCanvas({ skins, theme, audio, settings, paused, onStats, onG
       gameRef.current?.destroy(true);
       gameRef.current = null;
     };
-  }, [audio, onGameOver, onStats, settings.animationQuality, settings.lowPerformanceMode, settings.particles, settings.reduceMotion, settings.screenShake, settings.trailEffects, skins, theme]);
+  }, [audio, modeId, onGameOver, onStats, settings.animationQuality, settings.lowPerformanceMode, settings.particles, settings.reduceMotion, settings.screenShake, settings.trailEffects, skins, theme]);
 
   useEffect(() => {
     window.dispatchEvent(new CustomEvent("waves:pause", { detail: { paused } }));

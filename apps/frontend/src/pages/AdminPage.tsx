@@ -238,6 +238,58 @@ export function AdminPage() {
   const suspiciousUserCount = analytics?.suspiciousUsers ?? users.filter((user) => user.trustStatus === "SUSPICIOUS").length;
   const unverifiedUserCount = analytics?.unverifiedUsers ?? users.filter((user) => !user.emailVerifiedAt).length;
   const financialEventCount = analytics?.financialEvents30Days ?? financialTransactions.length;
+  const activeUserCount = users.filter((user) => user.status === "ACTIVE").length;
+  const bannedUserCount = users.filter((user) => user.status === "BANNED").length;
+  const trustedUserCount = users.filter((user) => user.trustStatus === "TRUSTED").length;
+  const restrictedUserCount = users.filter((user) => user.activeRestrictions.length > 0).length;
+  const validScoreCount = scores.filter((score) => score.status === "valid").length;
+  const rejectedScoreCount = scores.filter((score) => score.status === "rejected").length;
+  const hiddenScoreCount = scores.filter((score) => score.status === "hidden").length;
+  const answeredTicketCount = supportTickets.filter((ticket) => ticket.status === "ANSWERED").length;
+  const closedTicketCount = supportTickets.filter((ticket) => ticket.status === "CLOSED").length;
+  const appealTicketCount = supportTickets.filter((ticket) => ticket.category === "APPEAL" || ticket.category === "BAN_APPEAL").length;
+  const completedFinancialCount = financialTransactions.filter((transaction) => transaction.status === "completed").length;
+  const pendingFinancialCount = financialTransactions.filter((transaction) => transaction.status === "pending").length;
+  const failedFinancialCount = financialTransactions.filter((transaction) => !["completed", "pending"].includes(transaction.status)).length;
+  const providerCount = new Set(financialTransactions.map((transaction) => transaction.provider).filter(Boolean)).size;
+  const idempotentCount = financialTransactions.filter((transaction) => Boolean(transaction.idempotencyKey)).length;
+  const totalClientErrors = analytics?.activityTimeline.reduce((sum, row) => sum + row.clientErrors, 0) ?? 0;
+
+  const priorityQueue = [
+    {
+      id: "scores",
+      count: pendingScoreCount,
+      tone: pendingScoreCount > 0 ? "danger" : "neutral",
+      title: t("adminWorkspace.overview.priority.scoreTitle"),
+      body: t("adminWorkspace.overview.priority.scoreBody"),
+      action: () => {
+        setScoreStatusFilter("review");
+        setActiveSection("scores");
+      }
+    },
+    {
+      id: "support",
+      count: openTicketCount,
+      tone: openTicketCount > 0 ? "gold" : "neutral",
+      title: t("adminWorkspace.overview.priority.supportTitle"),
+      body: t("adminWorkspace.overview.priority.supportBody"),
+      action: () => {
+        setSupportStatus("OPEN");
+        setActiveSection("support");
+      }
+    },
+    {
+      id: "users",
+      count: suspiciousUserCount + unverifiedUserCount,
+      tone: suspiciousUserCount > 0 ? "danger" : unverifiedUserCount > 0 ? "gold" : "neutral",
+      title: t("adminWorkspace.overview.priority.userTitle"),
+      body: t("adminWorkspace.overview.priority.userBody"),
+      action: () => {
+        setUserTrustFilter("SUSPICIOUS");
+        setActiveSection("users");
+      }
+    }
+  ];
 
   function markSectionLoaded(section: AdminSection) {
     setSectionLoaded((current) => ({ ...current, [section]: true }));
@@ -646,6 +698,45 @@ export function AdminPage() {
               <AdminMetricCard label={t("adminWorkspace.overview.financialEvents")} value={financialEventCount} detail={t("adminWorkspace.overview.financialJournal")} icon={BadgeDollarSign} tone="gold" onClick={() => setActiveSection("finance")} />
               <AdminMetricCard label={t("adminWorkspace.overview.unverifiedUsers")} value={unverifiedUserCount} detail={t("adminWorkspace.overview.emailQueue")} icon={MailCheck} tone="neutral" onClick={() => setActiveSection("users")} />
             </div>
+            <div className="mt-5 rounded-lg border border-white/10 bg-white/[0.03] p-4">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <div className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">{t("adminWorkspace.overview.priorityTitle")}</div>
+                  <p className="mt-1 text-sm text-slate-400">{t("adminWorkspace.overview.priorityDescription")}</p>
+                </div>
+                <div className="text-xs text-slate-500">{t("adminWorkspace.generatedAt", { date: new Date().toLocaleString() })}</div>
+              </div>
+              <div className="mt-4 grid gap-3 lg:grid-cols-3">
+                {priorityQueue.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={item.action}
+                    className={`rounded-lg border p-4 text-left transition hover:-translate-y-0.5 ${
+                      item.tone === "danger"
+                        ? "border-magentaGlow/30 bg-magentaGlow/10"
+                        : item.tone === "gold"
+                          ? "border-goldGlow/25 bg-goldGlow/10"
+                          : "border-white/10 bg-white/5"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">{item.title}</span>
+                      <span className={`rounded-full px-2.5 py-1 text-xs font-black ${
+                        item.tone === "danger"
+                          ? "bg-magentaGlow text-white"
+                          : item.tone === "gold"
+                            ? "bg-goldGlow text-ink"
+                            : "bg-white/10 text-slate-200"
+                      }`}>
+                        {item.count}
+                      </span>
+                    </div>
+                    <div className="mt-2 text-sm leading-6 text-slate-300">{item.body}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className="mt-5 grid gap-3 lg:grid-cols-3">
               <button type="button" onClick={() => { setScoreStatusFilter("review"); setActiveSection("scores"); }} className="rounded-lg border border-white/10 bg-white/5 p-4 text-left transition hover:border-cyanGlow hover:bg-white/10">
                 <div className="text-xs font-black uppercase text-slate-500">{t("adminWorkspace.overview.scoreDesk")}</div>
@@ -729,6 +820,14 @@ export function AdminPage() {
 
           <div className="mt-3 text-xs text-slate-400">{t("adminWorkspace.users.results", { count: filteredUsers.length })}</div>
         </div>
+
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        <AdminMetricCard label={t("adminWorkspace.users.summary.active")} value={activeUserCount} icon={Users} tone="cyan" />
+        <AdminMetricCard label={t("adminWorkspace.users.summary.banned")} value={bannedUserCount} icon={Ban} tone={bannedUserCount ? "danger" : "neutral"} />
+        <AdminMetricCard label={t("adminWorkspace.users.summary.suspicious")} value={suspiciousUserCount} icon={CircleAlert} tone={suspiciousUserCount ? "danger" : "gold"} />
+        <AdminMetricCard label={t("adminWorkspace.users.summary.trusted")} value={trustedUserCount} icon={ShieldCheck} tone="cyan" />
+        <AdminMetricCard label={t("adminWorkspace.users.summary.restricted")} value={restrictedUserCount} icon={ShieldAlert} tone={restrictedUserCount ? "gold" : "neutral"} />
+      </div>
 
       <div className="arcade-border overflow-hidden rounded-lg">
         <div className="hidden overflow-x-auto md:block">
@@ -836,6 +935,12 @@ export function AdminPage() {
             </button>
           ))}
         </div>
+        <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <AdminMetricCard label={t("adminWorkspace.scores.summary.review")} value={pendingScoreCount} icon={ShieldAlert} tone={pendingScoreCount ? "danger" : "neutral"} />
+          <AdminMetricCard label={t("adminWorkspace.scores.summary.valid")} value={validScoreCount} icon={CheckCircle2} tone="cyan" />
+          <AdminMetricCard label={t("adminWorkspace.scores.summary.rejected")} value={rejectedScoreCount} icon={Ban} tone={rejectedScoreCount ? "gold" : "neutral"} />
+          <AdminMetricCard label={t("adminWorkspace.scores.summary.hidden")} value={hiddenScoreCount} icon={Eye} tone={hiddenScoreCount ? "gold" : "neutral"} />
+        </div>
         <div className="grid gap-3">
           {visibleScores.map((score) => (
             <article key={score.id} className="rounded-lg border border-white/10 bg-white/5 p-4">
@@ -866,6 +971,13 @@ export function AdminPage() {
           icon={BadgeDollarSign}
           action={<Button type="button" variant="ghost" disabled={sectionBusy.finance} icon={<RefreshCw size={16} className={sectionBusy.finance ? "animate-spin" : ""} />} onClick={() => void loadFinance()}>{t("admin.refresh")}</Button>}
         />
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          <AdminMetricCard label={t("adminWorkspace.finance.summary.completed")} value={completedFinancialCount} icon={BadgeDollarSign} tone="cyan" />
+          <AdminMetricCard label={t("adminWorkspace.finance.summary.pending")} value={pendingFinancialCount} icon={CircleAlert} tone={pendingFinancialCount ? "gold" : "neutral"} />
+          <AdminMetricCard label={t("adminWorkspace.finance.summary.failed")} value={failedFinancialCount} icon={Ban} tone={failedFinancialCount ? "danger" : "neutral"} />
+          <AdminMetricCard label={t("adminWorkspace.finance.summary.providers")} value={providerCount} icon={Activity} tone="neutral" />
+          <AdminMetricCard label={t("adminWorkspace.finance.summary.idempotent")} value={idempotentCount} icon={ClipboardCheck} tone="gold" />
+        </div>
         <div className="mt-4 overflow-x-auto md:block hidden">
           <table className="w-full min-w-[62rem] text-left text-sm">
             <thead className="text-slate-400">
@@ -939,6 +1051,11 @@ export function AdminPage() {
       <div className="grid gap-5 xl:grid-cols-2">
         <div className="arcade-border rounded-lg p-4 sm:p-5">
           <AdminSectionHeader title={t("adminExtra.auditLog")} description={t("adminWorkspace.activity.auditDescription")} icon={History} action={<Button type="button" variant="ghost" disabled={sectionBusy.activity} icon={<RefreshCw size={16} className={sectionBusy.activity ? "animate-spin" : ""} />} onClick={() => void loadActivity()}>{t("admin.refresh")}</Button>} />
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            <AdminMetricCard label={t("adminWorkspace.activity.summary.audit")} value={auditLogs.length} icon={History} tone="neutral" />
+            <AdminMetricCard label={t("adminWorkspace.activity.summary.transfers")} value={guestTransfers.length} icon={Activity} tone="gold" />
+            <AdminMetricCard label={t("adminWorkspace.activity.summary.errors")} value={totalClientErrors} icon={CircleAlert} tone={totalClientErrors ? "danger" : "neutral"} />
+          </div>
           <div className="mt-4"><Input label={t("adminWorkspace.activity.search")} value={activityQuery} onChange={(event) => setActivityQuery(event.target.value)} placeholder={t("adminWorkspace.activity.searchPlaceholder")} /></div>
           <div className="mt-4 grid max-h-[32rem] gap-2 overflow-y-auto pr-2">
             {visibleAuditLogs.map((log) => <div key={log.id} className="rounded-md border border-white/10 bg-white/5 p-3 text-xs leading-5 text-slate-300"><strong className="text-white">{t(`adminExtra.auditActions.${log.actionType}`, log.actionType)}</strong><div>{log.reason || t("adminExtra.noReason")}</div><div className="text-slate-500">{new Date(log.createdAt).toLocaleString()} | {log.adminEmail || t("adminExtra.system")}</div></div>)}
@@ -964,15 +1081,18 @@ export function AdminPage() {
           action={<Button type="button" variant="ghost" disabled={sectionBusy.support} icon={<RefreshCw size={16} className={sectionBusy.support ? "animate-spin" : ""} />} onClick={() => void loadSupportTickets(supportStatus, supportSource)}>{t("admin.refresh")}</Button>}
         />
         <div className="mt-4"><Input label={t("adminWorkspace.support.search")} value={supportQuery} onChange={(event) => setSupportQuery(event.target.value)} placeholder={t("adminWorkspace.support.searchPlaceholder")} /></div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <AdminMetricCard label={t("adminWorkspace.support.summary.open")} value={openTicketCount} icon={Inbox} tone={openTicketCount ? "danger" : "neutral"} />
+          <AdminMetricCard label={t("adminWorkspace.support.summary.answered")} value={answeredTicketCount} icon={Send} tone="cyan" />
+          <AdminMetricCard label={t("adminWorkspace.support.summary.closed")} value={closedTicketCount} icon={CheckCircle2} tone="neutral" />
+          <AdminMetricCard label={t("adminWorkspace.support.summary.appeals")} value={appealTicketCount} icon={ShieldAlert} tone={appealTicketCount ? "gold" : "neutral"} />
+        </div>
         <div className="mb-4 mt-4 flex flex-wrap gap-2">
           {(["ALL", "OPEN", "ANSWERED", "CLOSED"] as Array<SupportTicketStatus | "ALL">).map((status) => (
             <button
               key={status}
               type="button"
-              onClick={() => {
-                setSupportStatus(status);
-                void loadSupportTickets(status, supportSource);
-              }}
+              onClick={() => setSupportStatus(status)}
               className={`rounded-md border px-3 py-2 text-xs font-black transition ${
                 supportStatus === status
                   ? "border-cyanGlow bg-cyanGlow text-ink"
@@ -988,10 +1108,7 @@ export function AdminPage() {
             <button
               key={source}
               type="button"
-              onClick={() => {
-                setSupportSource(source);
-                void loadSupportTickets(supportStatus, source);
-              }}
+              onClick={() => setSupportSource(source)}
               className={`rounded-md border px-3 py-2 text-xs font-black transition ${
                 supportSource === source
                   ? "border-goldGlow bg-goldGlow text-ink"

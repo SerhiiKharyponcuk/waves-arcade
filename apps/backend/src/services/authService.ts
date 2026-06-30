@@ -323,13 +323,24 @@ export async function getCurrentAccount(userId: string): Promise<AuthUserDto> {
 
 export async function issueEmailVerificationCode(userId: string, email: string): Promise<EmailVerificationRequiredDto> {
   const code = generateEmailCode();
+  const issuedAt = new Date();
 
-  await prisma.emailVerificationCode.create({
-    data: {
-      userId,
-      codeHash: hashEmailCode(email, code),
-      expiresAt: new Date(Date.now() + 15 * 60_000)
-    }
+  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await tx.emailVerificationCode.updateMany({
+      where: {
+        userId,
+        usedAt: null
+      },
+      data: { usedAt: issuedAt }
+    });
+
+    await tx.emailVerificationCode.create({
+      data: {
+        userId,
+        codeHash: hashEmailCode(email, code),
+        expiresAt: new Date(issuedAt.getTime() + 15 * 60_000)
+      }
+    });
   });
 
   const emailResult = await sendEmailVerificationCode(email, code);
@@ -375,7 +386,6 @@ export async function verifyEmailCode(input: { email: string; code: string }): P
   const verification = await prisma.emailVerificationCode.findFirst({
     where: {
       userId: user.id,
-      codeHash,
       usedAt: null,
       expiresAt: { gt: new Date() }
     },
@@ -383,6 +393,18 @@ export async function verifyEmailCode(input: { email: string; code: string }): P
   });
 
   if (!verification || verification.attempts >= 5) {
+    throw new AppError(400, "Verification code is invalid or expired.", "EMAIL_CODE_INVALID");
+  }
+
+  if (verification.codeHash !== codeHash) {
+    const now = new Date();
+    await prisma.emailVerificationCode.update({
+      where: { id: verification.id },
+      data: {
+        attempts: { increment: 1 },
+        usedAt: verification.attempts + 1 >= 5 ? now : undefined
+      }
+    });
     throw new AppError(400, "Verification code is invalid or expired.", "EMAIL_CODE_INVALID");
   }
 

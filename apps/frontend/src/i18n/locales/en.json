@@ -68,6 +68,66 @@
     "start": "Start run",
     "tapToControl": "Hold click or Space"
   },
+  "gameModes": {
+    "title": "Choose your mode",
+    "subtitle": "Each run changes the arena rhythm, pressure, and pacing in a different way.",
+    "selected": "Selected",
+    "active": "Mode",
+    "timeLeft": "Time left",
+    "statusLabel": "Arena",
+    "focusTitle": "What to expect",
+    "timeAttackTag": "60-second rush",
+    "tags": {
+      "classic": "Balanced run",
+      "endless": "Infinite climb",
+      "hardcore": "No mercy",
+      "zen": "Low pressure",
+      "boss": "Wave pressure"
+    },
+    "status": {
+      "steadyRun": "Steady lane pressure",
+      "adaptiveArena": "Long-form adaptive flow",
+      "scoreRush": "Build score before the clock ends",
+      "finalSprint": "Final sprint",
+      "oneMistake": "One mistake ends the run",
+      "calmFlow": "Calm flow window",
+      "waveBuild": "Wave building",
+      "bossWave": "Boss wave active",
+      "waveRecover": "Recovery window"
+    },
+    "modes": {
+      "classic": {
+        "name": "Classic Mode",
+        "description": "The standard competitive run with balanced hazards, coins, and escalating pressure.",
+        "focus": "Best place to learn lines, chase cleaner runs, and compare your score against the normal arena flow."
+      },
+      "endless": {
+        "name": "Endless Mode",
+        "description": "A longer-form run with smoother scaling, more breathing room, and fewer sudden spikes.",
+        "focus": "Made for flow state. The arena stays open longer, ramps slower, and rewards consistency over panic."
+      },
+      "time_attack": {
+        "name": "Time Attack",
+        "description": "You have 60 seconds to stack as much score as possible before the timer closes the run.",
+        "focus": "Grab every safe coin line and keep momentum high. The last 20 seconds get noticeably sharper."
+      },
+      "hardcore": {
+        "name": "Hardcore Mode",
+        "description": "A tighter, harsher arena with denser patterns and almost no safe recovery sectors.",
+        "focus": "For confident players only. Expect narrow gaps, more stacked hazards, and almost no mercy."
+      },
+      "zen": {
+        "name": "Zen Mode",
+        "description": "A softer run with wider gaps, lighter patterns, and more forgiving rhythm.",
+        "focus": "Use this when you want a calmer session, easier visual reading, and a less stressful arena cadence."
+      },
+      "boss": {
+        "name": "Boss Mode",
+        "description": "The arena attacks in waves: pressure surges, then brief recovery windows before the next burst.",
+        "focus": "Read the wave rhythm. Survive the surge, use the recovery to reset, and prepare for the next push."
+      }
+    }
+  },
   "roulette": {
     "eyebrow": "Reward wheel",
     "title": "Prize Roulette",
@@ -187,12 +247,30 @@
       "serverPriced": "Server-priced",
       "featured": "Popular",
       "bestValue": "Best value",
-      "coins1000": { "name": "1,000 coins", "description": "A solid coin pack for skins, themes, and unlocks." },
-      "coins2500": { "name": "2,500 coins", "description": "More room to unlock rare cosmetics without grinding." },
-      "coins5500": { "name": "5,500 coins", "description": "Best-value coin pack for serious customization." },
-      "premium30": { "name": "Premium 30 days", "description": "Premium status, bonuses, and future premium features for one month." },
-      "premium90": { "name": "Premium 90 days", "description": "Three months of premium access with a better price." },
-      "skinGalaxyVip": { "name": "Galaxy VIP skin", "description": "A premium galaxy cosmetic prepared for paid unlocks." }
+      "coins1000": {
+        "name": "1,000 coins",
+        "description": "A solid coin pack for skins, themes, and unlocks."
+      },
+      "coins2500": {
+        "name": "2,500 coins",
+        "description": "More room to unlock rare cosmetics without grinding."
+      },
+      "coins5500": {
+        "name": "5,500 coins",
+        "description": "Best-value coin pack for serious customization."
+      },
+      "premium30": {
+        "name": "Premium 30 days",
+        "description": "Premium status, bonuses, and future premium features for one month."
+      },
+      "premium90": {
+        "name": "Premium 90 days",
+        "description": "Three months of premium access with a better price."
+      },
+      "skinGalaxyVip": {
+        "name": "Galaxy VIP skin",
+        "description": "A premium galaxy cosmetic prepared for paid unlocks."
+      }
     },
     "methods": {
       "title": "Payment method",
@@ -418,7 +496,7 @@
     "guestTitle": "Support without an account",
     "loginEmail": "Login email",
     "contactName": "Name (optional)",
-    "passwordWarning": "Never send your password. Support and admins do not need it and cannot ask for it.",
+    "passwordWarning": "Never send your password. Support will never ask for your password.",
     "guestSent": "Request sent. Reference:",
     "subtitle": "Send a message to the admin team about bugs, accounts, shop issues, payments, bans, or anything that needs review.",
     "category": "Category",
@@ -429,7 +507,6 @@
     "adminResponse": "Admin response",
     "empty": "No support requests yet.",
     "ticketCreated": "Ticket created: {{id}}",
-    "passwordWarning": "Never send your password. Support will never ask for your password.",
     "readRules": "Read Support Rules and Terms",
     "replyEmail": "Email for reply",
     "optionalName": "Display name (optional)",
@@ -453,7 +530,20 @@
     "intro": "These rules apply to guests, account holders, scores, purchases, ads, support, and administrator decisions.",
     "securityTitle": "Security reminder",
     "securityBody": "Never share your password. Support and administrators will never ask for it.",
-    "categories": { "general": "General game rules", "guest": "Guest player rules", "account": "Account rules", "password": "Password and security rules", "score": "Score and leaderboard rules", "antiCheat": "Anti-cheat rules", "shop": "Skins, shop and rewards rules", "ads": "Ads and rewarded ads rules", "support": "Support and appeal rules", "bans": "Ban and restriction rules", "privacy": "Privacy and data rules", "admin": "Administrator and enforcement rules" }
+    "categories": {
+      "general": "General game rules",
+      "guest": "Guest player rules",
+      "account": "Account rules",
+      "password": "Password and security rules",
+      "score": "Score and leaderboard rules",
+      "antiCheat": "Anti-cheat rules",
+      "shop": "Skins, shop and rewards rules",
+      "ads": "Ads and rewarded ads rules",
+      "support": "Support and appeal rules",
+      "bans": "Ban and restriction rules",
+      "privacy": "Privacy and data rules",
+      "admin": "Administrator and enforcement rules"
+    }
   },
   "consent": {
     "title": "Privacy choices",
@@ -524,38 +614,215 @@
     }
   },
   "settingsDetails": {
-    "saved": "Settings saved.", "saveError": "Settings could not be saved.", "passwordChanged": "Password changed successfully.", "passwordError": "Password could not be changed.", "deleteError": "Account could not be deleted.",
+    "saved": "Settings saved.",
+    "saveError": "Settings could not be saved.",
+    "passwordChanged": "Password changed successfully.",
+    "passwordError": "Password could not be changed.",
+    "deleteError": "Account could not be deleted.",
     "temporaryPasswordWarning": "Your temporary password was accepted. You must choose a new password before using other account features.",
-    "username": "Username", "email": "Email", "status": "Status", "created": "Created", "guestAccountLimit": "Guest has no cloud profile, leaderboard identity, purchases, achievements, or cross-device progress.", "unlockAccountSettings": "Unlock account settings",
-    "difficulty": "Difficulty", "controlSensitivity": "Control sensitivity", "movementType": "Movement type", "vibration": "Vibration", "autoPause": "Auto pause", "showScore": "Show score during game", "showTutorial": "Show tutorial", "reduceMotion": "Reduce motion",
-    "keyboardControls": "Keyboard controls", "touchControls": "Touch controls", "mouseControls": "Mouse controls", "virtualJoystick": "Virtual joystick", "controlSize": "Control size", "resetControls": "Reset controls",
-    "masterVolume": "Master volume", "musicVolume": "Music volume", "effectsVolume": "Sound effects volume", "testAudio": "Test game audio", "muteAll": "Mute all",
-    "particles": "Particles", "screenShake": "Screen shake", "trailEffects": "Trail effects", "animationQuality": "Animation quality", "lowPerformance": "Low performance mode", "highContrast": "High contrast mode",
-    "showLeaderboardName": "Show username in leaderboard", "hideProfile": "Hide profile", "allowRewardedAds": "Allow rewarded ads", "rewardedAdsHelp": "Rewarded ads are optional. Guests may see more ads because account features and purchase history are unavailable.",
-    "openSupport": "Open support ticket", "supportRules": "Support rules", "securityPassword": "Security / Password", "lastPasswordChange": "Last password change: {{date}}. Never share your password.",
-    "currentPassword": "Current password", "newPassword": "New password", "confirmPassword": "Confirm new password", "passwordHelp": "Use at least 10 characters with uppercase, lowercase, and a number. Do not reuse your current password.", "changePassword": "Change password",
-    "deleteAccount": "Delete account", "deleteAccountHelp": "This anonymizes your identity, hides scores, removes access, and clears spendable balances. Financial records may be retained in pseudonymous form where legally required.", "deleteMyAccount": "Delete my account", "deletePermanently": "Permanently delete account", "deleteConfirmationHelp": "Enter your password and type DELETE. This action cannot be undone.", "typeDelete": "Type DELETE", "deleteForever": "Delete account permanently",
-    "accountStatuses": { "ACTIVE": "Active", "BANNED": "Banned", "DELETED": "Deleted" },
-    "options": { "adaptive": "Adaptive", "normal": "Normal", "hard": "Hard", "click": "Mouse / click", "keyboard": "Keyboard", "touch": "Touch", "low": "Low", "medium": "Medium", "high": "High" }
+    "username": "Username",
+    "email": "Email",
+    "status": "Status",
+    "created": "Created",
+    "guestAccountLimit": "Guest has no cloud profile, leaderboard identity, purchases, achievements, or cross-device progress.",
+    "unlockAccountSettings": "Unlock account settings",
+    "difficulty": "Difficulty",
+    "controlSensitivity": "Control sensitivity",
+    "movementType": "Movement type",
+    "vibration": "Vibration",
+    "autoPause": "Auto pause",
+    "showScore": "Show score during game",
+    "showTutorial": "Show tutorial",
+    "reduceMotion": "Reduce motion",
+    "keyboardControls": "Keyboard controls",
+    "touchControls": "Touch controls",
+    "mouseControls": "Mouse controls",
+    "virtualJoystick": "Virtual joystick",
+    "controlSize": "Control size",
+    "resetControls": "Reset controls",
+    "masterVolume": "Master volume",
+    "musicVolume": "Music volume",
+    "effectsVolume": "Sound effects volume",
+    "testAudio": "Test game audio",
+    "muteAll": "Mute all",
+    "particles": "Particles",
+    "screenShake": "Screen shake",
+    "trailEffects": "Trail effects",
+    "animationQuality": "Animation quality",
+    "lowPerformance": "Low performance mode",
+    "highContrast": "High contrast mode",
+    "showLeaderboardName": "Show username in leaderboard",
+    "hideProfile": "Hide profile",
+    "allowRewardedAds": "Allow rewarded ads",
+    "rewardedAdsHelp": "Rewarded ads are optional. Guests may see more ads because account features and purchase history are unavailable.",
+    "openSupport": "Open support ticket",
+    "supportRules": "Support rules",
+    "securityPassword": "Security / Password",
+    "lastPasswordChange": "Last password change: {{date}}. Never share your password.",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "passwordHelp": "Use at least 10 characters with uppercase, lowercase, and a number. Do not reuse your current password.",
+    "changePassword": "Change password",
+    "deleteAccount": "Delete account",
+    "deleteAccountHelp": "This anonymizes your identity, hides scores, removes access, and clears spendable balances. Financial records may be retained in pseudonymous form where legally required.",
+    "deleteMyAccount": "Delete my account",
+    "deletePermanently": "Permanently delete account",
+    "deleteConfirmationHelp": "Enter your password and type DELETE. This action cannot be undone.",
+    "typeDelete": "Type DELETE",
+    "deleteForever": "Delete account permanently",
+    "accountStatuses": {
+      "ACTIVE": "Active",
+      "BANNED": "Banned",
+      "DELETED": "Deleted"
+    },
+    "options": {
+      "adaptive": "Adaptive",
+      "normal": "Normal",
+      "hard": "Hard",
+      "click": "Mouse / click",
+      "keyboard": "Keyboard",
+      "touch": "Touch",
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    }
   },
   "progression": {
-    "achievements": "Achievements", "dailyMissions": "Daily missions", "completed": "Completed", "season": "Season: {{name}}", "level": "Level {{level}}", "xp": "XP",
-    "seasons": { "season-1": "Neon Origins" },
+    "achievements": "Achievements",
+    "dailyMissions": "Daily missions",
+    "completed": "Completed",
+    "season": "Season: {{name}}",
+    "level": "Level {{level}}",
+    "xp": "XP",
+    "seasons": {
+      "season-1": "Neon Origins"
+    },
     "items": {
-      "first-flight": { "title": "First Flight", "description": "Finish one valid run" },
-      "neon-sprinter": { "title": "Neon Sprinter", "description": "Reach 10,000 score" },
-      "arena-master": { "title": "Arena Master", "description": "Reach 50,000 score" },
-      "daily-runs": { "title": "Finish 3 valid runs" },
-      "daily-score": { "title": "Score 10,000 points" },
-      "daily-coins": { "title": "Collect 10 energy coins" }
+      "first-flight": {
+        "title": "First Flight",
+        "description": "Finish one valid run"
+      },
+      "neon-sprinter": {
+        "title": "Neon Sprinter",
+        "description": "Reach 10,000 score"
+      },
+      "arena-master": {
+        "title": "Arena Master",
+        "description": "Reach 50,000 score"
+      },
+      "daily-runs": {
+        "title": "Finish 3 valid runs"
+      },
+      "daily-score": {
+        "title": "Score 10,000 points"
+      },
+      "daily-coins": {
+        "title": "Collect 10 energy coins"
+      }
     }
   },
   "themesPage": {
-    "title": "Themes", "heading": "Build your arena atmosphere", "subtitle": "Themes change the background, trail palette, obstacles, interface accent, and particles.", "guestNotice": "Create an account to unlock more themes. Guests can use the first three basic themes.", "loadError": "Themes could not be loaded.", "selectError": "Theme could not be selected.", "accountRequired": "Create an account to unlock more themes.",
-    "equipped": "Equipped", "equip": "Equip", "unlock": "Unlock", "coinsOrScore": "{{coins}} coins / score", "availableEveryone": "Available to everyone", "premiumEntitlement": "Premium entitlement", "unlockCondition": "Reach {{score}} score or spend {{coins}} coins",
-    "types": { "free": "Free", "unlockable": "Unlockable", "premium": "Premium" },
+    "title": "Themes",
+    "heading": "Build your arena atmosphere",
+    "subtitle": "Themes change the background, trail palette, obstacles, interface accent, and particles.",
+    "guestNotice": "Create an account to unlock more themes. Guests can use the first three basic themes.",
+    "loadError": "Themes could not be loaded.",
+    "selectError": "Theme could not be selected.",
+    "accountRequired": "Create an account to unlock more themes.",
+    "equipped": "Equipped",
+    "equip": "Equip",
+    "unlock": "Unlock",
+    "coinsOrScore": "{{coins}} coins / score",
+    "availableEveryone": "Available to everyone",
+    "premiumEntitlement": "Premium entitlement",
+    "unlockCondition": "Reach {{score}} score or spend {{coins}} coins",
+    "types": {
+      "free": "Free",
+      "unlockable": "Unlockable",
+      "premium": "Premium"
+    },
     "items": {
-      "classic-neon": { "name": "Classic Neon", "particles": "Cyan sparks" }, "dark-space": { "name": "Dark Space", "particles": "Star dust" }, "cyber-grid": { "name": "Cyber Grid", "particles": "Digital squares" }, "ocean-blue": { "name": "Ocean Blue", "particles": "Bubbles" }, "sunset-run": { "name": "Sunset Run", "particles": "Sun flares" }, "lava-zone": { "name": "Lava Zone", "particles": "Embers" }, "ice-world": { "name": "Ice World", "particles": "Snow crystals" }, "forest-glow": { "name": "Forest Glow", "particles": "Fireflies" }, "purple-night": { "name": "Purple Night", "particles": "Violet sparks" }, "retro-arcade": { "name": "Retro Arcade", "particles": "Pixel burst" }, "minimal-white": { "name": "Minimal White", "particles": "Ink dots" }, "toxic-green": { "name": "Toxic Green", "particles": "Toxic mist" }, "gold-premium": { "name": "Gold Premium", "particles": "Gold shards" }, "rainbow-energy": { "name": "Rainbow Energy", "particles": "Rainbow sparks" }, "winter-frost": { "name": "Winter Frost", "particles": "Frost" }, "desert-storm": { "name": "Desert Storm", "particles": "Sand grains" }, "candy-mode": { "name": "Candy Mode", "particles": "Sugar stars" }, "galaxy-trail": { "name": "Galaxy Trail", "particles": "Nebula dust" }, "matrix-code": { "name": "Matrix Code", "particles": "Code rain" }, "fire-line": { "name": "Fire Line", "particles": "Flames" }
+      "classic-neon": {
+        "name": "Classic Neon",
+        "particles": "Cyan sparks"
+      },
+      "dark-space": {
+        "name": "Dark Space",
+        "particles": "Star dust"
+      },
+      "cyber-grid": {
+        "name": "Cyber Grid",
+        "particles": "Digital squares"
+      },
+      "ocean-blue": {
+        "name": "Ocean Blue",
+        "particles": "Bubbles"
+      },
+      "sunset-run": {
+        "name": "Sunset Run",
+        "particles": "Sun flares"
+      },
+      "lava-zone": {
+        "name": "Lava Zone",
+        "particles": "Embers"
+      },
+      "ice-world": {
+        "name": "Ice World",
+        "particles": "Snow crystals"
+      },
+      "forest-glow": {
+        "name": "Forest Glow",
+        "particles": "Fireflies"
+      },
+      "purple-night": {
+        "name": "Purple Night",
+        "particles": "Violet sparks"
+      },
+      "retro-arcade": {
+        "name": "Retro Arcade",
+        "particles": "Pixel burst"
+      },
+      "minimal-white": {
+        "name": "Minimal White",
+        "particles": "Ink dots"
+      },
+      "toxic-green": {
+        "name": "Toxic Green",
+        "particles": "Toxic mist"
+      },
+      "gold-premium": {
+        "name": "Gold Premium",
+        "particles": "Gold shards"
+      },
+      "rainbow-energy": {
+        "name": "Rainbow Energy",
+        "particles": "Rainbow sparks"
+      },
+      "winter-frost": {
+        "name": "Winter Frost",
+        "particles": "Frost"
+      },
+      "desert-storm": {
+        "name": "Desert Storm",
+        "particles": "Sand grains"
+      },
+      "candy-mode": {
+        "name": "Candy Mode",
+        "particles": "Sugar stars"
+      },
+      "galaxy-trail": {
+        "name": "Galaxy Trail",
+        "particles": "Nebula dust"
+      },
+      "matrix-code": {
+        "name": "Matrix Code",
+        "particles": "Code rain"
+      },
+      "fire-line": {
+        "name": "Fire Line",
+        "particles": "Flames"
+      }
     }
   },
   "aboutPage": {
@@ -572,24 +839,72 @@
   },
   "policies": {
     "effective": "Effective: 20 June 2026",
-    "privacy": { "title": "Privacy Policy", "sections": {
-      "data": { "title": "Data we collect", "body": "Account details, game sessions, valid scores, purchases, support messages, security events and consent choices. Guest identifiers used for analytics are hashed." },
-      "purpose": { "title": "Why we use data", "body": "To provide accounts and cloud progress, run the game and shop, protect fair play, answer support requests, measure reliability and show advertising only after the required choice." },
-      "legal": { "title": "Legal basis", "body": "Service data is processed to provide the game and enforce its rules. Optional analytics and advertising are based on consent, which can be changed in Settings." },
-      "sharing": { "title": "Sharing", "body": "Hosting, database, email, error monitoring, payment and advertising providers receive only the data needed for their role. We do not sell account passwords or authentication tokens." },
-      "retention": { "title": "Retention and deletion", "body": "Security and financial records may be retained where required. Account deletion anonymizes identity, removes access, hides scores and clears spendable balances." },
-      "choices": { "title": "Your choices", "body": "You can change privacy settings, withdraw optional consent, contact Support, appeal moderation and request account deletion from Settings." },
-      "security": { "title": "Security", "body": "Passwords are stored as secure hashes. Administrators cannot view old passwords. Never send a password to Support." },
-      "contact": { "title": "Contact", "body": "Use the in-game Support page for privacy requests. Include the account email but never include a password." }
-    } },
-    "cookies": { "title": "Cookie Policy", "sections": {
-      "necessary": { "title": "Necessary storage", "body": "Authentication state, guest session, language, controls, security and consent choices. These are required for core functionality." },
-      "analytics": { "title": "Analytics", "body": "With consent, anonymous events measure sessions, retention, valid scores, ad views and errors. Sensitive fields are filtered server-side." },
-      "advertising": { "title": "Advertising", "body": "With consent, Google Ad Manager may use cookies or similar storage for banners and rewarded ads according to Google policies and your region." },
-      "choices": { "title": "Managing choices", "body": "Open Cookie preferences in Settings at any time. Rejecting optional storage does not block gameplay, but advertising and analytics integrations remain disabled." },
-      "thirdParties": { "title": "Third parties", "body": "Google, hosting, email and monitoring providers may apply their own storage when their configured feature is used. Their policies also apply." },
-      "changes": { "title": "Changes", "body": "The policy may be updated before commercial launch or when providers change. The effective date is shown above." }
-    } }
+    "privacy": {
+      "title": "Privacy Policy",
+      "sections": {
+        "data": {
+          "title": "Data we collect",
+          "body": "Account details, game sessions, valid scores, purchases, support messages, security events and consent choices. Guest identifiers used for analytics are hashed."
+        },
+        "purpose": {
+          "title": "Why we use data",
+          "body": "To provide accounts and cloud progress, run the game and shop, protect fair play, answer support requests, measure reliability and show advertising only after the required choice."
+        },
+        "legal": {
+          "title": "Legal basis",
+          "body": "Service data is processed to provide the game and enforce its rules. Optional analytics and advertising are based on consent, which can be changed in Settings."
+        },
+        "sharing": {
+          "title": "Sharing",
+          "body": "Hosting, database, email, error monitoring, payment and advertising providers receive only the data needed for their role. We do not sell account passwords or authentication tokens."
+        },
+        "retention": {
+          "title": "Retention and deletion",
+          "body": "Security and financial records may be retained where required. Account deletion anonymizes identity, removes access, hides scores and clears spendable balances."
+        },
+        "choices": {
+          "title": "Your choices",
+          "body": "You can change privacy settings, withdraw optional consent, contact Support, appeal moderation and request account deletion from Settings."
+        },
+        "security": {
+          "title": "Security",
+          "body": "Passwords are stored as secure hashes. Administrators cannot view old passwords. Never send a password to Support."
+        },
+        "contact": {
+          "title": "Contact",
+          "body": "Use the in-game Support page for privacy requests. Include the account email but never include a password."
+        }
+      }
+    },
+    "cookies": {
+      "title": "Cookie Policy",
+      "sections": {
+        "necessary": {
+          "title": "Necessary storage",
+          "body": "Authentication state, guest session, language, controls, security and consent choices. These are required for core functionality."
+        },
+        "analytics": {
+          "title": "Analytics",
+          "body": "With consent, anonymous events measure sessions, retention, valid scores, ad views and errors. Sensitive fields are filtered server-side."
+        },
+        "advertising": {
+          "title": "Advertising",
+          "body": "With consent, Google Ad Manager may use cookies or similar storage for banners and rewarded ads according to Google policies and your region."
+        },
+        "choices": {
+          "title": "Managing choices",
+          "body": "Open Cookie preferences in Settings at any time. Rejecting optional storage does not block gameplay, but advertising and analytics integrations remain disabled."
+        },
+        "thirdParties": {
+          "title": "Third parties",
+          "body": "Google, hosting, email and monitoring providers may apply their own storage when their configured feature is used. Their policies also apply."
+        },
+        "changes": {
+          "title": "Changes",
+          "body": "The policy may be updated before commercial launch or when providers change. The effective date is shown above."
+        }
+      }
+    }
   },
   "adminWorkspace": {
     "refreshAll": "Refresh all data",
@@ -629,7 +944,17 @@
       "supportDeskBody": "Open unanswered tickets, ban appeals and account recovery requests in one place.",
       "riskDesk": "Risk desk",
       "reviewRiskAccounts": "Review risky accounts",
-      "riskDeskBody": "Focus on suspicious or recently restricted players without scanning the whole list."
+      "riskDeskBody": "Focus on suspicious or recently restricted players without scanning the whole list.",
+      "priorityTitle": "Priority queue",
+      "priorityDescription": "Open the most urgent operational work without scanning every section.",
+      "priority": {
+        "scoreTitle": "Score review",
+        "scoreBody": "Suspicious and pending leaderboard submissions waiting for a decision.",
+        "supportTitle": "Support inbox",
+        "supportBody": "Unanswered player tickets, appeals and recovery requests.",
+        "userTitle": "Risk accounts",
+        "userBody": "Suspicious, restricted or unverified players that may need attention."
+      }
     },
     "users": {
       "title": "Player management",
@@ -651,6 +976,13 @@
         "passwordChanged": "Last password change",
         "forcePasswordChange": "Must change password",
         "restrictions": "Active restrictions"
+      },
+      "summary": {
+        "active": "Active players",
+        "banned": "Banned players",
+        "suspicious": "Suspicious trust",
+        "trusted": "Trusted players",
+        "restricted": "Restricted players"
       }
     },
     "scores": {
@@ -664,40 +996,167 @@
         "pending_review": "Pending",
         "rejected": "Rejected",
         "hidden": "Hidden"
+      },
+      "summary": {
+        "review": "Review queue",
+        "valid": "Valid scores",
+        "rejected": "Rejected scores",
+        "hidden": "Hidden scores"
       }
     },
     "support": {
       "description": "Reply to players, handle appeals and close completed tickets.",
       "search": "Search tickets",
       "searchPlaceholder": "Subject, email, player or message",
-      "emptyHint": "No tickets match the selected filters."
+      "emptyHint": "No tickets match the selected filters.",
+      "summary": {
+        "open": "Open tickets",
+        "answered": "Answered",
+        "closed": "Closed",
+        "appeals": "Appeals"
+      }
     },
     "finance": {
-      "description": "Review wallet purchases, rewards, providers, status and idempotency keys."
+      "description": "Review wallet purchases, rewards, providers, status and idempotency keys.",
+      "summary": {
+        "completed": "Completed",
+        "pending": "Pending",
+        "failed": "Failed",
+        "providers": "Providers",
+        "idempotent": "Idempotency keys"
+      }
     },
     "activity": {
       "auditDescription": "Protected history of administrator actions.",
       "transferDescription": "Guest progress imports and validation results.",
       "search": "Search audit log",
       "searchPlaceholder": "Action, reason, admin or target ID",
-      "noAudit": "No audit events found"
+      "noAudit": "No audit events found",
+      "summary": {
+        "audit": "Audit events",
+        "transfers": "Guest transfers",
+        "errors": "Client errors"
+      }
     }
   },
   "adminExtra": {
-    "resetUserScores": "Reset user scores", "defaultScoreResetReason": "Confirmed score manipulation or administrator correction.", "trustedReason": "Administrator reviewed the account as trusted.", "suspiciousReason": "Account requires additional anti-cheat review.", "restrictionRemovedReason": "Restriction removed by administrator.",
-    "analytics": { "title": "Product analytics", "registered": "Registered", "new7d": "New 7d", "active7d": "Active 7d", "returning7d": "Returning 7d", "sessions30d": "Sessions 30d", "validScores30d": "Valid scores 30d", "adViews30d": "Ad views 30d", "guests30d": "Guests 30d" },
-    "activityGraph": { "title": "Activity graph", "description": "Daily activity for the last 14 days, including gameplay, scores, ads, guest starts, registrations and client errors.", "sessions": "Sessions", "scores": "Scores", "ads": "Ads", "guests": "Guests", "users": "New users", "errors": "Errors", "errorCount": "{{count}} client error(s)" },
-    "finance": { "title": "Financial journal", "empty": "No financial transactions found.", "user": "User", "item": "Item", "status": "Status", "provider": "Provider", "amount": "Amount", "date": "Date", "idempotencyKey": "Idempotency key", "noAmount": "No wallet change", "gems": "gems", "tickets": "tickets", "lives": "lives" },
-    "userStatuses": { "ACTIVE": "Active", "BANNED": "Banned", "DELETED": "Deleted" }, "trustStatuses": { "NORMAL": "Normal", "TRUSTED": "Trusted", "SUSPICIOUS": "Suspicious" },
-    "activeRestrictions": "{{count}} active restriction(s)", "removeRestriction": "Remove {{type}}", "resetPassword": "Reset password", "resetScores": "Reset scores", "markSuspicious": "Mark suspicious", "markTrusted": "Mark trusted", "restrict": "Restrict",
-    "scoreModeration": "Score moderation", "ms": "ms", "hits": "hits", "noReasonRecorded": "No reason recorded", "noSessionFlags": "no session flags", "approve": "Approve", "reject": "Reject", "hide": "Hide", "banForCheating": "Ban for cheating", "noScoresToReview": "No scores need review.", "validScoreHistory": "Valid score history ({{count}})",
-    "scoreApprovedReason": "Score reviewed and approved by administrator.", "scoreRejectedReason": "Score rejected after review.", "scoreHiddenReason": "Score hidden by administrator.", "cheatingReason": "Cheating: {{reason}}", "invalidScore": "invalid score submission",
-    "scoreStatuses": { "valid": "Valid", "suspicious": "Suspicious", "pending_review": "Pending review", "rejected": "Rejected", "hidden": "Hidden" },
-    "auditLog": "Admin audit log", "noReason": "No reason", "system": "System", "guestTransfers": "Guest transfer attempts", "localScore": "local", "transferredScore": "moved", "passedValidation": "Passed validation", "noTransfers": "No transfer attempts.",
-    "ticketStatuses": { "ALL": "All", "OPEN": "Open", "ANSWERED": "Answered", "CLOSED": "Closed" }, "related": "Related", "appeal": "Appeal", "appealDecision": "Appeal decision", "internalNote": "Internal note (not shown to player)",
-    "appealStatuses": { "UNDER_REVIEW": "Under review", "UPHELD": "Keep restriction", "REMOVED": "Remove restriction", "RESTORED": "Restore score", "REJECTED": "Reject appeal" },
-    "temporaryPassword": "Temporary password", "closePermanently": "Close permanently", "temporaryPasswordHelp": "This password is shown only once. It is never stored or logged as plain text. The user must change it after login.", "copyTemporaryPassword": "Copy temporary password", "closeAndHide": "Close and hide forever",
-    "scoreDecisionTitle": "{{status}} score", "confirmScoreDecision": "Confirm score decision", "addRestriction": "Add restriction", "restrictionType": "Restriction type", "applyRestriction": "Apply restriction"
+    "resetUserScores": "Reset user scores",
+    "defaultScoreResetReason": "Confirmed score manipulation or administrator correction.",
+    "trustedReason": "Administrator reviewed the account as trusted.",
+    "suspiciousReason": "Account requires additional anti-cheat review.",
+    "restrictionRemovedReason": "Restriction removed by administrator.",
+    "analytics": {
+      "title": "Product analytics",
+      "registered": "Registered",
+      "new7d": "New 7d",
+      "active7d": "Active 7d",
+      "returning7d": "Returning 7d",
+      "sessions30d": "Sessions 30d",
+      "validScores30d": "Valid scores 30d",
+      "adViews30d": "Ad views 30d",
+      "guests30d": "Guests 30d"
+    },
+    "activityGraph": {
+      "title": "Activity graph",
+      "description": "Daily activity for the last 14 days, including gameplay, scores, ads, guest starts, registrations and client errors.",
+      "sessions": "Sessions",
+      "scores": "Scores",
+      "ads": "Ads",
+      "guests": "Guests",
+      "users": "New users",
+      "errors": "Errors",
+      "errorCount": "{{count}} client error(s)"
+    },
+    "finance": {
+      "title": "Financial journal",
+      "empty": "No financial transactions found.",
+      "user": "User",
+      "item": "Item",
+      "status": "Status",
+      "provider": "Provider",
+      "amount": "Amount",
+      "date": "Date",
+      "idempotencyKey": "Idempotency key",
+      "noAmount": "No wallet change",
+      "gems": "gems",
+      "tickets": "tickets",
+      "lives": "lives"
+    },
+    "userStatuses": {
+      "ACTIVE": "Active",
+      "BANNED": "Banned",
+      "DELETED": "Deleted"
+    },
+    "trustStatuses": {
+      "NORMAL": "Normal",
+      "TRUSTED": "Trusted",
+      "SUSPICIOUS": "Suspicious"
+    },
+    "activeRestrictions": "{{count}} active restriction(s)",
+    "removeRestriction": "Remove {{type}}",
+    "resetPassword": "Reset password",
+    "resetScores": "Reset scores",
+    "markSuspicious": "Mark suspicious",
+    "markTrusted": "Mark trusted",
+    "restrict": "Restrict",
+    "scoreModeration": "Score moderation",
+    "ms": "ms",
+    "hits": "hits",
+    "noReasonRecorded": "No reason recorded",
+    "noSessionFlags": "no session flags",
+    "approve": "Approve",
+    "reject": "Reject",
+    "hide": "Hide",
+    "banForCheating": "Ban for cheating",
+    "noScoresToReview": "No scores need review.",
+    "validScoreHistory": "Valid score history ({{count}})",
+    "scoreApprovedReason": "Score reviewed and approved by administrator.",
+    "scoreRejectedReason": "Score rejected after review.",
+    "scoreHiddenReason": "Score hidden by administrator.",
+    "cheatingReason": "Cheating: {{reason}}",
+    "invalidScore": "invalid score submission",
+    "scoreStatuses": {
+      "valid": "Valid",
+      "suspicious": "Suspicious",
+      "pending_review": "Pending review",
+      "rejected": "Rejected",
+      "hidden": "Hidden"
+    },
+    "auditLog": "Admin audit log",
+    "noReason": "No reason",
+    "system": "System",
+    "guestTransfers": "Guest transfer attempts",
+    "localScore": "local",
+    "transferredScore": "moved",
+    "passedValidation": "Passed validation",
+    "noTransfers": "No transfer attempts.",
+    "ticketStatuses": {
+      "ALL": "All",
+      "OPEN": "Open",
+      "ANSWERED": "Answered",
+      "CLOSED": "Closed"
+    },
+    "related": "Related",
+    "appeal": "Appeal",
+    "appealDecision": "Appeal decision",
+    "internalNote": "Internal note (not shown to player)",
+    "appealStatuses": {
+      "UNDER_REVIEW": "Under review",
+      "UPHELD": "Keep restriction",
+      "REMOVED": "Remove restriction",
+      "RESTORED": "Restore score",
+      "REJECTED": "Reject appeal"
+    },
+    "temporaryPassword": "Temporary password",
+    "closePermanently": "Close permanently",
+    "temporaryPasswordHelp": "This password is shown only once. It is never stored or logged as plain text. The user must change it after login.",
+    "copyTemporaryPassword": "Copy temporary password",
+    "closeAndHide": "Close and hide forever",
+    "scoreDecisionTitle": "{{status}} score",
+    "confirmScoreDecision": "Confirm score decision",
+    "addRestriction": "Add restriction",
+    "restrictionType": "Restriction type",
+    "applyRestriction": "Apply restriction"
   },
   "common": {
     "loading": "Loading",

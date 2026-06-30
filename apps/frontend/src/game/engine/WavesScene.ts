@@ -5,6 +5,7 @@ import { ParticleBurst } from "../effects/ParticleBurst";
 import { PlayerController, type PlayerRenderSettings } from "../player/PlayerController";
 import type { GameThemeDto } from "@waves/shared";
 import { GameAudioManager, type GameAudioSettings } from "../audio/GameAudioManager";
+import { getGameModeDefinition, resolveGameModeProfile, type GameModeId } from "./gameModes";
 
 export interface GameStats {
   score: number;
@@ -13,9 +14,13 @@ export interface GameStats {
   durationMs: number;
   obstacleHits: number;
   inputTransitions: number;
+  modeId: GameModeId;
+  modeStatusKey?: string | null;
+  timeLeftMs?: number;
 }
 
 export interface WavesSceneOptions {
+  modeId: GameModeId;
   skins: GameSkinBundle;
   theme: GameThemeDto;
   audio: GameAudioSettings;
@@ -41,6 +46,7 @@ export class WavesScene extends Phaser.Scene {
   private previousPressed = false;
   private inputTransitions = 0;
   private audio?: GameAudioManager;
+  private elapsedMs = 0;
 
   constructor(options: WavesSceneOptions) {
     super("waves-scene");
@@ -100,7 +106,8 @@ export class WavesScene extends Phaser.Scene {
     const pressed = this.readPressedInput();
     if (!this.firstInputAt) {
       if (!pressed) {
-        this.obstacles.update(this.player.x, 1);
+        const idleProfile = resolveGameModeProfile(this.options.modeId, 0, this.player.distance);
+        this.obstacles.update(this.player.x, idleProfile.difficulty, idleProfile);
         this.options.onStats(this.currentStats(0));
         return;
       }
@@ -115,12 +122,19 @@ export class WavesScene extends Phaser.Scene {
       if (pressed) this.audio?.playControl();
     }
 
-    this.player.update(delta, { pressed });
-    const difficulty = Math.min(18, 1 + Math.floor(this.player.distance / 5000));
-    this.obstacles.update(this.player.x, difficulty);
+    this.elapsedMs += delta;
+    const modeProfile = resolveGameModeProfile(this.options.modeId, this.elapsedMs, this.player.distance);
+
+    this.player.update(delta, { pressed, verticalSpeedScale: modeProfile.verticalSpeedScale });
+    this.obstacles.update(this.player.x, modeProfile.difficulty, modeProfile);
 
     if (this.player.y < 10 || this.player.y > this.scale.height - 10) {
       this.finish(1);
+      return;
+    }
+
+    if (modeProfile.timeLimitMs && this.elapsedMs >= modeProfile.timeLimitMs) {
+      this.finish(0);
       return;
     }
 
@@ -201,13 +215,18 @@ export class WavesScene extends Phaser.Scene {
 
   private currentStats(obstacleHits: number): GameStats {
     const distance = this.player?.distance ?? 0;
+    const modeDefinition = getGameModeDefinition(this.options.modeId);
+    const modeProfile = resolveGameModeProfile(this.options.modeId, this.elapsedMs, distance);
     return {
       score: distance + this.coins * 125,
       coins: this.coins,
       distance,
-      durationMs: Math.floor(performance.now() - this.startedAt),
+      durationMs: Math.floor(this.elapsedMs),
       obstacleHits,
-      inputTransitions: this.inputTransitions
+      inputTransitions: this.inputTransitions,
+      modeId: this.options.modeId,
+      modeStatusKey: modeProfile.statusKey ?? modeDefinition.statusKey,
+      timeLeftMs: modeDefinition.timeLimitMs ? Math.max(0, modeDefinition.timeLimitMs - this.elapsedMs) : undefined
     };
   }
 
@@ -222,7 +241,8 @@ export class WavesScene extends Phaser.Scene {
       this.particles?.emit(this.player.x, this.player.y, this.options.skins.arrow, 24);
     }
     this.physics.pause();
-    if (this.options.performance.screenShake && !this.options.performance.reduceMotion) {
+    const modeProfile = resolveGameModeProfile(this.options.modeId, this.elapsedMs, stats.distance);
+    if (this.options.performance.screenShake && !this.options.performance.reduceMotion && !modeProfile.suppressShake) {
       this.cameras.main.shake(this.options.performance.lowPerformanceMode ? 140 : 220, this.options.performance.lowPerformanceMode ? 0.003 : 0.006);
     }
     this.options.onStats(stats);

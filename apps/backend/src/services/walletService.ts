@@ -43,6 +43,8 @@ type PurchaseGrants = {
   skinSlug: string | null;
 };
 
+const IDEMPOTENCY_KEY_PATTERN = /^[A-Za-z0-9:_-]{24,160}$/;
+
 type PurchaseMetadata = Record<string, unknown> & {
   sku?: string;
   amountCents?: number;
@@ -104,6 +106,12 @@ function calculatePaymentOrder(input: PurchasePlaceholderInput) {
   };
 }
 
+function assertStrongIdempotencyKey(idempotencyKey: string) {
+  if (!IDEMPOTENCY_KEY_PATTERN.test(idempotencyKey)) {
+    throw new AppError(400, "Payment request key is invalid.", "INVALID_IDEMPOTENCY_KEY");
+  }
+}
+
 function idempotencyPayloadMatches(metadata: Record<string, unknown>, order: ReturnType<typeof calculatePaymentOrder>) {
   return (
     metadata.sku === order.sku &&
@@ -113,6 +121,47 @@ function idempotencyPayloadMatches(metadata: Record<string, unknown>, order: Ret
     metadata.supportAmountCents === order.supportAmountCents &&
     JSON.stringify(metadata.grants ?? {}) === JSON.stringify(order.grants)
   );
+}
+
+function toPurchaseMetadata(order: ReturnType<typeof calculatePaymentOrder>, externalId?: string): PurchaseMetadata {
+  return {
+    sku: order.sku,
+    amountCents: order.amountCents,
+    productAmountCents: order.productAmountCents,
+    supportAmountCents: order.supportAmountCents,
+    currency: order.currency,
+    grants: order.grants,
+    externalId
+  };
+}
+
+function buildExistingPaymentIntentResponse(
+  purchase: { userId: string; provider: string; status: string; idempotencyKey: string | null },
+  metadata: PurchaseMetadata,
+  fallbackIdempotencyKey: string
+) {
+  const orderId = purchase.idempotencyKey ?? fallbackIdempotencyKey;
+
+  if (purchase.status === "initiating" || purchase.status === "processing") {
+    throw new AppError(409, "Purchase is already processing. Refresh your wallet in a moment.", "PAYMENT_ALREADY_PROCESSING");
+  }
+
+  if (purchase.provider === "liqpay" && env.PAYMENT_PROVIDER === "liqpay") {
+    return {
+      provider: purchase.provider,
+      externalId: metadata.externalId ?? orderId,
+      status: "pending" as const,
+      message: "LiqPay checkout session created.",
+      checkoutUrl: `${new URL(env.LIQPAY_SERVER_URL!).origin}/api/payments/liqpay/checkout/${encodeURIComponent(orderId)}`
+    };
+  }
+
+  return {
+    provider: purchase.provider,
+    externalId: metadata.externalId ?? `placeholder_${orderId}`,
+    status: "requires_configuration" as const,
+    message: `Payment provider "${purchase.provider}" is not configured yet. Connect Stripe, Mollie, PayPal, Adyen, Google Play Billing, or Apple IAP here.`
+  };
 }
 
 function toWalletDto(wallet: {
@@ -391,49 +440,99 @@ export async function createPurchasePlaceholder(
   userId: string,
   input: PurchasePlaceholderInput
 ) {
+  await assertNoActiveRestriction(userId, ["shop_restriction", "temporary_ban", "permanent_ban"], "Payments");
+  assertStrongIdempotencyKey(input.idempotencyKey);
   const order = calculatePaymentOrder(input);
-  const existing = await prisma.purchaseTransaction.findUnique({ where: { idempotencyKey: input.idempotencyKey } });
-  if (existing) {
-    const metadata = existing.metadata ? parsePurchaseMetadata(existing.metadata) : {};
-    if (!idempotencyPayloadMatches(metadata, order)) {
-      throw new AppError(409, "Idempotency key was already used for a different payment request.", "IDEMPOTENCY_KEY_CONFLICT");
-    }
-    if (existing.provider === "liqpay" && env.PAYMENT_PROVIDER === "liqpay") {
-      return {
-        provider: existing.provider,
-        externalId: metadata.externalId ?? existing.idempotencyKey ?? input.idempotencyKey,
-        status: "pending" as const,
-        message: "LiqPay checkout session created.",
-        checkoutUrl: `${new URL(env.LIQPAY_SERVER_URL!).origin}/api/payments/liqpay/checkout/${encodeURIComponent(existing.idempotencyKey ?? input.idempotencyKey)}`
-      };
-    }
-    return {
-      provider: existing.provider,
-      externalId: metadata.externalId ?? `placeholder_${input.idempotencyKey}`,
-      status: "requires_configuration" as const,
-      message: `Payment provider "${existing.provider}" is not configured yet. Connect Stripe, Mollie, PayPal, Adyen, Google Play Billing, or Apple IAP here.`
-    };
-  }
-
-  const intent = await getPaymentProvider(input.provider).createPaymentIntent({ userId, ...input, amountCents: order.amountCents, currency: order.currency });
+  const initialMetadata = toPurchaseMetadata(order);
+  let createdPurchase:
+    | {
+        id: string;
+        userId: string;
+        provider: string;
+        status: string;
+        idempotencyKey: string | null;
+        metadata: string | null;
+      }
+    | null = null;
 
   try {
-    await prisma.purchaseTransaction.create({
+    createdPurchase = await prisma.purchaseTransaction.create({
       data: {
         userId,
         provider: input.provider,
         type: order.type,
-        status: "pending",
+        status: "initiating",
         idempotencyKey: input.idempotencyKey,
-        metadata: JSON.stringify({
-          sku: order.sku,
-          amountCents: order.amountCents,
-          productAmountCents: order.productAmountCents,
-          supportAmountCents: order.supportAmountCents,
-          currency: order.currency,
-          grants: order.grants,
-          externalId: intent.externalId
-        })
+        metadata: JSON.stringify(initialMetadata)
+      },
+      select: {
+        id: true,
+        userId: true,
+        provider: true,
+        status: true,
+        idempotencyKey: true,
+        metadata: true
+      }
+    });
+  } catch (error) {
+    if (!isKnownPrismaError(error, "P2002")) {
+      rethrowSafeWalletMutationError(error);
+    }
+
+    const existing = await prisma.purchaseTransaction.findUnique({
+      where: { idempotencyKey: input.idempotencyKey },
+      select: {
+        userId: true,
+        provider: true,
+        status: true,
+        idempotencyKey: true,
+        metadata: true
+      }
+    });
+
+    if (!existing || existing.userId !== userId) {
+      throw new AppError(409, "Idempotency key is already in use.", "IDEMPOTENCY_KEY_CONFLICT");
+    }
+
+    const metadata = existing.metadata ? parsePurchaseMetadata(existing.metadata) : {};
+    if (!idempotencyPayloadMatches(metadata, order)) {
+      throw new AppError(409, "Idempotency key was already used for a different payment request.", "IDEMPOTENCY_KEY_CONFLICT");
+    }
+
+    return buildExistingPaymentIntentResponse(existing, metadata, input.idempotencyKey);
+  }
+
+  let intent;
+  try {
+    intent = await getPaymentProvider(input.provider).createPaymentIntent({
+      userId,
+      ...input,
+      amountCents: order.amountCents,
+      currency: order.currency
+    });
+  } catch (error) {
+    if (createdPurchase?.id) {
+      await prisma.purchaseTransaction.update({
+        where: { id: createdPurchase.id },
+        data: {
+          status: "failed",
+          metadata: JSON.stringify({
+            ...initialMetadata,
+            initializationFailedAt: new Date().toISOString()
+          })
+        }
+      }).catch(() => undefined);
+    }
+    throw error;
+  }
+
+  try {
+    await prisma.purchaseTransaction.update({
+      where: { id: createdPurchase.id },
+      data: {
+        provider: input.provider,
+        status: intent.status === "pending" ? "pending" : "requires_configuration",
+        metadata: JSON.stringify(toPurchaseMetadata(order, intent.externalId))
       }
     });
   } catch (error) {
@@ -561,9 +660,13 @@ async function grantPaidPurchase(
 }
 
 export async function getLiqPayCheckoutSession(orderId: string) {
+  assertStrongIdempotencyKey(orderId);
   const purchase = await prisma.purchaseTransaction.findUnique({ where: { idempotencyKey: orderId } });
   if (!purchase || purchase.provider !== "liqpay") {
     throw new AppError(404, "Payment order not found.", "PAYMENT_ORDER_NOT_FOUND");
+  }
+  if (purchase.status === "initiating") {
+    throw new AppError(409, "Payment order is still being prepared.", "PAYMENT_ORDER_PREPARING");
   }
   if (purchase.status !== "pending") {
     throw new AppError(409, "This payment order is no longer payable.", "PAYMENT_ORDER_NOT_PENDING");
@@ -599,6 +702,7 @@ export async function completeLiqPayPurchase(input: {
   if (!orderId) {
     throw new AppError(400, "Missing LiqPay order ID.", "LIQPAY_ORDER_ID_MISSING");
   }
+  assertStrongIdempotencyKey(orderId);
 
   const purchase = await prisma.purchaseTransaction.findUnique({ where: { idempotencyKey: orderId } });
   if (!purchase) {
@@ -822,6 +926,7 @@ export async function startAdRewardSession(
   placement: AdPlacement = "coins",
   provider: AdProvider = env.AD_PROVIDER
 ): Promise<AdRewardSessionDto> {
+  await assertNoActiveRestriction(userId, ["rewards_removed", "temporary_ban", "permanent_ban"], "Ad rewards");
   const user = await prisma.user.findUnique({
     where: { id: userId },
     include: { wallet: true }
@@ -863,6 +968,7 @@ export async function completeAdRewardSession(
     providerPayload?: Record<string, unknown>;
   }
 ): Promise<AdRewardCompleteDto> {
+  await assertNoActiveRestriction(userId, ["rewards_removed", "temporary_ban", "permanent_ban"], "Ad rewards");
   try {
     const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const adReward = await tx.adReward.findFirst({
