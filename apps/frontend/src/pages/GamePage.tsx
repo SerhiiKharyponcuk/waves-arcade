@@ -72,6 +72,134 @@ const modeIconMap = {
 
 const modeStorageKey = "waves_selected_mode_v1";
 
+const gameModesLocaleFallbacks = {
+  uk: {
+    title: "Обери режим",
+    subtitle: "Кожен забіг змінює темп арени, тиск і ритм по-своєму.",
+    selected: "Обрано",
+    active: "Режим",
+    timeLeft: "Час",
+    statusLabel: "Арена",
+    focusTitle: "Чого очікувати",
+    timeAttackTag: "Ривок на 60 секунд",
+    tags: {
+      classic: "Збалансований забіг",
+      endless: "Безкінечний ріст",
+      hardcore: "Без пощади",
+      zen: "Низький тиск",
+      boss: "Тиск хвилями"
+    },
+    status: {
+      steadyRun: "Рівномірний тиск траси",
+      adaptiveArena: "Довга адаптивна арена",
+      scoreRush: "Набери максимум до кінця часу",
+      finalSprint: "Фінальний спринт",
+      oneMistake: "Одна помилка завершує забіг",
+      calmFlow: "Спокійне вікно потоку",
+      waveBuild: "Наростання хвиль",
+      bossWave: "Активна босс-хвиля",
+      waveRecover: "Вікно відновлення"
+    },
+    modes: {
+      classic: {
+        name: "Класичний режим",
+        description: "Стандартний забіг зі збалансованими перешкодами, монетами та поступовим зростанням тиску.",
+        focus: "Найкраще місце, щоб вивчити траєкторії, покращити чистоту проходження й порівнювати себе зі звичайним ритмом арени."
+      },
+      endless: {
+        name: "Безкінечний режим",
+        description: "Довший забіг із плавнішим масштабуванням, більшим простором для дихання та менше різких стрибків.",
+        focus: "Режим для потоку. Арена довше залишається відкритою, повільніше ускладнюється й нагороджує стабільність, а не паніку."
+      },
+      time_attack: {
+        name: "Атака на час",
+        description: "У тебе є 60 секунд, щоб набрати якомога більше очок, поки таймер не завершить забіг.",
+        focus: "Збирай кожну безпечну лінію монет і тримай високий темп. Останні 20 секунд стають помітно гострішими."
+      },
+      hardcore: {
+        name: "Хардкорний режим",
+        description: "Тісніша й жорсткіша арена з густішими патернами та майже без безпечних секторів для відновлення.",
+        focus: "Лише для впевнених гравців. Чекай вузькі проходи, більше накладених загроз і майже нуль милосердя."
+      },
+      zen: {
+        name: "Дзен-режим",
+        description: "М'якший забіг із ширшими проходами, легшими патернами та поблажливішим ритмом.",
+        focus: "Обирай його, коли хочеш спокійнішу сесію, простіше читання арени й менше стресу від темпу."
+      },
+      boss: {
+        name: "Босс-режим",
+        description: "Арена атакує хвилями: сплески тиску змінюються короткими вікнами відновлення перед новим натиском.",
+        focus: "Зчитуй ритм хвилі. Переживи сплеск, використай відновлення для ресету й готуйся до наступного натиску."
+      }
+    }
+  },
+  ru: {
+    title: "Выбери режим",
+    subtitle: "Каждый забег меняет ритм арены, давление и темп по-своему.",
+    selected: "Выбрано",
+    active: "Режим",
+    timeLeft: "Время",
+    statusLabel: "Арена",
+    focusTitle: "Что ожидать",
+    timeAttackTag: "Рывок на 60 секунд",
+    tags: {
+      classic: "Сбалансированный забег",
+      endless: "Бесконечный рост",
+      hardcore: "Без пощады",
+      zen: "Низкое давление",
+      boss: "Давление волнами"
+    },
+    status: {
+      steadyRun: "Ровное давление трассы",
+      adaptiveArena: "Длинная адаптивная арена",
+      scoreRush: "Набери максимум до конца таймера",
+      finalSprint: "Финальный спринт",
+      oneMistake: "Одна ошибка завершает забег",
+      calmFlow: "Спокойное окно потока",
+      waveBuild: "Нарастание волн",
+      bossWave: "Активная босс-волна",
+      waveRecover: "Окно восстановления"
+    },
+    modes: {
+      classic: {
+        name: "Классический режим",
+        description: "Стандартный соревновательный забег со сбалансированными препятствиями, монетами и нарастающим давлением.",
+        focus: "Лучшее место, чтобы изучать траектории, улучшать чистоту прохождения и сравнивать свой счёт с обычным ритмом арены."
+      },
+      endless: {
+        name: "Бесконечный режим",
+        description: "Более длинный забег с плавным ростом сложности, большим пространством и меньшим числом резких всплесков.",
+        focus: "Режим для потока. Арена дольше остаётся открытой, медленнее усложняется и награждает стабильность, а не панику."
+      },
+      time_attack: {
+        name: "Атака на время",
+        description: "У тебя есть 60 секунд, чтобы набрать как можно больше очков, пока таймер не завершит забег.",
+        focus: "Собирай каждую безопасную линию монет и держи высокий темп. Последние 20 секунд становятся заметно жёстче."
+      },
+      hardcore: {
+        name: "Хардкорный режим",
+        description: "Более тесная и жёсткая арена с плотными паттернами и почти без безопасных зон для восстановления.",
+        focus: "Только для уверенных игроков. Жди узкие проходы, больше наложенных угроз и почти ноль пощады."
+      },
+      zen: {
+        name: "Дзен-режим",
+        description: "Более мягкий забег с широкими проходами, лёгкими паттернами и более прощающим ритмом.",
+        focus: "Выбирай его, когда хочешь спокойную сессию, более простое чтение арены и меньше стресса от темпа."
+      },
+      boss: {
+        name: "Босс-режим",
+        description: "Арена атакует волнами: всплески давления сменяются короткими окнами восстановления перед следующим натиском.",
+        focus: "Считывай ритм волны. Переживи всплеск, используй восстановление для ресета и готовься к следующему натиску."
+      }
+    }
+  }
+} as const;
+
+function hasBrokenLocaleText(value: string) {
+  return value.includes("??") || value.includes(String.fromCharCode(208)) || value.includes(String.fromCharCode(209));
+}
+
+
 function loadStoredMode(): GameModeId {
   if (typeof window === "undefined") {
     return "classic";
@@ -94,7 +222,7 @@ function formatCountdown(ms: number) {
 }
 
 export function GamePage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user, patchWallet } = useAuthStore();
   const { active: guestActive, session: guestSession, recordGame, updateSession, requestAuthentication } = useGuestStore();
   const isGuest = guestActive && !user;
@@ -176,6 +304,45 @@ export function GamePage() {
   );
   const selectedModeDefinition = useMemo(() => getGameModeDefinition(selectedMode), [selectedMode]);
   const SelectedModeIcon = modeIconMap[selectedMode];
+  const localeKey = (i18n.resolvedLanguage ?? i18n.language ?? "en").slice(0, 2) as keyof typeof gameModesLocaleFallbacks;
+
+  const modeText = useCallback((key: string, modeId?: GameModeId) => {
+    const translated = t(key);
+    if (!hasBrokenLocaleText(translated)) {
+      return translated;
+    }
+
+    const fallback = gameModesLocaleFallbacks[localeKey];
+    if (!fallback) {
+      return translated;
+    }
+
+    if (key === "gameModes.title") return fallback.title;
+    if (key === "gameModes.subtitle") return fallback.subtitle;
+    if (key === "gameModes.selected") return fallback.selected;
+    if (key === "gameModes.active") return fallback.active;
+    if (key === "gameModes.timeLeft") return fallback.timeLeft;
+    if (key === "gameModes.statusLabel") return fallback.statusLabel;
+    if (key === "gameModes.focusTitle") return fallback.focusTitle;
+    if (key === "gameModes.timeAttackTag") return fallback.timeAttackTag;
+    if (key.startsWith("gameModes.tags.")) {
+      const tagId = key.replace("gameModes.tags.", "") as keyof typeof fallback.tags;
+      return fallback.tags[tagId] ?? translated;
+    }
+    if (key.startsWith("gameModes.status.")) {
+      const statusId = key.replace("gameModes.status.", "") as keyof typeof fallback.status;
+      return fallback.status[statusId] ?? translated;
+    }
+    if (key.startsWith("gameModes.modes.") && modeId) {
+      const field = key.endsWith(".name") ? "name" : key.endsWith(".description") ? "description" : key.endsWith(".focus") ? "focus" : null;
+      if (!field) {
+        return translated;
+      }
+      return fallback.modes[modeId][field] ?? translated;
+    }
+
+    return translated;
+  }, [i18n.language, i18n.resolvedLanguage, localeKey, t]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -401,11 +568,11 @@ export function GamePage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="grid grid-cols-2 gap-2 text-sm font-bold md:grid-cols-5">
             <div className="rounded-md border border-white/10 bg-white/5 px-3 py-2">
-              {t("gameModes.active")}: {t(`gameModes.modes.${selectedMode}.name`)}
+              {modeText("gameModes.active")}: {modeText(`gameModes.modes.${selectedMode}.name`, selectedMode)}
             </div>
             <div className="rounded-md border border-white/10 bg-white/5 px-3 py-2">
-              {stats.timeLeftMs !== undefined ? t("gameModes.timeLeft") : t("gameModes.statusLabel")}:{" "}
-              {stats.timeLeftMs !== undefined ? formatCountdown(stats.timeLeftMs) : t(stats.modeStatusKey ?? selectedModeDefinition.statusKey)}
+              {stats.timeLeftMs !== undefined ? modeText("gameModes.timeLeft") : modeText("gameModes.statusLabel")}:{" "}
+              {stats.timeLeftMs !== undefined ? formatCountdown(stats.timeLeftMs) : modeText(stats.modeStatusKey ?? selectedModeDefinition.statusKey, selectedMode)}
             </div>
             <div className="rounded-md border border-white/10 bg-white/5 px-3 py-2">
               {t("game.score")}: {stats.score}
@@ -451,8 +618,8 @@ export function GamePage() {
               <div className="flex items-center gap-3 rounded-md border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200">
                 <SelectedModeIcon size={18} className="text-cyanGlow" />
                 <div>
-                  <div className="font-bold text-white">{t(`gameModes.modes.${selectedMode}.name`)}</div>
-                  <div>{t(`gameModes.modes.${selectedMode}.description`)}</div>
+                  <div className="font-bold text-white">{modeText(`gameModes.modes.${selectedMode}.name`, selectedMode)}</div>
+                  <div>{modeText(`gameModes.modes.${selectedMode}.description`, selectedMode)}</div>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -524,8 +691,8 @@ export function GamePage() {
         <div className="mt-8">
           <div className="mb-3 flex items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-black text-white">{t("gameModes.title")}</h2>
-              <p className="text-sm leading-6 text-slate-300">{t("gameModes.subtitle")}</p>
+              <h2 className="text-lg font-black text-white">{modeText("gameModes.title")}</h2>
+              <p className="text-sm leading-6 text-slate-300">{modeText("gameModes.subtitle")}</p>
             </div>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -551,14 +718,14 @@ export function GamePage() {
                     </div>
                     {selected ? (
                       <span className="rounded-full border border-white/10 bg-white/10 px-2 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-white">
-                        {t("gameModes.selected")}
+                        {modeText("gameModes.selected")}
                       </span>
                     ) : null}
                   </div>
-                  <div className="mt-4 text-lg font-black text-white">{t(`gameModes.modes.${mode.id}.name`)}</div>
-                  <div className="mt-2 text-sm leading-6 text-slate-300">{t(`gameModes.modes.${mode.id}.description`)}</div>
+                  <div className="mt-4 text-lg font-black text-white">{modeText(`gameModes.modes.${mode.id}.name`, mode.id)}</div>
+                  <div className="mt-2 text-sm leading-6 text-slate-300">{modeText(`gameModes.modes.${mode.id}.description`, mode.id)}</div>
                   <div className="mt-3 text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
-                    {t(mode.timeLimitMs ? "gameModes.timeAttackTag" : `gameModes.tags.${mode.id}`)}
+                    {modeText(mode.timeLimitMs ? "gameModes.timeAttackTag" : `gameModes.tags.${mode.id}`, mode.id)}
                   </div>
                 </button>
               );
@@ -577,12 +744,12 @@ export function GamePage() {
             {t("menu.playNow")}
           </Button>
           <Button type="button" variant="secondary" disabled icon={<SelectedModeIcon size={18} />}>
-            {t(`gameModes.modes.${selectedMode}.name`)}
+            {modeText(`gameModes.modes.${selectedMode}.name`, selectedMode)}
           </Button>
         </div>
         <div className="mt-4 rounded-lg border border-white/10 bg-white/5 p-4 text-sm leading-6 text-slate-300">
-          <div className="font-bold text-white">{t("gameModes.focusTitle")}</div>
-          <div className="mt-1">{t(`gameModes.modes.${selectedMode}.focus`)}</div>
+          <div className="font-bold text-white">{modeText("gameModes.focusTitle")}</div>
+          <div className="mt-1">{modeText(`gameModes.modes.${selectedMode}.focus`, selectedMode)}</div>
           <div className="mt-3 text-xs uppercase tracking-[0.18em] text-slate-400">{t("game.tapToControl")}</div>
         </div>
         {error ? <div className="mt-5 rounded-md border border-magentaGlow/40 bg-magentaGlow/10 p-3 text-sm text-pink-200">{error}</div> : null}
