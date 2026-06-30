@@ -5,6 +5,7 @@
 - Server-owned game sessions with periodic monotonic checkpoints for elapsed time, distance, coins and input transitions.
 - Server-computed score formula, plausibility limits, review states and leaderboard filtering.
 - Registration, password recovery, support and global API rate limits.
+- Proxy-aware backend rate limiting with configurable `TRUST_PROXY_HOPS` for direct Render or Cloudflare-fronted production traffic.
 - Optional Cloudflare Turnstile verification that fails closed when enabled in production.
 - Password hashing, one-time admin temporary passwords and mandatory password changes.
 - Consent-gated analytics and Google Ad Manager loading.
@@ -22,6 +23,7 @@
 5. Run professional legal review and native-speaker review of policies and the canonical English rules before paid marketing.
 6. Add provider server-to-server verification for paid purchases and rewarded ad callbacks.
 7. Migrate database backups into encrypted private object storage with retention and restore drills.
+8. The backend still uses in-memory limiter storage. Multi-instance production must add Cloudflare edge rate limiting or a Redis-backed distributed limiter before traffic scaling.
 
 ## Backup
 

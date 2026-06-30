@@ -321,6 +321,57 @@ test("payment placeholder validates server-side pricing and idempotency payloads
     });
     assert.equal(conflict.status, 409);
     assert.equal(conflict.body.code, "IDEMPOTENCY_KEY_CONFLICT");
+
+    const weakKey = await rawRequest<{ code?: string }>(base, "/wallet/purchase-placeholder", {
+      method: "POST",
+      headers: user.headers,
+      body: JSON.stringify({
+        sku: "coins_1000",
+        supportAmountCents: 0,
+        currency: "UAH",
+        provider: "liqpay",
+        idempotencyKey: "short-key"
+      })
+    });
+    assert.equal(weakKey.status, 400);
+    assert.equal(weakKey.body.code, "VALIDATION_ERROR");
+  } finally {
+    if (userId) await prisma.user.deleteMany({ where: { id: userId } });
+    await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+  }
+});
+
+test("ad reward completion rejects oversized provider payloads without crashing", async () => {
+  const server = createApp().listen(0);
+  await new Promise<void>((resolve) => server.once("listening", resolve));
+  const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}/api`;
+  let userId = "";
+
+  try {
+    const user = await registerTestAccount(base, "Payload Pilot");
+    userId = user.userId;
+    const session = await request<{ adSessionId: string }>(base, "/wallet/ad/reward/start", {
+      method: "POST",
+      headers: user.headers,
+      body: JSON.stringify({ placement: "coins", provider: "mock" })
+    });
+
+    const providerPayload = Object.fromEntries(
+      Array.from({ length: 17 }, (_, index) => [`field_${index}`, `value_${index}`])
+    );
+    const response = await rawRequest<{ code?: string }>(base, "/wallet/ad/reward/complete", {
+      method: "POST",
+      headers: user.headers,
+      body: JSON.stringify({
+        adSessionId: session.adSessionId,
+        provider: "mock",
+        providerEventId: "mock-event",
+        providerPayload
+      })
+    });
+
+    assert.equal(response.status, 400);
+    assert.equal(response.body.code, "VALIDATION_ERROR");
   } finally {
     if (userId) await prisma.user.deleteMany({ where: { id: userId } });
     await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));

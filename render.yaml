@@ -24,6 +24,8 @@ services:
         value: 7d
       - key: CORS_ORIGIN
         sync: false
+      - key: TRUST_PROXY_HOPS
+        value: "1"
       - key: AD_PROVIDER
         value: google_ad_manager
       - key: AD_SESSION_TTL_SECONDS

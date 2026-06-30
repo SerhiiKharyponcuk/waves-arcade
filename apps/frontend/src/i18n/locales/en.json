@@ -945,6 +945,11 @@
       "riskDesk": "Risk desk",
       "reviewRiskAccounts": "Review risky accounts",
       "riskDeskBody": "Focus on suspicious or recently restricted players without scanning the whole list.",
+      "moderationTitle": "Moderation radar",
+      "moderationDescription": "Jump straight into score reviews, appeals, suspicious players and verification backlog.",
+      "financeTitle": "Finance pulse",
+      "financeDescription": "Keep an eye on pending purchases, failed rewards and provider mix before they become support issues.",
+      "openFinance": "Open finance workspace",
       "priorityTitle": "Priority queue",
       "priorityDescription": "Open the most urgent operational work without scanning every section.",
       "priority": {
@@ -1018,6 +1023,18 @@
     },
     "finance": {
       "description": "Review wallet purchases, rewards, providers, status and idempotency keys.",
+      "search": "Search finance log",
+      "searchPlaceholder": "User, email, provider, item or idempotency key",
+      "statusFilter": "Status",
+      "providerFilter": "Provider",
+      "allProviders": "All providers",
+      "results": "{{count}} finance event(s) shown",
+      "attentionTitle": "Needs attention",
+      "attentionDescription": "Pending or failed operations that may turn into support work.",
+      "providerTitle": "Provider mix",
+      "providerDescription": "See which payment or reward sources currently drive the ledger.",
+      "noAttention": "No finance issues are waiting right now.",
+      "noProviders": "No provider activity has been recorded yet.",
       "summary": {
         "completed": "Completed",
         "pending": "Pending",
@@ -1070,6 +1087,10 @@
     "finance": {
       "title": "Financial journal",
       "empty": "No financial transactions found.",
+      "attentionLabel": "Needs attention",
+      "protectedLabel": "Protected by idempotency",
+      "topProvider": "Top provider",
+      "volume": "{{count}} ledger event(s)",
       "user": "User",
       "item": "Item",
       "status": "Status",
@@ -1078,6 +1099,11 @@
       "date": "Date",
       "idempotencyKey": "Idempotency key",
       "noAmount": "No wallet change",
+      "statusLabels": {
+        "completed": "Completed",
+        "pending": "Pending",
+        "failed": "Failed"
+      },
       "gems": "gems",
       "tickets": "tickets",
       "lives": "lives"

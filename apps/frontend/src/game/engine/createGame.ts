@@ -1,7 +1,33 @@
-import Phaser from "phaser";
-import { WavesScene, type WavesSceneOptions } from "./WavesScene";
+import type Phaser from "phaser";
+import type { WavesSceneOptions } from "./WavesScene";
 
-export function createWavesGame(parent: HTMLElement, options: WavesSceneOptions) {
+async function importGameRuntime() {
+  const [phaserModule, sceneModule] = await Promise.all([import("phaser"), import("./WavesScene")]);
+  return {
+    Phaser: phaserModule.default,
+    WavesScene: sceneModule.WavesScene
+  };
+}
+
+type GameRuntime = Awaited<ReturnType<typeof importGameRuntime>>;
+
+let runtimePromise: Promise<GameRuntime> | null = null;
+
+async function loadGameRuntime() {
+  if (!runtimePromise) {
+    runtimePromise = importGameRuntime();
+  }
+
+  return runtimePromise;
+}
+
+export function warmGameRuntime() {
+  return loadGameRuntime().then(() => undefined);
+}
+
+export async function createWavesGame(parent: HTMLElement, options: WavesSceneOptions): Promise<Phaser.Game> {
+  const { Phaser, WavesScene } = await loadGameRuntime();
+
   return new Phaser.Game({
     type: Phaser.AUTO,
     parent,

@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type Phaser from "phaser";
+import { useTranslation } from "react-i18next";
 import type { GameSkinBundle } from "../../game/skins/skinResolver";
 import { createWavesGame } from "../../game/engine/createGame";
 import type { GameStats } from "../../game/engine/WavesScene";
@@ -8,6 +9,7 @@ import type { GameThemeDto } from "@waves/shared";
 import type { GameAudioSettings } from "../../game/audio/GameAudioManager";
 import type { GameSettings } from "../../types/settings";
 import type { GameModeId } from "../../game/engine/gameModes";
+import { AppLoader } from "../ui/AppLoader";
 
 interface GameCanvasProps {
   modeId: GameModeId;
@@ -21,15 +23,20 @@ interface GameCanvasProps {
 }
 
 export function GameCanvas({ modeId, skins, theme, audio, settings, paused, onStats, onGameOver }: GameCanvasProps) {
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
+  const [booting, setBooting] = useState(true);
 
   useEffect(() => {
     if (!containerRef.current) {
       return;
     }
 
-    gameRef.current = createWavesGame(containerRef.current, {
+    let cancelled = false;
+    setBooting(true);
+
+    void createWavesGame(containerRef.current, {
       modeId,
       skins,
       theme,
@@ -44,9 +51,19 @@ export function GameCanvas({ modeId, skins, theme, audio, settings, paused, onSt
       },
       onStats,
       onGameOver
+    }).then((game) => {
+      if (cancelled) {
+        game.destroy(true);
+        return;
+      }
+      gameRef.current = game;
+      setBooting(false);
+    }).catch(() => {
+      setBooting(false);
     });
 
     return () => {
+      cancelled = true;
       window.dispatchEvent(new CustomEvent("waves:virtual-control", { detail: { pressed: false } }));
       gameRef.current?.destroy(true);
       gameRef.current = null;
@@ -60,6 +77,11 @@ export function GameCanvas({ modeId, skins, theme, audio, settings, paused, onSt
   return (
     <div className="game-canvas relative h-[calc(100dvh-12rem)] min-h-[24rem] overflow-hidden rounded-lg border border-white/10 bg-ink shadow-neon sm:h-[66vh] sm:min-h-[28rem]">
       <div ref={containerRef} className="h-full w-full" />
+      {booting ? (
+        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-ink/70 backdrop-blur-sm">
+          <AppLoader label={t("loader.runtimeTitle")} subtitle={t("loader.runtimeSubtitle")} compact />
+        </div>
+      ) : null}
       <div className="pointer-events-none absolute bottom-4 left-4">
         <VirtualJoystick />
       </div>

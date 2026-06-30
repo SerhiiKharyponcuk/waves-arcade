@@ -23,6 +23,7 @@ import { trackEvent } from "../services/analytics";
 import type { GameAudioSettings } from "../game/audio/GameAudioManager";
 import { defaultGameSettings, type GameSettings } from "../types/settings";
 import { gameModeDefinitions, getGameModeDefinition, type GameModeId } from "../game/engine/gameModes";
+import { warmGameRuntime } from "../game/engine/createGame";
 
 type RunState = "idle" | "running" | "paused" | "over";
 
@@ -32,7 +33,10 @@ let gameRuntimePreload: Promise<unknown> | null = null;
 
 function preloadGameRuntime() {
   if (!gameRuntimePreload) {
-    gameRuntimePreload = import("../components/game/GameCanvas");
+    gameRuntimePreload = Promise.all([
+      import("../components/game/GameCanvas"),
+      warmGameRuntime()
+    ]);
   }
   return gameRuntimePreload;
 }

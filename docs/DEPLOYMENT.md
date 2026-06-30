@@ -54,6 +54,7 @@ Important Render environment variables:
 
 ```env
 NODE_ENV=production
+TRUST_PROXY_HOPS=1
 DATABASE_URL=your-neon-postgres-url
 JWT_ACCESS_SECRET=long-random-secret
 JWT_REFRESH_SECRET=another-long-random-secret
@@ -141,6 +142,31 @@ VITE_AD_PROVIDER=mock
 ```
 
 Switch it back to `google_ad_manager` before real monetized traffic.
+
+## 4.1 Multi-instance rate limiting
+
+The backend already applies local Express rate limits, but those counters live in memory and protect only one running API instance.
+
+Before scaling Render horizontally or putting real paid traffic on the game:
+
+1. Put Cloudflare in front of the API and frontend.
+2. Keep backend `TRUST_PROXY_HOPS=1` when traffic goes straight to Render.
+3. Change backend `TRUST_PROXY_HOPS=2` when the path is `Client -> Cloudflare -> Render`.
+4. Add Cloudflare edge rate-limit rules for:
+   - `/api/auth/*`
+   - `/api/wallet/*`
+   - `/api/payments/*`
+   - `/api/game/session/*`
+   - `/api/admin/*`
+5. Use stricter challenge or block rules for login, register, password recovery, payment, ad reward completion, and admin routes.
+
+Recommended edge actions:
+
+- Managed Challenge for repeated auth abuse
+- Challenge or Block for payment and admin bursts
+- Temporary block for repeated `/api/game/session/end` spam
+
+If you later add a Redis-backed distributed limiter, keep the backend limits enabled as an inner safety layer.
 
 ## 5. Domain
 

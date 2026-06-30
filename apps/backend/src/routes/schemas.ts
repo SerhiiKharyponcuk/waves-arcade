@@ -9,6 +9,31 @@ export const idempotencyKeySchema = z
   .max(160, "Idempotency key is too long.")
   .regex(/^[A-Za-z0-9:_-]+$/, "Idempotency key contains unsupported characters.");
 
+function boundedRecordSchema<T extends z.ZodTypeAny>(valueSchema: T, maxKeys: number, message: string) {
+  return z.record(valueSchema).superRefine((value, context) => {
+    if (Object.keys(value).length > maxKeys) {
+      context.addIssue({ code: z.ZodIssueCode.custom, message });
+    }
+  });
+}
+
+const limitedCustomizationSchema = boundedRecordSchema(z.string().max(80), 32, "Customization payload is too large.");
+const limitedGameSettingsSchema = boundedRecordSchema(
+  z.union([z.string().max(160), z.number(), z.boolean(), z.null()]),
+  40,
+  "Game settings payload is too large."
+);
+const limitedGuestRecordSchema = boundedRecordSchema(
+  z.union([z.string().max(160), z.number(), z.boolean(), z.null()]),
+  24,
+  "Guest payload is too large."
+);
+const limitedProviderPayloadSchema = boundedRecordSchema(
+  z.union([z.string().max(160), z.number(), z.boolean(), z.null()]),
+  16,
+  "Provider payload is too large."
+);
+
 const botGuardSchema = {
   website: z.string().max(0, "Bot check failed.").optional().default(""),
   formStartedAt: z.number().int().positive().optional()
@@ -45,8 +70,8 @@ export const updateProfileSchema = z.object({
   locale: localeSchema.catch("en").optional(),
   avatarUrl: z.string().url().nullable().optional(),
   selectedThemeId: z.string().trim().min(2).max(60).optional(),
-  customization: z.record(z.string().max(80)).optional(),
-  gameSettings: z.record(z.union([z.string(), z.number(), z.boolean(), z.null()])).optional(),
+  customization: limitedCustomizationSchema.optional(),
+  gameSettings: limitedGameSettingsSchema.optional(),
   showUsernameInLeaderboard: z.boolean().optional(),
   hideProfile: z.boolean().optional()
 });
@@ -107,7 +132,7 @@ export const adRewardCompleteSchema = z.object({
   adSessionId: z.string().uuid(),
   provider: z.enum(["mock", "crazygames", "admob", "unity", "google_ad_manager"]).optional(),
   providerEventId: z.string().trim().max(160).optional(),
-  providerPayload: z.record(z.unknown()).optional()
+  providerPayload: limitedProviderPayloadSchema.optional()
 });
 
 export const adminBanSchema = z.object({
@@ -181,8 +206,8 @@ export const guestTransferSchema = z.object({
   bestGuestScore: z.number().int().min(0).max(5_000_000),
   selectedBasicTheme: z.string().trim().min(2).max(60),
   selectedBasicSkin: z.string().trim().max(60).optional(),
-  selectedBasicControls: z.record(z.unknown()),
-  temporarySettings: z.record(z.unknown()),
+  selectedBasicControls: limitedGuestRecordSchema,
+  temporarySettings: limitedGuestRecordSchema,
   temporaryCoins: z.number().int().min(0).max(100_000).optional()
 });
 

@@ -178,6 +178,9 @@ export function AdminPage() {
   const [userStatusFilter, setUserStatusFilter] = useState<"ALL" | "ACTIVE" | "BANNED">("ALL");
   const [userTrustFilter, setUserTrustFilter] = useState<"ALL" | "NORMAL" | "TRUSTED" | "SUSPICIOUS">("ALL");
   const [scoreStatusFilter, setScoreStatusFilter] = useState<"review" | "all" | "valid" | "suspicious" | "pending_review" | "rejected" | "hidden">("review");
+  const [financeQuery, setFinanceQuery] = useState("");
+  const [financeStatusFilter, setFinanceStatusFilter] = useState<"ALL" | "completed" | "pending" | "failed">("ALL");
+  const [financeProviderFilter, setFinanceProviderFilter] = useState("ALL");
   const [supportQuery, setSupportQuery] = useState("");
   const [activityQuery, setActivityQuery] = useState("");
   const [sectionBusy, setSectionBusy] = useState<Partial<Record<AdminSection, boolean>>>({});
@@ -232,6 +235,54 @@ export function AdminPage() {
         .some((value) => String(value).toLocaleLowerCase().includes(normalized))
     );
   }, [activityQuery, auditLogs]);
+
+  const financeProviderOptions = useMemo(
+    () => Array.from(new Set(financialTransactions.map((transaction) => transaction.provider).filter(Boolean))).sort((left, right) => left.localeCompare(right)),
+    [financialTransactions]
+  );
+
+  const visibleFinancialTransactions = useMemo(() => {
+    const normalized = financeQuery.trim().toLocaleLowerCase();
+    return financialTransactions.filter((transaction) => {
+      const normalizedStatus = transaction.status === "completed" ? "completed" : transaction.status === "pending" ? "pending" : "failed";
+      const matchesStatus = financeStatusFilter === "ALL" || normalizedStatus === financeStatusFilter;
+      const matchesProvider = financeProviderFilter === "ALL" || transaction.provider === financeProviderFilter;
+      const matchesQuery = !normalized || [
+        transaction.displayName,
+        transaction.userEmail,
+        transaction.productLabel,
+        transaction.type,
+        transaction.provider,
+        transaction.idempotencyKey
+      ]
+        .filter(Boolean)
+        .some((value) => String(value).toLocaleLowerCase().includes(normalized));
+      return matchesStatus && matchesProvider && matchesQuery;
+    });
+  }, [financeProviderFilter, financeQuery, financeStatusFilter, financialTransactions]);
+
+  const financeProviderSummaries = useMemo(
+    () =>
+      financeProviderOptions
+        .map((provider) => {
+          const transactions = financialTransactions.filter((transaction) => transaction.provider === provider);
+          return {
+            provider,
+            total: transactions.length,
+            completed: transactions.filter((transaction) => transaction.status === "completed").length,
+            pending: transactions.filter((transaction) => transaction.status === "pending").length,
+            failed: transactions.filter((transaction) => !["completed", "pending"].includes(transaction.status)).length
+          };
+        })
+        .sort((left, right) => right.total - left.total)
+        .slice(0, 4),
+    [financeProviderOptions, financialTransactions]
+  );
+
+  const financeAttentionTransactions = useMemo(
+    () => financialTransactions.filter((transaction) => transaction.status !== "completed").slice(0, 4),
+    [financialTransactions]
+  );
 
   const pendingScoreCount = analytics?.pendingScores ?? scores.filter((score) => score.status === "suspicious" || score.status === "pending_review").length;
   const openTicketCount = analytics?.openSupportTickets ?? supportTickets.filter((ticket) => ticket.status === "OPEN").length;
@@ -291,6 +342,50 @@ export function AdminPage() {
     }
   ];
 
+  const moderationRadar = [
+    {
+      id: "review",
+      value: pendingScoreCount,
+      label: t("adminWorkspace.overview.scoresToReview"),
+      description: t("adminWorkspace.overview.antiCheatQueue"),
+      tone: pendingScoreCount ? "danger" : "neutral",
+      onClick: () => {
+        setScoreStatusFilter("review");
+        setActiveSection("scores");
+      }
+    },
+    {
+      id: "appeals",
+      value: openTicketCount,
+      label: t("adminWorkspace.support.summary.open"),
+      description: t("adminWorkspace.overview.requiresAttention"),
+      tone: openTicketCount ? "gold" : "neutral",
+      onClick: () => {
+        setSupportStatus("OPEN");
+        setActiveSection("support");
+      }
+    },
+    {
+      id: "suspicious",
+      value: suspiciousUserCount,
+      label: t("adminWorkspace.overview.suspiciousUsers"),
+      description: t("adminWorkspace.overview.flaggedAccounts"),
+      tone: suspiciousUserCount ? "danger" : "neutral",
+      onClick: () => {
+        setUserTrustFilter("SUSPICIOUS");
+        setActiveSection("users");
+      }
+    },
+    {
+      id: "unverified",
+      value: unverifiedUserCount,
+      label: t("adminWorkspace.overview.unverifiedUsers"),
+      description: t("adminWorkspace.overview.emailQueue"),
+      tone: unverifiedUserCount ? "gold" : "neutral",
+      onClick: () => setActiveSection("users")
+    }
+  ];
+
   function markSectionLoaded(section: AdminSection) {
     setSectionLoaded((current) => ({ ...current, [section]: true }));
     setSectionUpdatedAt((current) => ({ ...current, [section]: new Date().toISOString() }));
@@ -323,7 +418,14 @@ export function AdminPage() {
 
   async function loadOverview() {
     await runSectionLoad("overview", async () => {
-      setAnalytics(await adminApi.analytics());
+      const [analyticsData, financeRows] = await Promise.all([
+        adminApi.analytics(),
+        financialTransactions.length ? Promise.resolve(financialTransactions) : adminApi.financialTransactions()
+      ]);
+      setAnalytics(analyticsData);
+      if (!financialTransactions.length) {
+        setFinancialTransactions(financeRows);
+      }
     });
   }
 
@@ -614,6 +716,18 @@ export function AdminPage() {
     return parts.length ? parts.join(" | ") : t("adminExtra.finance.noAmount");
   }
 
+  function formatFinancialStatus(status: string) {
+    if (status === "completed") return t("adminExtra.finance.statusLabels.completed");
+    if (status === "pending") return t("adminExtra.finance.statusLabels.pending");
+    return t("adminExtra.finance.statusLabels.failed");
+  }
+
+  function financialStatusTone(status: string) {
+    if (status === "completed") return "bg-cyanGlow/15 text-cyanGlow";
+    if (status === "pending") return "bg-goldGlow/15 text-goldGlow";
+    return "bg-magentaGlow/15 text-pink-200";
+  }
+
   function renderUserActions(user: AdminUserDto) {
     return (
       <div className="flex flex-wrap items-center gap-2">
@@ -735,6 +849,68 @@ export function AdminPage() {
                     <div className="mt-2 text-sm leading-6 text-slate-300">{item.body}</div>
                   </button>
                 ))}
+              </div>
+            </div>
+            <div className="mt-5 grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+              <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">{t("adminWorkspace.overview.moderationTitle")}</div>
+                    <p className="mt-1 text-sm text-slate-400">{t("adminWorkspace.overview.moderationDescription")}</p>
+                  </div>
+                  <ShieldAlert size={18} className="text-magentaGlow" />
+                </div>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {moderationRadar.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={item.onClick}
+                      className={`rounded-lg border p-4 text-left transition hover:-translate-y-0.5 ${
+                        item.tone === "danger"
+                          ? "border-magentaGlow/30 bg-magentaGlow/10"
+                          : item.tone === "gold"
+                            ? "border-goldGlow/25 bg-goldGlow/10"
+                            : "border-white/10 bg-white/5"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">{item.label}</span>
+                        <span className="text-xl font-black text-white">{item.value}</span>
+                      </div>
+                      <div className="mt-2 text-sm leading-6 text-slate-300">{item.description}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">{t("adminWorkspace.overview.financeTitle")}</div>
+                    <p className="mt-1 text-sm text-slate-400">{t("adminWorkspace.overview.financeDescription")}</p>
+                  </div>
+                  <BadgeDollarSign size={18} className="text-goldGlow" />
+                </div>
+                <div className="mt-4 grid gap-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-md border border-white/10 bg-white/5 p-3">
+                      <div className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">{t("adminExtra.finance.attentionLabel")}</div>
+                      <div className="mt-1 text-xl font-black text-white">{pendingFinancialCount + failedFinancialCount}</div>
+                    </div>
+                    <div className="rounded-md border border-white/10 bg-white/5 p-3">
+                      <div className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">{t("adminExtra.finance.protectedLabel")}</div>
+                      <div className="mt-1 text-xl font-black text-white">{idempotentCount}</div>
+                    </div>
+                  </div>
+                  <div className="rounded-md border border-white/10 bg-white/5 p-3 text-sm text-slate-300">
+                    <div className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">{t("adminExtra.finance.topProvider")}</div>
+                    <div className="mt-1 text-base font-black text-white">{financeProviderSummaries[0]?.provider ?? "-"}</div>
+                    <div className="mt-1 text-xs text-slate-500">{t("adminExtra.finance.volume", { count: financeProviderSummaries[0]?.total ?? 0 })}</div>
+                  </div>
+                  <Button type="button" variant="secondary" onClick={() => setActiveSection("finance")} icon={<BadgeDollarSign size={16} />}>
+                    {t("adminWorkspace.overview.openFinance")}
+                  </Button>
+                </div>
               </div>
             </div>
             <div className="mt-5 grid gap-3 lg:grid-cols-3">
@@ -971,12 +1147,96 @@ export function AdminPage() {
           icon={BadgeDollarSign}
           action={<Button type="button" variant="ghost" disabled={sectionBusy.finance} icon={<RefreshCw size={16} className={sectionBusy.finance ? "animate-spin" : ""} />} onClick={() => void loadFinance()}>{t("admin.refresh")}</Button>}
         />
+        <form
+          className="mt-4 grid gap-3 lg:grid-cols-[minmax(14rem,1fr)_12rem_12rem]"
+          onSubmit={(event) => event.preventDefault()}
+        >
+          <Input
+            label={t("adminWorkspace.finance.search")}
+            value={financeQuery}
+            onChange={(event) => setFinanceQuery(event.target.value)}
+            placeholder={t("adminWorkspace.finance.searchPlaceholder")}
+          />
+          <label className="grid gap-2 text-sm text-slate-300">
+            <span>{t("adminWorkspace.finance.statusFilter")}</span>
+            <select value={financeStatusFilter} onChange={(event) => setFinanceStatusFilter(event.target.value as typeof financeStatusFilter)} className="min-h-11 rounded-md border border-slate-700 bg-ink/70 px-3 text-white">
+              <option value="ALL">{t("adminExtra.ticketStatuses.ALL")}</option>
+              <option value="completed">{t("adminExtra.finance.statusLabels.completed")}</option>
+              <option value="pending">{t("adminExtra.finance.statusLabels.pending")}</option>
+              <option value="failed">{t("adminExtra.finance.statusLabels.failed")}</option>
+            </select>
+          </label>
+          <label className="grid gap-2 text-sm text-slate-300">
+            <span>{t("adminWorkspace.finance.providerFilter")}</span>
+            <select value={financeProviderFilter} onChange={(event) => setFinanceProviderFilter(event.target.value)} className="min-h-11 rounded-md border border-slate-700 bg-ink/70 px-3 text-white">
+              <option value="ALL">{t("adminWorkspace.finance.allProviders")}</option>
+              {financeProviderOptions.map((provider) => (
+                <option key={provider} value={provider}>
+                  {provider}
+                </option>
+              ))}
+            </select>
+          </label>
+        </form>
+        <div className="mt-3 text-xs text-slate-400">{t("adminWorkspace.finance.results", { count: visibleFinancialTransactions.length })}</div>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
           <AdminMetricCard label={t("adminWorkspace.finance.summary.completed")} value={completedFinancialCount} icon={BadgeDollarSign} tone="cyan" />
           <AdminMetricCard label={t("adminWorkspace.finance.summary.pending")} value={pendingFinancialCount} icon={CircleAlert} tone={pendingFinancialCount ? "gold" : "neutral"} />
           <AdminMetricCard label={t("adminWorkspace.finance.summary.failed")} value={failedFinancialCount} icon={Ban} tone={failedFinancialCount ? "danger" : "neutral"} />
           <AdminMetricCard label={t("adminWorkspace.finance.summary.providers")} value={providerCount} icon={Activity} tone="neutral" />
           <AdminMetricCard label={t("adminWorkspace.finance.summary.idempotent")} value={idempotentCount} icon={ClipboardCheck} tone="gold" />
+        </div>
+        <div className="mt-4 grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+          <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">{t("adminWorkspace.finance.attentionTitle")}</div>
+                <p className="mt-1 text-sm text-slate-400">{t("adminWorkspace.finance.attentionDescription")}</p>
+              </div>
+              <CircleAlert size={17} className="text-goldGlow" />
+            </div>
+            <div className="mt-4 grid gap-3">
+              {financeAttentionTransactions.map((transaction) => (
+                <div key={transaction.id} className="rounded-lg border border-white/10 bg-white/5 p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="truncate font-black text-white">{transaction.productLabel}</div>
+                      <div className="mt-1 text-xs text-slate-500">{transaction.displayName}</div>
+                    </div>
+                    <span className={`shrink-0 rounded-md px-2 py-1 text-[11px] font-black ${financialStatusTone(transaction.status)}`}>
+                      {formatFinancialStatus(transaction.status)}
+                    </span>
+                  </div>
+                  <div className="mt-3 text-sm font-bold text-goldGlow">{formatFinancialAmount(transaction)}</div>
+                  <div className="mt-1 text-xs text-slate-500">{transaction.provider} | {new Date(transaction.createdAt).toLocaleString()}</div>
+                </div>
+              ))}
+              {!financeAttentionTransactions.length ? <AdminEmptyState icon={BadgeDollarSign} title={t("adminWorkspace.finance.noAttention")} /> : null}
+            </div>
+          </div>
+          <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">{t("adminWorkspace.finance.providerTitle")}</div>
+                <p className="mt-1 text-sm text-slate-400">{t("adminWorkspace.finance.providerDescription")}</p>
+              </div>
+              <Activity size={17} className="text-cyanGlow" />
+            </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              {financeProviderSummaries.map((provider) => (
+                <div key={provider.provider} className="rounded-lg border border-white/10 bg-white/5 p-4">
+                  <div className="truncate text-base font-black text-white">{provider.provider}</div>
+                  <div className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-500">{t("adminExtra.finance.volume", { count: provider.total })}</div>
+                  <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
+                    <div className="rounded-md bg-cyanGlow/10 px-2 py-2 text-cyanGlow">{provider.completed}</div>
+                    <div className="rounded-md bg-goldGlow/10 px-2 py-2 text-goldGlow">{provider.pending}</div>
+                    <div className="rounded-md bg-magentaGlow/10 px-2 py-2 text-pink-200">{provider.failed}</div>
+                  </div>
+                </div>
+              ))}
+              {!financeProviderSummaries.length ? <AdminEmptyState icon={Activity} title={t("adminWorkspace.finance.noProviders")} /> : null}
+            </div>
+          </div>
         </div>
         <div className="mt-4 overflow-x-auto md:block hidden">
           <table className="w-full min-w-[62rem] text-left text-sm">
@@ -991,7 +1251,7 @@ export function AdminPage() {
               </tr>
             </thead>
             <tbody>
-              {financialTransactions.map((transaction) => (
+              {visibleFinancialTransactions.map((transaction) => (
                 <tr key={transaction.id} className="border-b border-white/5 align-top transition hover:bg-white/[0.03]">
                   <td className="p-3">
                     <div className="font-black text-white">{transaction.displayName}</div>
@@ -1002,8 +1262,8 @@ export function AdminPage() {
                     <div className="text-xs text-slate-500">{transaction.type}</div>
                   </td>
                   <td className="p-3">
-                    <span className={`rounded-md px-2 py-1 text-xs font-black ${transaction.status === "completed" ? "bg-cyanGlow/15 text-cyanGlow" : transaction.status === "pending" ? "bg-goldGlow/15 text-goldGlow" : "bg-magentaGlow/15 text-pink-200"}`}>
-                      {transaction.status}
+                    <span className={`rounded-md px-2 py-1 text-xs font-black ${financialStatusTone(transaction.status)}`}>
+                      {formatFinancialStatus(transaction.status)}
                     </span>
                   </td>
                   <td className="p-3 text-slate-300">{transaction.provider}</td>
@@ -1011,10 +1271,10 @@ export function AdminPage() {
                   <td className="p-3">
                     <div className="text-slate-300">{new Date(transaction.createdAt).toLocaleString()}</div>
                     <div className="mt-1 break-all text-[11px] text-slate-600">{t("adminExtra.finance.idempotencyKey")}: {transaction.idempotencyKey ?? "-"}</div>
-                  </td>
+                      </td>
                 </tr>
               ))}
-              {!financialTransactions.length ? (
+              {!visibleFinancialTransactions.length ? (
                 <tr>
                   <td className="p-4" colSpan={6}>
                     <AdminEmptyState icon={BadgeDollarSign} title={t("adminExtra.finance.empty")} />
@@ -1025,14 +1285,14 @@ export function AdminPage() {
           </table>
         </div>
         <div className="mt-4 grid gap-3 md:hidden">
-          {financialTransactions.map((transaction) => (
+          {visibleFinancialTransactions.map((transaction) => (
             <article key={transaction.id} className="rounded-lg border border-white/10 bg-white/5 p-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="font-black text-white">{transaction.productLabel}</div>
                   <div className="mt-1 text-xs text-slate-500">{transaction.provider}</div>
                 </div>
-                <span className={`rounded-md px-2 py-1 text-[11px] font-black ${transaction.status === "completed" ? "bg-cyanGlow/15 text-cyanGlow" : transaction.status === "pending" ? "bg-goldGlow/15 text-goldGlow" : "bg-magentaGlow/15 text-pink-200"}`}>{transaction.status}</span>
+                <span className={`rounded-md px-2 py-1 text-[11px] font-black ${financialStatusTone(transaction.status)}`}>{formatFinancialStatus(transaction.status)}</span>
               </div>
               <div className="mt-3 rounded-md bg-ink/60 p-3 text-sm">
                 <div className="font-bold text-white">{transaction.displayName}</div>
@@ -1042,7 +1302,7 @@ export function AdminPage() {
               <div className="mt-3 text-xs text-slate-500">{new Date(transaction.createdAt).toLocaleString()}</div>
             </article>
           ))}
-          {!financialTransactions.length ? <AdminEmptyState icon={BadgeDollarSign} title={t("adminExtra.finance.empty")} /> : null}
+          {!visibleFinancialTransactions.length ? <AdminEmptyState icon={BadgeDollarSign} title={t("adminExtra.finance.empty")} /> : null}
         </div>
       </div>
       ) : null}

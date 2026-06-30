@@ -218,6 +218,20 @@ function resolveAdReward(placement: AdPlacement) {
   return rewardByPlacement[placement] ?? rewardByPlacement.coins;
 }
 
+function sanitizeProviderPayload(payload?: Record<string, unknown>) {
+  if (!payload) return undefined;
+
+  const safeEntries = Object.entries(payload)
+    .filter(([key, value]) =>
+      !/token|secret|password|cookie|authorization/i.test(key)
+      && (["string", "number", "boolean"].includes(typeof value) || value === null)
+    )
+    .slice(0, 16)
+    .map(([key, value]) => [key.slice(0, 60), typeof value === "string" ? value.slice(0, 160) : value] as const);
+
+  return safeEntries.length ? Object.fromEntries(safeEntries) : undefined;
+}
+
 async function ensureDailyClaim(userId: string) {
   return prisma.dailyRewardClaim.upsert({
     where: { userId },
@@ -1015,6 +1029,7 @@ export async function completeAdRewardSession(
       }
 
       const updatedAdReward = await tx.adReward.findUniqueOrThrow({ where: { id: adReward.id } });
+      const providerPayload = sanitizeProviderPayload(input.providerPayload);
       const wallet = await updateWalletBalance(
         tx,
         userId,
@@ -1025,7 +1040,7 @@ export async function completeAdRewardSession(
           adSessionId: adReward.id,
           provider,
           providerEventId: input.providerEventId,
-          providerPayload: input.providerPayload,
+          providerPayload,
           placement,
           rewardType: selectedReward.rewardType
         }

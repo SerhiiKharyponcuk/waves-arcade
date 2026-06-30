@@ -37,7 +37,7 @@ import {
 
 export const adminRoutes = Router();
 
-adminRoutes.use(adminRateLimit, requireAuth, requireAdmin);
+adminRoutes.use(requireAuth, requireAdmin, adminRateLimit);
 adminRoutes.get("/users", validateQuery(adminUserSearchQuerySchema), asyncHandler(adminUsers));
 adminRoutes.get("/analytics", asyncHandler(adminAnalytics));
 adminRoutes.post("/users/:userId/ban", validateBody(adminBanSchema), asyncHandler(adminBanUser));

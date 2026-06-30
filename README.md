@@ -122,6 +122,7 @@ Backend:
 - `PORT`
 - `CORS_ORIGIN`
 - `NODE_ENV`
+- `TRUST_PROXY_HOPS`
 - `AD_PROVIDER`
 - `AD_SESSION_TTL_SECONDS`
 - `CAPTCHA_PROVIDER` and `TURNSTILE_SECRET_KEY`
@@ -195,6 +196,7 @@ Currency:
 - Authenticated routes require a bearer token.
 - Input validation uses Zod.
 - Helmet, CORS, and rate limiting are enabled.
+- Production proxy hops are configurable with `TRUST_PROXY_HOPS` so Cloudflare or another reverse proxy can forward the real client IP safely.
 - Skin purchases and coin spending are validated server-side.
 - Score submission goes through server-owned sessions, periodic checkpoints, and review states.
 - Rejected checkpoints cannot later produce a valid leaderboard score.
@@ -278,3 +280,4 @@ Production checklist:
 - Set up database backups.
 - Add logging and error monitoring.
 - Add abuse monitoring for auth, wallet, and score endpoints.
+- Put Cloudflare edge rate limits or a Redis-backed gateway in front of multi-instance production traffic.

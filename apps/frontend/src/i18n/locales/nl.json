@@ -1021,6 +1021,11 @@
       "riskDesk": "Risicodesk",
       "reviewRiskAccounts": "Risicoaccounts beoordelen",
       "riskDeskBody": "Focus op verdachte of recent beperkte spelers zonder de hele lijst door te nemen.",
+      "moderationTitle": "Moderatie-radar",
+      "moderationDescription": "Ga direct naar scorecontrole, beroepszaken, verdachte spelers en verificatieachterstanden.",
+      "financeTitle": "Financiele pulse",
+      "financeDescription": "Houd wachtende aankopen, mislukte beloningen en providerverdeling in beeld voordat ze supportwerk worden.",
+      "openFinance": "Open financiele werkruimte",
       "priorityTitle": "Prioriteitenrij",
       "priorityDescription": "Open het meest urgente werk zonder elke sectie af te zoeken.",
       "priority": {
@@ -1094,6 +1099,18 @@
     },
     "finance": {
       "description": "Bekijk wallet-aankopen, beloningen, providers, status en idempotency keys.",
+      "search": "Financieel logboek zoeken",
+      "searchPlaceholder": "Gebruiker, e-mail, provider, item of idempotency key",
+      "statusFilter": "Status",
+      "providerFilter": "Provider",
+      "allProviders": "Alle providers",
+      "results": "{{count}} financiele gebeurtenis(sen) zichtbaar",
+      "attentionTitle": "Vraagt aandacht",
+      "attentionDescription": "Openstaande of mislukte bewerkingen die supportwerk kunnen worden.",
+      "providerTitle": "Providermix",
+      "providerDescription": "Bekijk welke betaal- of rewardbronnen nu het logboek vullen.",
+      "noAttention": "Er wachten nu geen financiele problemen.",
+      "noProviders": "Er is nog geen provideractiviteit geregistreerd.",
       "summary": {
         "completed": "Voltooid",
         "pending": "In behandeling",
@@ -1146,6 +1163,10 @@
     "finance": {
       "title": "Financieel logboek",
       "empty": "Geen financiele transacties gevonden.",
+      "attentionLabel": "Vraagt aandacht",
+      "protectedLabel": "Beschermd door idempotency",
+      "topProvider": "Belangrijkste provider",
+      "volume": "{{count}} logboekgebeurtenis(sen)",
       "user": "Gebruiker",
       "item": "Item",
       "status": "Status",
@@ -1154,6 +1175,11 @@
       "date": "Datum",
       "idempotencyKey": "Idempotency key",
       "noAmount": "Geen wallet-wijziging",
+      "statusLabels": {
+        "completed": "Voltooid",
+        "pending": "In behandeling",
+        "failed": "Mislukt"
+      },
       "gems": "edelstenen",
       "tickets": "tickets",
       "lives": "levens"

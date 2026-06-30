@@ -7,4 +7,4 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { analyticsEventSchema } from "./schemas.js";
 
 export const analyticsRoutes = Router();
-analyticsRoutes.post("/events", analyticsRateLimit, optionalAuth, validateBody(analyticsEventSchema), asyncHandler(createAnalyticsEvent));
+analyticsRoutes.post("/events", optionalAuth, analyticsRateLimit, validateBody(analyticsEventSchema), asyncHandler(createAnalyticsEvent));

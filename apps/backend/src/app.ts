@@ -1,5 +1,6 @@
 import cookieParser from "cookie-parser";
 import express from "express";
+import { env } from "./config/env.js";
 import { apiRoutes } from "./routes/index.js";
 import { apiRateLimit, corsMiddleware, helmetMiddleware, noStoreApiMiddleware, requestTimeoutMiddleware, strictJsonContentType } from "./middleware/security.js";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
@@ -7,7 +8,9 @@ import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
 export function createApp() {
   const app = express();
 
-  if (process.env.NODE_ENV === "production") app.set("trust proxy", 1);
+  if (env.NODE_ENV === "production") {
+    app.set("trust proxy", env.TRUST_PROXY_HOPS);
+  }
 
   app.use(helmetMiddleware);
   app.use(corsMiddleware);
