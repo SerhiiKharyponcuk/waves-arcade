@@ -27,6 +27,7 @@ export class PlayerController {
   private readonly arrowGraphics: Phaser.GameObjects.Graphics;
   private readonly trailPoints: Phaser.Math.Vector2[] = [];
   private readonly trailPointLimit: number;
+  private readonly startX: number;
   private readonly speedX = 335;
   private readonly verticalSpeed = 335;
   private direction = 1;
@@ -39,7 +40,8 @@ export class PlayerController {
     this.trailVisual = trailVisual;
     this.renderSettings = renderSettings;
     this.trailPointLimit = renderSettings.lowPerformanceMode ? 56 : renderSettings.animationQuality === "low" ? 84 : renderSettings.animationQuality === "medium" ? 108 : 126;
-    this.x = 140;
+    this.startX = Phaser.Math.Clamp(scene.scale.width * 0.24, 140, 240);
+    this.x = this.startX;
     this.y = scene.scale.height / 2;
     this.trailGraphics = scene.add.graphics();
     this.arrowGraphics = scene.add.graphics();
@@ -54,7 +56,7 @@ export class PlayerController {
     const dt = deltaMs / 1000;
     const nextDirection = input.pressed ? -1 : 1;
     if (nextDirection !== this.direction) {
-      this.turnPulse = this.renderSettings.reduceMotion ? 0.28 : 1;
+      this.turnPulse = this.renderSettings.reduceMotion ? 0.18 : 0.72;
     }
     this.direction = nextDirection;
     const targetAngle = this.direction < 0 ? -0.76 : 0.76;
@@ -64,7 +66,7 @@ export class PlayerController {
 
     this.x += this.speedX * dt;
     this.y += this.direction * this.verticalSpeed * (input.verticalSpeedScale ?? 1) * dt;
-    this.distance = Math.max(this.distance, Math.floor(this.x - 140));
+    this.distance = Math.max(this.distance, Math.floor(this.x - this.startX));
 
     this.collider.setPosition(this.x, this.y);
     this.pushTrailPoint();
@@ -133,15 +135,15 @@ export class PlayerController {
     this.arrowGraphics.setRotation(0);
     const angle = this.currentAngle;
     const pulse = this.turnPulse;
-    const tip = this.rotatePoint(this.x + 23 + pulse * 3, this.y, angle);
-    const backA = this.rotatePoint(this.x - 18, this.y - 14 - pulse * 3, angle);
-    const backB = this.rotatePoint(this.x - 18, this.y + 14 + pulse * 3, angle);
-    const notch = this.rotatePoint(this.x - 7 - pulse * 2, this.y, angle);
+    const tip = this.rotatePoint(this.x + 23 + pulse * 1.5, this.y, angle);
+    const backA = this.rotatePoint(this.x - 18, this.y - 14 - pulse * 1.8, angle);
+    const backB = this.rotatePoint(this.x - 18, this.y + 14 + pulse * 1.8, angle);
+    const notch = this.rotatePoint(this.x - 7 - pulse * 1.2, this.y, angle);
 
     if (pulse > 0 && !this.renderSettings.reduceMotion) {
-      const flareBack = this.rotatePoint(this.x - 34 - pulse * 12, this.y, angle);
-      const flareTop = this.rotatePoint(this.x - 12, this.y - 18 - pulse * 10, angle);
-      const flareBottom = this.rotatePoint(this.x - 12, this.y + 18 + pulse * 10, angle);
+      const flareBack = this.rotatePoint(this.x - 34 - pulse * 8, this.y, angle);
+      const flareTop = this.rotatePoint(this.x - 12, this.y - 18 - pulse * 7, angle);
+      const flareBottom = this.rotatePoint(this.x - 12, this.y + 18 + pulse * 7, angle);
       if (!this.renderSettings.lowPerformanceMode) {
         this.arrowGraphics.lineStyle(2 + pulse * 4, secondary, 0.18 * pulse);
         this.arrowGraphics.strokeTriangle(flareBack.x, flareBack.y, flareTop.x, flareTop.y, flareBottom.x, flareBottom.y);

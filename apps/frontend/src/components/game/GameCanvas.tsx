@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type Phaser from "phaser";
 import { useTranslation } from "react-i18next";
+import { Maximize2, Minimize2 } from "lucide-react";
 import type { GameSkinBundle } from "../../game/skins/skinResolver";
 import { createWavesGame } from "../../game/engine/createGame";
 import type { GameStats } from "../../game/engine/WavesScene";
@@ -25,8 +26,10 @@ interface GameCanvasProps {
 export function GameCanvas({ modeId, skins, theme, audio, settings, paused, onStats, onGameOver }: GameCanvasProps) {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const shellRef = useRef<HTMLDivElement | null>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
   const [booting, setBooting] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     if (!containerRef.current) {
@@ -74,9 +77,38 @@ export function GameCanvas({ modeId, skins, theme, audio, settings, paused, onSt
     window.dispatchEvent(new CustomEvent("waves:pause", { detail: { paused } }));
   }, [paused]);
 
+  useEffect(() => {
+    const handleFullscreenChange = () => setIsFullscreen(document.fullscreenElement === shellRef.current);
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = useCallback(() => {
+    const shell = shellRef.current;
+    if (!shell) {
+      return;
+    }
+
+    if (document.fullscreenElement === shell) {
+      void document.exitFullscreen();
+      return;
+    }
+
+    void shell.requestFullscreen({ navigationUI: "hide" }).catch(() => undefined);
+  }, []);
+
   return (
-    <div className="game-canvas relative h-[calc(100dvh-12rem)] min-h-[24rem] overflow-hidden rounded-lg border border-white/10 bg-ink shadow-neon sm:h-[66vh] sm:min-h-[28rem]">
+    <div ref={shellRef} className={`game-canvas relative overflow-hidden border border-white/10 bg-ink shadow-neon ${isFullscreen ? "is-fullscreen border-0" : "rounded-lg"}`}>
       <div ref={containerRef} className="h-full w-full" />
+      <button
+        type="button"
+        onClick={toggleFullscreen}
+        className="absolute right-4 top-4 z-20 grid h-11 w-11 place-items-center rounded-md border border-white/15 bg-black/35 text-white shadow-neon backdrop-blur-md transition hover:border-cyanGlow/50 hover:text-cyanGlow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyanGlow"
+        aria-label={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+        title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+      >
+        {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+      </button>
       {booting ? (
         <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-ink/70 backdrop-blur-sm">
           <AppLoader label={t("loader.runtimeTitle")} subtitle={t("loader.runtimeSubtitle")} compact />

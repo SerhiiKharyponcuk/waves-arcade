@@ -22,6 +22,13 @@ export interface ObstacleSpawnProfile {
 
 type CleanupObject = Phaser.GameObjects.GameObject & { x?: number; width?: number; destroy: () => void };
 
+interface LaneMetrics {
+  edgePadding: number;
+  centerPadding: number;
+  minimumSeparation: number;
+  coinClearance: number;
+}
+
 export class ObstacleManager {
   public readonly obstacleGroup: Phaser.Physics.Arcade.StaticGroup;
   public readonly coinGroup: Phaser.Physics.Arcade.Group;
@@ -50,7 +57,9 @@ export class ObstacleManager {
     this.rotationStep = theme.lowPerformanceMode ? 0.02 : theme.animationQuality === "low" ? 0.028 : theme.animationQuality === "medium" ? 0.04 : 0.052;
     this.obstacleGroup = scene.physics.add.staticGroup();
     this.coinGroup = scene.physics.add.group({ allowGravity: false, immovable: true });
-    this.bottomY = scene.scale.height - 86;
+    const metrics = this.getLaneMetrics();
+    this.topY = metrics.edgePadding;
+    this.bottomY = scene.scale.height - metrics.edgePadding;
   }
 
   update(targetX: number, difficulty: number, profile: ObstacleSpawnProfile) {
@@ -72,11 +81,13 @@ export class ObstacleManager {
 
     const previousTop = this.topY;
     const previousBottom = this.bottomY;
-    const gap = Math.max(profile.minimumGap, 390 - difficulty * 7 + profile.gapOffset);
+    const metrics = this.getLaneMetrics();
+    const responsiveGap = Math.min(390, Math.max(profile.minimumGap, this.scene.scale.height * 0.48));
+    const gap = Math.max(profile.minimumGap, responsiveGap - difficulty * 7 + profile.gapOffset);
     const drift = Phaser.Math.Between(-profile.driftRange, profile.driftRange);
-    const center = Phaser.Math.Clamp((previousTop + previousBottom) / 2 + drift, 165, this.scene.scale.height - 165);
-    this.topY = Phaser.Math.Clamp(center - gap / 2, 42, this.scene.scale.height - 240);
-    this.bottomY = Phaser.Math.Clamp(center + gap / 2, this.topY + 165, this.scene.scale.height - 42);
+    const center = Phaser.Math.Clamp((previousTop + previousBottom) / 2 + drift, metrics.centerPadding, this.scene.scale.height - metrics.centerPadding);
+    this.topY = Phaser.Math.Clamp(center - gap / 2, metrics.edgePadding, this.scene.scale.height - metrics.edgePadding - metrics.minimumSeparation);
+    this.bottomY = Phaser.Math.Clamp(center + gap / 2, this.topY + metrics.minimumSeparation, this.scene.scale.height - metrics.edgePadding);
 
     this.addSectorFill(x, width, color);
     this.addWallBlock(x, 0, width, this.topY);
@@ -92,7 +103,7 @@ export class ObstacleManager {
       } else if (Phaser.Math.FloatBetween(0, 1) <= 0.58 + profile.extraCoinChance) {
         this.addDiamond(
           x + width * Phaser.Math.FloatBetween(0.52, 0.8),
-          Phaser.Math.Clamp((this.topY + this.bottomY) / 2 + Phaser.Math.Between(-70, 70), this.topY + 54, this.bottomY - 54)
+          Phaser.Math.Clamp((this.topY + this.bottomY) / 2 + Phaser.Math.Between(-70, 70), this.topY + metrics.coinClearance, this.bottomY - metrics.coinClearance)
         );
       }
     }
@@ -102,6 +113,7 @@ export class ObstacleManager {
   private addEventPattern(x: number, width: number, difficulty: number, profile: ObstacleSpawnProfile) {
     const roll = Phaser.Math.Between(0, 100);
     const midY = (this.topY + this.bottomY) / 2;
+    const metrics = this.getLaneMetrics();
 
     if (roll < 22) {
       this.addSpikeRow(x + 58, this.bottomY - 12, Math.min(6, 2 + Math.floor(difficulty / 3)), "floor");
@@ -126,16 +138,27 @@ export class ObstacleManager {
     }
 
     if (Phaser.Math.FloatBetween(0, 1) <= 0.58 + profile.extraCoinChance) {
-      this.addDiamond(x + width * 0.72, Phaser.Math.Clamp(midY + Phaser.Math.Between(-105, 105), this.topY + 54, this.bottomY - 54));
+      this.addDiamond(x + width * 0.72, Phaser.Math.Clamp(midY + Phaser.Math.Between(-105, 105), this.topY + metrics.coinClearance, this.bottomY - metrics.coinClearance));
     }
   }
 
   private addSafeLaneReward(x: number, width: number, profile: ObstacleSpawnProfile) {
     const centerY = (this.topY + this.bottomY) / 2;
+    const metrics = this.getLaneMetrics();
     this.addDiamond(x + width * 0.46, centerY);
     if (profile.extraCoinChance > 0.18) {
-      this.addDiamond(x + width * 0.68, Phaser.Math.Clamp(centerY + Phaser.Math.Between(-58, 58), this.topY + 54, this.bottomY - 54));
+      this.addDiamond(x + width * 0.68, Phaser.Math.Clamp(centerY + Phaser.Math.Between(-58, 58), this.topY + metrics.coinClearance, this.bottomY - metrics.coinClearance));
     }
+  }
+
+  private getLaneMetrics(): LaneMetrics {
+    const height = this.scene.scale.height;
+    return {
+      edgePadding: Phaser.Math.Clamp(height * 0.1, 32, 86),
+      centerPadding: Phaser.Math.Clamp(height * 0.24, 92, 165),
+      minimumSeparation: Phaser.Math.Clamp(height * 0.3, 112, 165),
+      coinClearance: Phaser.Math.Clamp(height * 0.09, 34, 54)
+    };
   }
 
   private addSectorFill(x: number, width: number, color: number) {

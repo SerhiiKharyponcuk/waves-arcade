@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Activity,
   Ban,
@@ -27,6 +27,7 @@ import {
   Users
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import enLocale from "../i18n/locales/en.json";
 import { AdminEmptyState, AdminMetricCard, AdminNavigation, AdminSectionHeader, type AdminSection } from "../components/admin/AdminWorkspace";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
@@ -52,8 +53,50 @@ const banReasonKeys = [
 
 type ActivityMetricKey = "gameSessions" | "validScores" | "adViews" | "guestSessions" | "newUsers";
 
-function AdminActivityChart({ rows }: { rows: AdminActivityDayDto[] }) {
+type TranslationOptions = Record<string, string | number | undefined> | string;
+
+function getFallbackTranslation(key: string) {
+  const value = key.split(".").reduce<unknown>((current, part) => {
+    if (current && typeof current === "object" && part in current) {
+      return (current as Record<string, unknown>)[part];
+    }
+    return undefined;
+  }, enLocale);
+
+  return typeof value === "string" ? value : undefined;
+}
+
+function interpolateFallback(value: string, options?: TranslationOptions) {
+  if (!options || typeof options === "string") {
+    return value;
+  }
+
+  return value.replace(/\{\{(\w+)\}\}/g, (match, token: string) => {
+    const replacement = options[token];
+    return replacement === undefined ? match : String(replacement);
+  });
+}
+
+function hasBrokenAdminText(value: string) {
+  return value.includes("??") || value.includes(String.fromCharCode(208)) || value.includes(String.fromCharCode(209));
+}
+
+function useAdminTranslation() {
   const { t } = useTranslation();
+
+  return useCallback((key: string, options?: TranslationOptions) => {
+    const translated = typeof options === "string" ? t(key, options) : t(key, options);
+    if (!hasBrokenAdminText(translated)) {
+      return translated;
+    }
+
+    const fallback = getFallbackTranslation(key);
+    return fallback ? interpolateFallback(fallback, options) : translated;
+  }, [t]);
+}
+
+function AdminActivityChart({ rows }: { rows: AdminActivityDayDto[] }) {
+  const t = useAdminTranslation();
   const metrics: Array<{ key: ActivityMetricKey; label: string; className: string }> = [
     { key: "gameSessions", label: t("adminExtra.activityGraph.sessions"), className: "bg-cyanGlow" },
     { key: "validScores", label: t("adminExtra.activityGraph.scores"), className: "bg-emerald-400" },
@@ -146,7 +189,7 @@ function AdminActivityChart({ rows }: { rows: AdminActivityDayDto[] }) {
 }
 
 export function AdminPage() {
-  const { t } = useTranslation();
+  const t = useAdminTranslation();
   const [users, setUsers] = useState<AdminUserDto[]>([]);
   const [query, setQuery] = useState("");
   const [busy, setBusy] = useState(false);

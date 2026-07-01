@@ -59,6 +59,18 @@ button {
   touch-action: none;
 }
 
+.game-canvas {
+  height: clamp(24rem, 68dvh, 46rem);
+  min-height: 24rem;
+}
+
+.game-canvas.is-fullscreen {
+  width: 100vw;
+  height: 100dvh;
+  min-height: 100dvh;
+  border-radius: 0;
+}
+
 @layer components {
   .admin-action {
     @apply flex min-h-10 w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-bold text-slate-300 transition hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-50;
@@ -208,4 +220,44 @@ button {
     transform: none !important;
     transition: none !important;
   }
+}
+
+@media (max-width: 767px) and (orientation: portrait) {
+  .game-canvas {
+    height: min(72dvh, 36rem);
+    min-height: 28rem;
+  }
+}
+
+@media (max-width: 767px) and (orientation: landscape) {
+  .game-canvas {
+    height: calc(100dvh - 4.5rem);
+    min-height: 18rem;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1180px) and (orientation: portrait) {
+  .game-canvas {
+    height: min(70dvh, 48rem);
+    min-height: 34rem;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1180px) and (orientation: landscape) {
+  .game-canvas {
+    height: min(78dvh, 42rem);
+    min-height: 28rem;
+  }
+}
+
+@media (min-width: 1181px) {
+  .game-canvas {
+    height: min(72dvh, 50rem);
+    min-height: 32rem;
+  }
+}
+
+.game-canvas.is-fullscreen {
+  height: 100dvh;
+  min-height: 100dvh;
 }

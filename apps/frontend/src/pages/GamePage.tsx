@@ -562,6 +562,26 @@ export function GamePage() {
     }
   }
 
+  const togglePause = useCallback(() => {
+    setRunState((current) => (current === "running" ? "paused" : current === "paused" ? "running" : current));
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target?.closest("input, textarea, select, [contenteditable='true']")) {
+        return;
+      }
+      if (event.key.toLowerCase() !== "p") {
+        return;
+      }
+      setRunState((current) => (current === "running" ? "paused" : current === "paused" ? "running" : current));
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   if (runState === "running" || runState === "paused" || runState === "over") {
     return (
       <section className="grid gap-4">
@@ -588,7 +608,7 @@ export function GamePage() {
             <Button
               type="button"
               variant="secondary"
-              onClick={() => setRunState(runState === "paused" ? "running" : "paused")}
+              onClick={togglePause}
               icon={runState === "paused" ? <Play size={18} /> : <Pause size={18} />}
             >
               {runState === "paused" ? t("game.resume") : t("game.pause")}

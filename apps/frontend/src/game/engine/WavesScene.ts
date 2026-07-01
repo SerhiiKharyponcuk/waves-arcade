@@ -80,8 +80,8 @@ export class WavesScene extends Phaser.Scene {
     this.physics.add.overlap(this.player.collider, this.obstacles.coinGroup, (_player, coin) =>
       this.collectCoin(coin as Phaser.GameObjects.GameObject)
     );
-    this.cameras.main.startFollow(this.player.collider, false, 0.08, 0.12, -220, 0);
-    this.cameras.main.setDeadzone(180, 90);
+    this.configureCamera();
+    this.scale.on("resize", this.handleResize);
 
     this.input.on("pointerdown", () => {
       this.pointerPressed = true;
@@ -144,9 +144,27 @@ export class WavesScene extends Phaser.Scene {
   shutdown() {
     window.removeEventListener("waves:virtual-control", this.handleVirtualControl as EventListener);
     window.removeEventListener("waves:pause", this.handlePause as EventListener);
+    this.scale.off("resize", this.handleResize);
     this.input.keyboard?.off("keydown", this.handleKeyboardAudio);
     this.audio?.destroy();
   }
+
+  private configureCamera() {
+    if (!this.player) {
+      return;
+    }
+
+    const followOffset = -Phaser.Math.Clamp(this.scale.width * 0.28, 120, 260);
+    const deadzoneWidth = Phaser.Math.Clamp(this.scale.width * 0.18, 90, 190);
+    const deadzoneHeight = Phaser.Math.Clamp(this.scale.height * 0.16, 70, 130);
+    this.cameras.main.startFollow(this.player.collider, false, 0.06, 0.1, followOffset, 0);
+    this.cameras.main.setDeadzone(deadzoneWidth, deadzoneHeight);
+  }
+
+  private handleResize = (gameSize: Phaser.Structs.Size) => {
+    this.physics.world.setBounds(0, 0, 100_000, gameSize.height);
+    this.configureCamera();
+  };
 
   private drawBackdrop() {
     const graphics = this.add.graphics();
